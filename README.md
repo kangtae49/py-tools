@@ -71,3 +71,28 @@ export default defineConfig([
   },
 ])
 ```
+---
+
+```sh
+PS C:\sources\py_src> pnpm create vite py-tools
+|
+o  Select a framework:
+|  React
+|
+o  Select a variant:
+|  TypeScript
+|
+o  Use rolldown-vite (Experimental)?:
+|  No
+|
+o  Install with pnpm and start now?
+|  No
+|
+o  Scaffolding project in C:\sources\py_src\py-tools...
+|
+—  Done. Now run:
+
+  cd py-tools
+  pnpm install
+  pnpm dev
+```

@@ -24,6 +24,7 @@ def run():
         title='PyTools',
         url=server_url,
         js_api=api,
+        text_select=True,
     )
 
     # webview.start(debug=debug)

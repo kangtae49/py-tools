@@ -69,6 +69,9 @@ function App() {
         {text}
       </textarea>
       }
+      <div>
+        <a href="https://google.com">google</a>
+      </div>
     </div>
   )
 }

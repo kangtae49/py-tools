@@ -96,3 +96,7 @@ o  Scaffolding project in C:\sources\py_src\py-tools...
   pnpm install
   pnpm dev
 ```
+
+```
+uv init
+```

@@ -117,3 +117,15 @@ uv sync
 ```sh
 uv run main.py
 ```
+
+# deploy
+```
+vite build --outDir gui --emptyOutDir --minify
+uv run pyinstaller build-windows.spec
+```
+
+# debug
+```
+pnpm dev
+uv run main.py
+```

@@ -113,3 +113,7 @@ dependencies = [
 ```sh
 uv sync
 ```
+
+```sh
+uv run main.py
+```

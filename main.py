@@ -1,5 +1,6 @@
+from apps import app
 def main():
-    print("Hello from py-tools!")
+    app.run()
 
 
 if __name__ == "__main__":

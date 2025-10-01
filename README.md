@@ -100,3 +100,16 @@ o  Scaffolding project in C:\sources\py_src\py-tools...
 ```
 uv init
 ```
+
+## pyproject.toml
+```toml
+dependencies = [
+    "pywebview",
+    "pyinstaller",
+    "setuptools",
+]
+```
+
+```sh
+uv sync
+```

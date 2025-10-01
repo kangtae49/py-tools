@@ -1,34 +1,75 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import {useEffect, useState} from "react";
+import {commands} from "./bindings";
+import {srcLocal} from "./components/utils.ts";
 
 function App() {
-  const [count, setCount] = useState(0)
 
+  const [mp3, setMp3] = useState<string | null>(null);
+  const [text, setText] = useState<string | null>(null);
+
+  const clickOpenMp3 = () => {
+    commands.dialog_open({
+      dialog_type: "OPEN"
+    }).then((result) => {
+      if(result.status === "ok") {
+        const files = result.data;
+        if (files !== null) {
+          // const path = "file://" + files[0].replace(/\\/g, "/");
+          const path = files[0];
+
+          setMp3(path);
+
+        }
+      }
+    })
+  }
+
+  const clickOpenFile = () => {
+    commands.dialog_open({
+      dialog_type: "OPEN"
+    }).then(async (result) => {
+      if(result.status === "ok") {
+        const files = result.data;
+        if (files !== null) {
+          // const path = "file://" + files[0].replace(/\\/g, "/");
+          const path = files[0];
+          fetch(srcLocal(path))
+          .then(res => res.text())
+          .then((text) => {
+            console.log(text)
+            setText(text);
+          })
+        }
+      }
+    })
+  }
+
+  useEffect(() => {
+    // window.pywebview.api.dialog_open({
+    //   dialog_type: "OPEN",
+    // }).then((files) => console.log(files))
+    console.log("hello")
+    // setText(null)
+  }, [])
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="app">
+      <div>[{window.location.href}]</div>
+      {import.meta.env.PROD && <div>PROD</div>}
+      {import.meta.env.DEV && <div>DEV</div>}
+      <div onClick={clickOpenMp3}>Open Mp3</div>
+      {mp3 !== null &&
+      <audio controls>
+        <source src={srcLocal(mp3)}></source>
+      </audio>
+      }
+      <div onClick={clickOpenFile}>Get TextFile</div>
+      {text !== null &&
+      <textarea>
+        {text}
+      </textarea>
+      }
+    </div>
   )
 }
 

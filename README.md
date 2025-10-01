@@ -120,6 +120,10 @@ uv run main.py
 
 # deploy
 ```
+npm build
+
+# or 
+
 vite build --outDir gui --emptyOutDir --minify
 uv run pyinstaller build-windows.spec
 ```
@@ -128,4 +132,10 @@ uv run pyinstaller build-windows.spec
 ```
 pnpm dev
 uv run main.py
+```
+
+# js_api
+## pydantic
+```sh
+uv run pydantic2ts --module apps/models.py --output src/types/models.d.ts
 ```

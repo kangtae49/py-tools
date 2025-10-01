@@ -1,6 +1,7 @@
 import os
 import sys
 import webview
+from apps import js_api
 
 def run():
 
@@ -18,9 +19,12 @@ def run():
         # base_path = os.path.dirname(os.path.abspath(__file__))
         # index_path = os.path.join(base_path, "../dist/index.html")
         # server_url = f"file://{index_path}"
-
-    webview.create_window(
+    api = js_api.JsApi()
+    win = webview.create_window(
         title='PyTools',
         url=server_url,
+        js_api=api,
     )
-    webview.start(debug=debug)
+
+    # webview.start(debug=debug)
+    webview.start(debug=True)

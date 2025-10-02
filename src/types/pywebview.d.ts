@@ -7,8 +7,9 @@ declare global {
     pywebview: {
       api: {
         dialog_open(options?: DialogOptions): Promise<string[] | null>;
+        get_drop_files(): Promise<DropFile[] | null>;
+      },
+    },
 
-      };
-    };
   }
 }

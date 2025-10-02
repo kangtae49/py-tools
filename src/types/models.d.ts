@@ -14,3 +14,14 @@ export interface DialogOptions {
   save_filename?: string;
   file_types?: string[];
 }
+export interface DropFile {
+  name: string;
+  lastModified: number;
+  lastModifiedDate: {
+    [k: string]: unknown;
+  };
+  webkitRelativePath: string;
+  size: number;
+  type: string;
+  pywebviewFullPath: string;
+}

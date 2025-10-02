@@ -1,4 +1,4 @@
-import type {DialogOptions} from "./types/models";
+import type {DialogOptions, DropFile} from "./types/models";
 
 export type Result<T, E> =
   | { status: "ok"; data: T }
@@ -14,5 +14,13 @@ export const commands = {
       if(e instanceof Error) throw e;
       else return { status: "error", error: e  as any };
     }
-  }
+  },
+  async get_drop_files(): Promise<Result<DropFile[] | null, Error>> {
+    try {
+      return { status: "ok", data: await window.pywebview.api.get_drop_files() };
+    } catch (e) {
+      if(e instanceof Error) throw e;
+      else return { status: "error", error: e  as any };
+    }
+  },
 }

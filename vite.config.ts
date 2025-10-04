@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import viteTsconfigPaths from 'vite-tsconfig-paths'
 import type {IncomingMessage, ServerResponse} from "node:http";
 import * as url from "node:url";
 import * as fs from "node:fs";
@@ -7,7 +8,7 @@ import * as fs from "node:fs";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    react(),
+    react(), viteTsconfigPaths(),
     {
       name: 'local-file-middleware',
       configureServer(server) {
@@ -39,7 +40,6 @@ export default defineConfig({
             });
             stream.pipe(res);
           } else {
-            // Range 없으면 전체 전송
             const stream = fs.createReadStream(filePath);
             res.writeHead(200, {
               'Content-Length': stat.size,

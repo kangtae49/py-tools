@@ -1,0 +1,20 @@
+.mosaic-root {
+    --top-height: 60px;
+    --first-height: 60px;
+    --icon-size: 24px;
+    --icon-size-middle: 35px;
+    --icon-font-size: 17px;
+    --icon-font-size-middle: 35px;
+    --icon-color: #f4a261;
+    --icon-color-inactive: #d9d9d9;
+    --icon-hover-scale: scale(1.2);
+}
+.title-bar { display: flex; width: 100%; }
+.title-bar .title {
+    flex: 1;
+    display: flex;
+    justify-content: center; align-items: center;
+}
+
+.fa-music { color: var(--icon-color); font-size: var(--icon-font-size);}
+.fa-music:hover { transform: var(--icon-hover-scale);}

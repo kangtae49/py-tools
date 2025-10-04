@@ -114,7 +114,8 @@ export default function MusicPlayerView() {
     commands.dialog_open({
       dialog_type: "OPEN",
       allow_multiple: false,
-      file_types: [`OpenAudio Book ("${["json"].join(";")}")`]
+      file_types: [`OpenAudio Book (${["*.json"].join(";")})`]
+
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;
@@ -133,7 +134,7 @@ export default function MusicPlayerView() {
     commands.dialog_open({
       dialog_type: "SAVE",
       allow_multiple: true,
-      file_types: [`Audio files (${["*.mp3", "*.wav", "*.ogg", "*.m4a", "*.opus", "*.webm"].join(";")})`]
+      file_types: [`Save Audio Book (${["*.json"].join(";")})`]
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;

@@ -4,11 +4,12 @@ import argparse
 import webview
 from webview import Window
 import json
-
-from apps import js_api
-from webview.dom import DOMEventHandler
-from apps.models import DropFile
 import string
+
+from webview.dom import DOMEventHandler
+from apps import js_api
+from apps.models import DropFile
+from apps.app_menu import app_menu
 
 api = js_api.JsApi()
 
@@ -135,4 +136,4 @@ def run():
     g_window = window
 
     # webview.start(debug=debug)
-    webview.start(debug=debug)
+    webview.start(debug=debug, menu=app_menu)

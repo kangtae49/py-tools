@@ -58,7 +58,8 @@ const ELEMENT_MAP: Record<WinType, TitleInfo> = {
 
 export function MosaicLayoutView() {
   const {
-    minimizeView, maximizeView, removeView,
+    // minimizeView, maximizeView,
+    removeView,
     mosaicValue, setMosaicValue,
   } = useMosaicStore();
 
@@ -88,16 +89,16 @@ export function MosaicLayoutView() {
                 {ELEMENT_MAP[getWinType(id)].icon}<div>{ELEMENT_MAP[getWinType(id)].title}</div>
               </div>
               <div className="controls">
-                <DefaultToolbarButton
-                  title="Minimize"
-                  onClick={() => minimizeView(id)}
-                  className="bp6-icon-minus"
-                />
-                <DefaultToolbarButton
-                  title="Maximize"
-                  onClick={() => maximizeView(id)}
-                  className="bp6-icon-maximize"
-                />
+                {/*<DefaultToolbarButton*/}
+                {/*  title="Minimize"*/}
+                {/*  onClick={() => minimizeView(id)}*/}
+                {/*  className="bp6-icon-minus"*/}
+                {/*/>*/}
+                {/*<DefaultToolbarButton*/}
+                {/*  title="Maximize"*/}
+                {/*  onClick={() => maximizeView(id)}*/}
+                {/*  className="bp6-icon-maximize"*/}
+                {/*/>*/}
                 <DefaultToolbarButton
                   title="Close Window"
                   onClick={() => removeView(id)}

@@ -8,6 +8,7 @@ import json
 from apps import js_api
 from webview.dom import DOMEventHandler
 from apps.models import DropFile
+import string
 
 api = js_api.JsApi()
 
@@ -29,6 +30,7 @@ def on_loaded(window):
     if window is not None:
         bind(window)
         print(f'url: {window.get_current_url()}')
+
 
 
 
@@ -58,8 +60,19 @@ def on_drop(e):
                  pywebviewFullPath=f.get('pywebviewFullPath'),
         ) for f in files]
     jstr = [x.model_dump() for x in drop_files]
-    js_str = f"""window.reactApi.changeDropFiles({json.dumps(jstr)})"""
-    g_window.evaluate_js(js_str)
+    # js_str = f"""window.reactApi.changeDropFiles({json.dumps(jstr)})"""
+    # g_window.evaluate_js(js_str)
+
+    tmpl = string.Template("""
+        window.dispatchEvent(new CustomEvent("drop-files", 
+            {
+                detail: $drop_files
+            }
+        ))
+    """)
+    print(tmpl.substitute(drop_files=json.dumps(jstr)))
+    g_window.evaluate_js(tmpl.substitute(drop_files=json.dumps(jstr)))
+
 
 
 def bind(window):

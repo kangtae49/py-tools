@@ -147,9 +147,9 @@ export const useMosaicStore = create<MosaicStore>((set, get) => ({
       if (!second) return first;
 
       if (first === id) {
-        return { ...node, splitPercentage: 100, first, second };
+        return { ...node, splitPercentage: 95, first, second };
       } else if(second === id) {
-        return { ...node, splitPercentage: 0, first, second };
+        return { ...node, splitPercentage: 5, first, second };
       }
 
       return { ...node, first, second };
@@ -174,9 +174,9 @@ export const useMosaicStore = create<MosaicStore>((set, get) => ({
       if (!second) return first;
 
       if (first === id) {
-        return { ...node, splitPercentage: 0, first, second };
+        return { ...node, splitPercentage: 5, first, second };
       } else if(second === id) {
-        return { ...node, splitPercentage: 100, first, second };
+        return { ...node, splitPercentage: 95, first, second };
       }
 
       return { ...node, first, second };

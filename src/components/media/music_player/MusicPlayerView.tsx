@@ -20,16 +20,15 @@ import {formatSeconds, getFilename} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
+import type {DropFile} from "@/types/models";
 
 const MUSIC_PLAYER_LATEST_PLAYLIST = 'music-player.playlist.latest.json'
 const MUSIC_PLAYER_SETTING = 'music-player.setting.json'
 
 export default function MusicPlayerView() {
   const [ready, setReady] = useState<boolean>(false);
-  // const [setting, setSetting] = useState<MusicPlayerSetting | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<ListImperativeAPI>(null);
-  // const { setNodeRef } = useDroppable({ id: "music-dropzone" });
   const {
     playList, appendPlayList, removePlayList, shufflePlayList, natsortPlayList,
     playPath, setPlayPath,
@@ -53,7 +52,9 @@ export default function MusicPlayerView() {
     autoPlay, setAutoPlay,
     setSetting,
   } = useAudioStore();
-  const {receivedDropFiles, getDropFiles, setFileList} = useReceivedDropFilesStore();
+  const {
+    setDropRef
+  } = useReceivedDropFilesStore();
 
   const openDialogPlayList = async () => {
     commands.dialog_open({
@@ -220,26 +221,6 @@ export default function MusicPlayerView() {
     setSelectedPlayList(newPlayList)
   }
 
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    console.log('handleDrop');
-    event.preventDefault();
-    setFileList(event.dataTransfer.files);
-  }
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-  };
-  useEffect(() => {
-    // console.log("receivedDropFiles:", receivedDropFiles);
-    const newDropFiles = getDropFiles();
-    console.log("dropFiles:", newDropFiles);
-    if (newDropFiles !== null) {
-      const files = newDropFiles.map((file) => file.pywebviewFullPath);
-      if (files.length > 0) {
-        appendPlayList(files);
-      }
-    }
-  }, [receivedDropFiles]);
-
   useEffect(() => {
     if (shuffle) {
       shufflePlayList()
@@ -317,14 +298,28 @@ export default function MusicPlayerView() {
   useEffect(() => {
     if (listRef?.current !== null) {
       setPlayListRef(listRef.current);
+
     }
   }, [listRef?.current])
 
-  // useEffect(() => {
-  //   if (containerRef?.current !== null) {
-  //     setNodeRef(containerRef.current)
-  //   }
-  // }, [containerRef?.current])
+
+  useEffect(() => {
+    if (containerRef?.current === null) return;
+    setDropRef(containerRef)
+    const onDropHandler = (e: CustomEvent) => {
+      console.log("drop-files !!!:", e.detail);
+      const newDropFiles = e.detail as DropFile[];
+      if (newDropFiles !== null) {
+        const files = newDropFiles.map((file) => file.pywebviewFullPath);
+        if (files.length > 0) {
+          appendPlayList(files);
+        }
+      }
+    };
+    containerRef?.current?.addEventListener("drop-files", onDropHandler as EventListener);
+    return () => containerRef?.current?.removeEventListener("drop-files", onDropHandler as EventListener);
+  }, [containerRef?.current])
+
 
   useEffect(() => {
     containerRef.current?.focus();
@@ -335,8 +330,6 @@ export default function MusicPlayerView() {
     }).finally(() => {
       setReady(true);
     })
-
-
   }, [])
 
   return (
@@ -344,8 +337,6 @@ export default function MusicPlayerView() {
          ref={containerRef}
          id="music-dropzone"
          onKeyDown={onKeyDownHandler} tabIndex={0}
-         onDrop={handleDrop}
-         onDragOver={handleDragOver}
     >
       <AudioView />
       <div className="top">

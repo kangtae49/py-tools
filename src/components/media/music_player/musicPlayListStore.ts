@@ -26,8 +26,8 @@ interface MusicPlayListStore {
   natsortPlayList: () => string [];
   prevPlayPath: () => string | null;
   nextPlayPath: () => string | null;
-  getPrev: (value: string | null) => string | null;
-  getNext: (value: string | null) => string | null;
+  getPrevPlayPath: (value: string | null) => string | null;
+  getNextPlayPath: (value: string | null) => string | null;
 
   scrollPlayPath: (value: string) => void;
 
@@ -106,7 +106,7 @@ export const useMusicPlayListStore = create<MusicPlayListStore>((set, get) => ({
     set({ playPath: next });
     return next;
   },
-  getPrev: (value) => {
+  getPrevPlayPath: (value) => {
     const curPlayList = get().playList;
     if (curPlayList.length == 0) {
       return null;
@@ -123,7 +123,7 @@ export const useMusicPlayListStore = create<MusicPlayListStore>((set, get) => ({
     prev = curPlayList[idx]
     return prev;
   },
-  getNext: (value) => {
+  getNextPlayPath: (value) => {
     const curPlayList = get().playList;
     if (curPlayList.length == 0) {
       return null;

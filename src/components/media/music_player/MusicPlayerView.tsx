@@ -32,8 +32,7 @@ export default function MusicPlayerView() {
   const {
     playList, appendPlayList, removePlayList, shufflePlayList, natsortPlayList,
     playPath, setPlayPath,
-    prevPlayPath, nextPlayPath,
-    getPrev, getNext,
+    getPrevPlayPath, getNextPlayPath,
     setPlayListRef,
     scrollPlayPath,
   } = useMusicPlayListStore();
@@ -49,7 +48,6 @@ export default function MusicPlayerView() {
     repeat, toggleRepeat,
     shuffle, toggleShuffle,
     ended, setEnded,
-    setAutoPlay,
     setting, setSetting,
     filter,
   } = useAudioStore();
@@ -159,21 +157,23 @@ export default function MusicPlayerView() {
   }
 
   const playPrev = () => {
-    const newPlayPath = prevPlayPath();
+    const newPlayPath = getPrevPlayPath(playPath);
     if (newPlayPath == null) return
     if (setting !== null) {
       setting.playPath = newPlayPath;
       setSetting({...setting, currentTime: 0})
     }
+    setPlayPath(newPlayPath);
   }
 
   const playNext = () => {
-    const newPlayPath = nextPlayPath();
+    const newPlayPath = getNextPlayPath(playPath);
     if (newPlayPath == null) return
     if (setting !== null) {
       setting.playPath = newPlayPath;
       setSetting({...setting, currentTime: 0})
     }
+    setPlayPath(newPlayPath);
   }
 
 
@@ -188,30 +188,32 @@ export default function MusicPlayerView() {
     } else if (e.key === "Delete") {
       clickRemovePlayList();
     } else if (e.key === "ArrowLeft") {
+      const newPlayPath = getPrevPlayPath(playPath)
       if (setting !== null) {
         setSetting({...setting, currentTime: 0})
       }
-      const newPlayPath = prevPlayPath()
+      setPlayPath(newPlayPath)
       if (newPlayPath !== null) {
         scrollPlayPath(newPlayPath)
       }
     } else if (e.key === "ArrowRight") {
+      const newPlayPath = getNextPlayPath(playPath)
       if (setting !== null) {
         setSetting({...setting, currentTime: 0})
       }
-      const newPlayPath = nextPlayPath()
+      setPlayPath(newPlayPath)
       if (newPlayPath !== null) {
         scrollPlayPath(newPlayPath)
       }
     } else if (e.key === "ArrowUp") {
-      const newSelection = getPrev(selectionBegin)
+      const newSelection = getPrevPlayPath(selectionBegin)
       if(newSelection !== null) {
         setSelectionBegin(newSelection)
         setSelectedPlayList([newSelection])
         scrollPlayPath(newSelection)
       }
     } else if (e.key === "ArrowDown") {
-      const newSelection = getNext(selectionBegin)
+      const newSelection = getNextPlayPath(selectionBegin)
       if(newSelection !== null) {
         setSelectionBegin(newSelection)
         setSelectedPlayList([newSelection])
@@ -220,7 +222,9 @@ export default function MusicPlayerView() {
     } else if (e.key === "Enter") {
       if (selectedPlayList.length == 1) {
         if (paused) {
-          setAutoPlay(true);
+          if (setting !== null) {
+            setSetting({...setting, paused: !paused})
+          }
         }
         setPlayPath(selectedPlayList[0]);
       }

@@ -37,14 +37,13 @@ class WindowEventListener:
 
     def on_closing(self):
         print('closing')
-        subpath = "music-player.setting.json"
         content = self.js_api.setting.get(MUSIC_PLAYER_SETTING)
-        self.js_api.app_write_to_string(MUSIC_PLAYER_SETTING, content)
+        self.js_api.app_write_file(MUSIC_PLAYER_SETTING, content)
         print(f"save: {MUSIC_PLAYER_SETTING}")
         print(f"{content}")
 
         content = self.js_api.setting.get(MUSIC_PLAYER_LATEST_PLAYLIST)
-        self.js_api.app_write_to_string(MUSIC_PLAYER_LATEST_PLAYLIST, content)
+        self.js_api.app_write_file(MUSIC_PLAYER_LATEST_PLAYLIST, content)
         print(f"save: {MUSIC_PLAYER_LATEST_PLAYLIST}")
         print(f"{content}")
 

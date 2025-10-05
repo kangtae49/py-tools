@@ -1,11 +1,11 @@
-import type {DialogOptions, DropFile} from "./types/models";
+import type {DialogOptions} from "./types/models";
 export type Result<T, E> =
   | { status: "ok"; data: T }
   | { status: "error"; error: E };
 
 
 export const commands = {
-  async dialog_open(options?: DialogOptions): Promise<Result<string[] | null, Error>> {
+  async dialogOpen(options?: DialogOptions): Promise<Result<string[] | null, Error>> {
     try {
       return { status: "ok", data: await window.pywebview.api.dialog_open(options) };
     } catch (e: Error | any) {
@@ -16,20 +16,9 @@ export const commands = {
       }
     }
   },
-  async get_drop_files(): Promise<Result<DropFile[] | null, Error>> {
+  async readFile(fullpath: string): Promise<Result<string, Error>> {
     try {
-      return { status: "ok", data: await window.pywebview.api.get_drop_files() };
-    } catch (e: Error | any) {
-      if (e?.name === 'ApiError') {
-        return { status: "error", error: e  as any };
-      } else {
-        throw e;
-      }
-    }
-  },
-  async read_to_string(fullpath: string): Promise<Result<string, Error>> {
-    try {
-      const res = await window.pywebview.api.read_to_string(fullpath);
+      const res = await window.pywebview.api.read_file(fullpath);
       return { status: "ok", data: res };
     } catch (e: Error | any) {
       if (e?.name === 'ApiError') {
@@ -39,9 +28,9 @@ export const commands = {
       }
     }
   },
-  async write_to_string(fullpath: string, content: string): Promise<Result<void, Error>> {
+  async writeFile(fullpath: string, content: string): Promise<Result<void, Error>> {
     try {
-      return { status: "ok", data: await window.pywebview.api.write_to_string(fullpath, content) };
+      return { status: "ok", data: await window.pywebview.api.write_file(fullpath, content) };
     } catch (e: Error | any) {
       if (e?.name === 'ApiError') {
         return { status: "error", error: e  as any };
@@ -50,9 +39,9 @@ export const commands = {
       }
     }
   },
-  async app_read_to_string(subpath: string): Promise<Result<string, Error>> {
+  async appReadFile(subpath: string): Promise<Result<string, Error>> {
     try {
-      const res = await window.pywebview.api.app_read_to_string(subpath);
+      const res = await window.pywebview.api.app_read_file(subpath);
       return { status: "ok", data: res };
     } catch (e: Error | any) {
       if (e?.name === 'ApiError') {
@@ -62,9 +51,9 @@ export const commands = {
       }
     }
   },
-  async app_write_to_string(subpath: string, content: string): Promise<Result<void, Error>> {
+  async appWriteFile(subpath: string, content: string): Promise<Result<void, Error>> {
     try {
-      return { status: "ok", data: await window.pywebview.api.app_write_to_string(subpath, content) };
+      return { status: "ok", data: await window.pywebview.api.app_write_file(subpath, content) };
     } catch (e: Error | any) {
       if (e?.name === 'ApiError') {
         return { status: "error", error: e  as any };
@@ -73,7 +62,7 @@ export const commands = {
       }
     }
   },
-  async app_read(subpath: string): Promise<Result<string, Error>> {
+  async appRead(subpath: string): Promise<Result<string, Error>> {
     try {
       const res = await window.pywebview.api.app_read(subpath);
       return { status: "ok", data: res };
@@ -85,7 +74,7 @@ export const commands = {
       }
     }
   },
-  async app_write(subpath: string, content: string): Promise<Result<void, Error>> {
+  async appWrite(subpath: string, content: string): Promise<Result<void, Error>> {
     try {
       return { status: "ok", data: await window.pywebview.api.app_write(subpath, content) };
     } catch (e: Error | any) {

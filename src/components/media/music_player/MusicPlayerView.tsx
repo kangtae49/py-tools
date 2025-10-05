@@ -57,7 +57,7 @@ export default function MusicPlayerView() {
 
   const openDialogPlayList = async () => {
     const filter_ext = filter.map((ext)=> `*.${ext}`).join(";") // *.mp3;*.wav;*.ogg;*.m4a;*.opus;*.webm
-    commands.dialog_open({
+    commands.dialogOpen({
       dialog_type: "OPEN",
       allow_multiple: true,
       file_types: [`Audio files (${filter_ext})`]
@@ -83,7 +83,6 @@ export default function MusicPlayerView() {
   }
 
   const loadJson = async (jsonStr: string): Promise<string []> => {
-    console.log("loadJson", jsonStr);
     const newList: string [] = JSON.parse(jsonStr);
     appendPlayList(newList);
     let shuffledPlayList: string[];
@@ -92,13 +91,16 @@ export default function MusicPlayerView() {
     } else {
       shuffledPlayList = natsortPlayList()
     }
-    commands.app_read_to_string(MUSIC_PLAYER_SETTING).then((result) => {
+    commands.appReadFile(MUSIC_PLAYER_SETTING).then((result) => {
       if (result.status === 'ok'){
         const setting: MusicPlayerSetting = JSON.parse(result.data);
         setPlayPath(setting.playPath ?? null);
         setSetting({...setting})
       } else {
-        setPlayPath(shuffledPlayList[0]);
+        setSetting({})
+        if(shuffledPlayList.length > 0) {
+          setPlayPath(shuffledPlayList[0]);
+        }
       }
     })
 
@@ -106,7 +108,7 @@ export default function MusicPlayerView() {
   }
 
   const openDialogOpenJson = async () => {
-    commands.dialog_open({
+    commands.dialogOpen({
       dialog_type: "OPEN",
       allow_multiple: false,
       file_types: [`OpenAudio Book (${["*.json"].join(";")})`]
@@ -114,7 +116,7 @@ export default function MusicPlayerView() {
       if(result.status === 'ok') {
         const files = result.data;
         if(files === null) return;
-        commands.read_to_string(files[0]).then(async (result) => {
+        commands.readFile(files[0]).then(async (result) => {
           if (result.status === 'ok'){
             loadJson(result.data).then();
           }
@@ -125,7 +127,7 @@ export default function MusicPlayerView() {
 
 
   const openDialogSaveAsJson = async () => {
-    commands.dialog_open({
+    commands.dialogOpen({
       dialog_type: "SAVE",
       allow_multiple: true,
       file_types: [`Save Audio Book (${["*.json"].join(";")})`]
@@ -134,7 +136,7 @@ export default function MusicPlayerView() {
         const files = result.data;
         if (files === null) { return }
         const content = JSON.stringify(playList, null, 2);
-        commands.write_to_string(files[0], content).then(async (result) => {
+        commands.writeFile(files[0], content).then(async (result) => {
           if (result.status === 'ok'){
             toast.success("Success save");
           } else {
@@ -286,13 +288,9 @@ export default function MusicPlayerView() {
     if (setting === null) return;
     if (playPath === null) return;
     if (!ready) return;
-    if (setting) {
-      commands.app_write(MUSIC_PLAYER_SETTING, JSON.stringify({...setting}, null, 2)).then((result) => {
-        if (result.status === 'ok'){
-          console.log("Success save status");
-        } else {
-          console.log("Fail save status");
-        }
+    if (setting != null) {
+      commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
+        console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
       })
     }
   }, [setting])
@@ -300,12 +298,8 @@ export default function MusicPlayerView() {
   useEffect(() => {
     if (!ready) return;
     const content = JSON.stringify(playList, null, 2);
-    commands.app_write(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
-      if (result.status === 'ok'){
-        console.log("Success Saved latest playlist");
-      } else {
-        console.log("Fail Saved latest playlist");
-      }
+    commands.appWrite(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
+      console.log(result.status, 'appWrite', MUSIC_PLAYER_LATEST_PLAYLIST);
     })
   }, [playList, ready])
 
@@ -321,15 +315,14 @@ export default function MusicPlayerView() {
     if (containerRef?.current === null) return;
     setDropRef(containerRef)
     const onDropHandler = (e: CustomEvent) => {
-      console.log("drop-files !!!:", e.detail);
       const newDropFiles = e.detail as DropFile[];
       if (newDropFiles !== null) {
         let files = newDropFiles
           .filter((file) => file.type.startsWith("audio/"))
         if (filter.length > 0) {
-          files = files.filter((file) => filter.some((ext) => file.pywebviewFullPath.endsWith(`.${ext}`)))
+          files = files.filter((file) => filter.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
         }
-        const fullpathFiles = files.map((file) => file.pywebviewFullPath);
+        const fullpathFiles = files.map((file) => file.pywebview_full_path);
         if (fullpathFiles.length > 0) {
           appendPlayList(fullpathFiles);
         }
@@ -342,13 +335,27 @@ export default function MusicPlayerView() {
 
   useEffect(() => {
     containerRef.current?.focus();
-    commands.app_read_to_string(MUSIC_PLAYER_LATEST_PLAYLIST).then(async (result) => {
+    commands.appReadFile(MUSIC_PLAYER_LATEST_PLAYLIST).then(async (result) => {
       if (result.status === 'ok'){
         await loadJson(result.data);
+      } else {
+        await loadJson('[]');
       }
     }).finally(() => {
       setReady(true);
     })
+    return () => {
+      if (!ready) return;
+      if (setting != null) {
+        commands.appWriteFile(MUSIC_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
+          console.log(result.status, 'appWriteFile', MUSIC_PLAYER_SETTING);
+        })
+      }
+      const content = JSON.stringify(playList, null, 2);
+      commands.appWriteFile(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
+        console.log(result.status, 'appWriteFile', MUSIC_PLAYER_LATEST_PLAYLIST);
+      })
+    }
   }, [])
 
   return (
@@ -406,7 +413,7 @@ export default function MusicPlayerView() {
           <div className="title" title={playPath ?? ''}>{getFilename(playPath ?? '')}</div>
           <div className="tm">{formatSeconds(currentTime)}</div>
           <div className="slider">
-            <input type="range" min={0} max={duration} step={0.01} value={currentTime}
+            <input type="range" min={0} max={duration || 0} step={0.01} value={currentTime}
                    onChange={(e) => {
                      const tm = Number(e.target.value);
                      changeCurrentTime(tm);

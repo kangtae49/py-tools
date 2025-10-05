@@ -1,8 +1,6 @@
-from pydantic import BaseModel
-from enum import Enum
 from typing import List
-
-
+from enum import Enum
+from pydantic import BaseModel
 
 
 class DialogType(str, Enum):
@@ -19,9 +17,10 @@ class DialogOptions(BaseModel):
 
 class DropFile(BaseModel):
     name: str
-    lastModified: int
-    lastModifiedDate: dict
-    webkitRelativePath: str
+    last_modified: int
+    last_modified_date: dict
+    webkit_relative_path: str
     size: int
     type: str
-    pywebviewFullPath: str
+    pywebview_full_path: str
+

@@ -103,7 +103,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
       const setting = get().setting;
       const newVolume = Math.max(0, Math.min(1, volume));
       if (audio) audio.volume = newVolume;
-      if (setting) {
+      if (setting != null) {
         set({setting: {...setting, volume: newVolume}})
       }
     },
@@ -112,7 +112,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
       const audio = get().mediaRef?.current;
       const setting = get().setting;
       if (audio) audio.currentTime = currentTime;
-      if (setting) {
+      if (setting != null) {
         set({setting: {...setting, currentTime: currentTime}})
       }
     },
@@ -121,7 +121,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
       const audio = get().mediaRef?.current;
       const setting = get().setting;
       if (audio) audio.playbackRate = playbackRate;
-      if (setting) {
+      if (setting != null) {
         set({setting: {...setting, playbackRate: playbackRate}})
       }
     },
@@ -130,7 +130,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
       const audio = get().mediaRef?.current;
       const setting = get().setting;
       if (audio) audio.muted = muted;
-      if (setting) {
+      if (setting != null) {
         set({setting: {...setting, muted: muted}})
       }
     },
@@ -150,7 +150,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     load: () => get().mediaRef?.current?.load(),
     togglePlay: async () => {
       const setting = get().setting;
-      if (setting) {
+      if (setting != null) {
         set({setting: {...setting, paused: !get().paused}})
       }
       return get().paused ? await get().play() : get().pause();

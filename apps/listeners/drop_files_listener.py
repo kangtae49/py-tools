@@ -35,10 +35,10 @@ class DropFilesListener:
             DropFile(name=f.get('name'),
                      size=f.get('size'),
                      type=f.get('type'),
-                     lastModified=f.get('lastModified'),
-                     lastModifiedDate=f.get('lastModifiedDate'),
-                     webkitRelativePath=f.get('webkitRelativePath'),
-                     pywebviewFullPath=f.get('pywebviewFullPath'),
+                     lastModified=f.get('last_modified'),
+                     lastModifiedDate=f.get('last_modified_date'),
+                     webkitRelativePath=f.get('webkit_relative_path'),
+                     pywebviewFullPath=f.get('pywebview_full_path'),
                      ) for f in files]
         jstr = [x.model_dump() for x in drop_files]
         # js_str = f"""window.reactApi.changeDropFiles({json.dumps(jstr)})"""

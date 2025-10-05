@@ -16,12 +16,12 @@ export interface DialogOptions {
 }
 export interface DropFile {
   name: string;
-  lastModified: number;
-  lastModifiedDate: {
+  last_modified: number;
+  last_modified_date: {
     [k: string]: unknown;
   };
-  webkitRelativePath: string;
+  webkit_relative_path: string;
   size: number;
   type: string;
-  pywebviewFullPath: string;
+  pywebview_full_path: string;
 }

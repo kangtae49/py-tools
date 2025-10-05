@@ -19,7 +19,10 @@ class ApiError(Exception):
 
 class JsApi:
     def __init__(self):
-        self.setting = {}
+        self.setting = {
+            MUSIC_PLAYER_LATEST_PLAYLIST: "[]",
+            MUSIC_PLAYER_SETTING: "{}"
+        }
 
     def dialog_open(self, options: Optional[dict] = None) -> List[str] | None:
         try:
@@ -51,17 +54,19 @@ class JsApi:
         except Exception as e:
             raise ApiException(f"{e}")
 
-    def read_to_string(self, fullpath: str):
+    def read_file(self, fullpath: str):
         try:
-            # if not os.path.exists(fullpath):
-            #     raise ApiError(f"file not found: {fullpath}")
+            if not os.path.exists(fullpath):
+                raise ApiError(f"file not found: {fullpath}")
             with open(fullpath, "r", encoding="utf-8") as f:
                 content = f.read()
                 return content
+        except ApiError as e:
+            raise e
         except Exception as e:
             raise ApiException(f"{e}")
 
-    def write_to_string(self, fullpath: str, content: str):
+    def write_file(self, fullpath: str, content: str):
         try:
             directory = os.path.dirname(fullpath)
             if directory:
@@ -69,25 +74,33 @@ class JsApi:
 
             with open(fullpath, "w", encoding="utf-8") as f:
                 f.write(content)
+                f.flush()
+        except ApiError as e:
+            raise e
         except Exception as e:
             raise ApiException(f"{e}")
 
 
-    def app_read_to_string(self, subpath: str):
+    def app_read_file(self, subpath: str):
         try:
             appdata_local = os.getenv("LOCALAPPDATA")
             fullpath = os.path.join(appdata_local, "py-tools", subpath)
-            return self.read_to_string(fullpath)
+            content = self.read_file(fullpath)
+            print(f"app_read_file !{subpath}!{content}!")
+            return content
+        except ApiError as e:
+            raise e
         except Exception as e:
             raise ApiException(f"{e}")
 
-    def app_write_to_string(self, subpath: str, content: str):
+    def app_write_file(self, subpath: str, content: str):
         try:
             appdata_local = os.getenv("LOCALAPPDATA")
             fullpath = os.path.join(appdata_local, "py-tools", subpath)
-            self.write_to_string(fullpath, content)
+            self.write_file(fullpath, content)
             self.setting.update({subpath: content})
-
+        except ApiError as e:
+            raise e
         except Exception as e:
             raise ApiException(f"{e}")
 
@@ -97,6 +110,7 @@ class JsApi:
         return self.setting.get(subpath)
 
     def app_write(self, subpath: str, content: str):
+        print(subpath, content)
         self.setting.update({subpath: content})
 
     # def app_read(self):

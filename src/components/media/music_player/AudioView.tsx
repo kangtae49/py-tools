@@ -9,45 +9,39 @@ function AudioView() {
   const ref = useRef<HTMLAudioElement | null>(null);
   const {
     mediaRef, setMediaRef,
-    autoPlay,
     setDuration,
     setCurrentTime, changeCurrentTime,
     setVolume, changeVolume,
     play,
     pause, setPaused,
-    setMuted,
+    setMuted, changeMuted,
     setPlaybackRate,
     setEnded,
-    setting, setSetting,
+    changePlaybackRate,
+    setting,
+    setSrc,
   } = useAudioStore();
 
-
-  const onloadedMetaData = async () => {
+  const onloadedData = async () => {
     if (!mediaRef?.current) return;
-
-    if (autoPlay) {
-      play()?.then(() => {
-        if (setting !== null) {
-          if (setting.playPath == playPath) {
-            changeVolume(setting.volume);
-            changeCurrentTime(setting.currentTime);
-          }
-          setSetting(null);
-        }
-      });
+    setSrc(mediaRef.current.src);
+    if (playPath == null) return;
+    if (setting == null) return;
+    changeVolume(setting.volume);
+    changeCurrentTime(setting.currentTime);
+    changePlaybackRate(setting.playbackRate);
+    changeMuted(setting.muted)
+    if (!setting.paused) {
+      play()?.then();
     } else {
       pause();
-      if (setting !== null) {
-        if (setting.playPath == playPath) {
-          changeVolume(setting.volume);
-          changeCurrentTime(setting.currentTime);
-        }
-        setSetting(null);
-      }
-
     }
 
     setDuration(mediaRef.current.duration);
+  }
+
+  const onloadedMetaData = async () => {
+    if (!mediaRef?.current) return;
   }
 
   const onTimeUpdate = () => {
@@ -88,6 +82,7 @@ function AudioView() {
     // if (!mediaRef?.current) return;
 
     // audioRef.current.volume = 0.5;
+    mediaRef?.current?.addEventListener("loadeddata", onloadedData);
     mediaRef?.current?.addEventListener("loadedmetadata", onloadedMetaData);
     mediaRef?.current?.addEventListener("timeupdate", onTimeUpdate);
     mediaRef?.current?.addEventListener("volumechange", onVolumeChange);

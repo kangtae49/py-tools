@@ -16,7 +16,10 @@ export default function MusicPlayListRowView({
                          }: RowComponentProps<{
   playList: string[];
 }>) {
-  const {paused, setAutoPlay} = useAudioStore();
+  const {
+    paused,
+    setting, setSetting,
+  } = useAudioStore();
   const {removePlayList, playPath, setPlayPath} = useMusicPlayListStore();
   const {
     selectedPlayList, setSelectedPlayList, appendSelectedPlayList, removeSelectedPlayList,
@@ -27,9 +30,9 @@ export default function MusicPlayListRowView({
   const clickPlayPath = (path: string) => {
     window.getSelection()?.removeAllRanges();
     setSelectedPlayList([]);
-
-    if (paused) {
-      setAutoPlay(true);
+    if (setting !== null) {
+      setting.playPath = path;
+      setSetting({...setting, currentTime: 0})
     }
     setPlayPath(path);
   }

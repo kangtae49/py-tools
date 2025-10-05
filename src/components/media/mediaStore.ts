@@ -3,7 +3,7 @@ import type {RefObject} from "react";
 import type {MusicPlayerSetting} from "@/components/media/music_player/musicPlayListStore.ts";
 
 export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
-const INIT_AUTO_PLAY = true;
+const INIT_AUTO_PLAY = false;
 const INIT_VOLUME = 0.5;
 
 interface MediaStore<T extends HTMLMediaElement> {
@@ -37,11 +37,11 @@ interface MediaStore<T extends HTMLMediaElement> {
   setFilter: (filter: string[]) => void;
   setSrc: (src: string) => void;
 
-  changeVolume: (volume: number) => void;
-  changeCurrentTime: (currentTime: number) => void;
-  changePlaybackRate: (playbackRate: number) => void;
-  changeMuted: (muted: boolean) => void;
-  changeSrc: (src: string) => void;
+  changeVolume: (volume: number | null | undefined) => void;
+  changeCurrentTime: (currentTime: number | null | undefined) => void;
+  changePlaybackRate: (playbackRate: number | null | undefined) => void;
+  changeMuted: (muted: boolean | null | undefined) => void;
+  changeSrc: (src: string | null | undefined) => void;
 
   play: () => Promise<void> | undefined;
   pause: () => void | undefined;
@@ -57,11 +57,11 @@ interface MediaDefault {
 
 export const audioDefault: MediaDefault = {
   shuffle: true,
-  filter: [],
+  filter: ["mp3", "wav", "ogg", "m4a", "opus", "webm"]
 };
 export const videoDefault: MediaDefault = {
   shuffle: false,
-  filter: [],
+  filter: ["*.*"],
 }
 
 function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault = {}) {
@@ -98,30 +98,61 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     setSrc: (src) => set({src}),
 
     changeVolume: (volume) => {
+      if (!volume) return;
       const audio = get().mediaRef?.current;
-      if (audio) audio.volume = Math.max(0, Math.min(1, volume));
+      const setting = get().setting;
+      const newVolume = Math.max(0, Math.min(1, volume));
+      if (audio) audio.volume = newVolume;
+      if (setting) {
+        set({setting: {...setting, volume: newVolume}})
+      }
     },
     changeCurrentTime: (currentTime) => {
+      if (!currentTime) return;
       const audio = get().mediaRef?.current;
+      const setting = get().setting;
       if (audio) audio.currentTime = currentTime;
+      if (setting) {
+        set({setting: {...setting, currentTime: currentTime}})
+      }
     },
     changePlaybackRate: (playbackRate) => {
+      if (!playbackRate) return;
       const audio = get().mediaRef?.current;
+      const setting = get().setting;
       if (audio) audio.playbackRate = playbackRate;
+      if (setting) {
+        set({setting: {...setting, playbackRate: playbackRate}})
+      }
     },
     changeMuted: (muted) => {
+      if (!muted) return;
       const audio = get().mediaRef?.current;
+      const setting = get().setting;
       if (audio) audio.muted = muted;
+      if (setting) {
+        set({setting: {...setting, muted: muted}})
+      }
     },
     changeSrc: (src) => {
+      if (!src) return;
       const audio = get().mediaRef?.current;
+      const playPath = get().setting?.playPath;
+      const setting = get().setting;
       if (audio) audio.src = src;
+      if (setting && playPath) {
+        set({setting: {...setting, playPath: playPath}})
+      }
     },
 
     play: () => get().mediaRef?.current?.play(),
     pause: () => get().mediaRef?.current?.pause(),
     load: () => get().mediaRef?.current?.load(),
     togglePlay: async () => {
+      const setting = get().setting;
+      if (setting) {
+        set({setting: {...setting, paused: !get().paused}})
+      }
       return get().paused ? await get().play() : get().pause();
     },
     toggleRepeat: () => {

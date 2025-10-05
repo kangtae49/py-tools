@@ -42,15 +42,15 @@ export default function MusicPlayerView() {
     selectionBegin, setSelectionBegin,
   } = useSelectedMusicPlayListStore();
   const {
-    paused, pause, play, togglePlay,
+    paused, pause, togglePlay,
     volume, changeVolume,
     duration, currentTime, changeCurrentTime,
     muted, changeMuted,
     repeat, toggleRepeat,
     shuffle, toggleShuffle,
     ended, setEnded,
-    autoPlay, setAutoPlay,
-    setSetting,
+    setAutoPlay,
+    setting, setSetting,
     filter,
   } = useAudioStore();
   const {
@@ -97,13 +97,8 @@ export default function MusicPlayerView() {
     commands.app_read_to_string(MUSIC_PLAYER_SETTING).then((result) => {
       if (result.status === 'ok'){
         const setting: MusicPlayerSetting = JSON.parse(result.data);
-        setPlayPath(setting.playPath);
+        setPlayPath(setting.playPath ?? null);
         setSetting({...setting})
-        // setVolume(setting.volume);
-        // setCurrentTime(setting.currentTime);
-
-        // changeVolume(setting.volume);
-        // changeCurrentTime(setting.currentTime);
       } else {
         setPlayPath(shuffledPlayList[0]);
       }
@@ -117,7 +112,6 @@ export default function MusicPlayerView() {
       dialog_type: "OPEN",
       allow_multiple: false,
       file_types: [`OpenAudio Book (${["*.json"].join(";")})`]
-
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;
@@ -161,19 +155,29 @@ export default function MusicPlayerView() {
   }
 
   const clickTogglePlay = async () => {
-    setAutoPlay(paused);
-    togglePlay().then(() => {
-      // if (playPath != null) {
-      //   commands.appWriteToString(MUSIC_PLAYER_SETTING, JSON.stringify({playPath, volume, currentTime}, null, 2)).then((result) => {
-      //     if (result.status === 'ok'){
-      //       console.log("Success save status");
-      //     } else {
-      //       console.log("Fail save status");
-      //     }
-      //   })
-      // }
-    });
+    togglePlay().then();
   }
+
+  const playPrev = () => {
+    const newPlayPath = prevPlayPath();
+    if (newPlayPath == null) return
+    if (setting !== null) {
+      setting.playPath = newPlayPath;
+      setSetting({...setting, currentTime: 0})
+    }
+  }
+
+  const playNext = () => {
+    const newPlayPath = nextPlayPath();
+    if (newPlayPath == null) return
+    if (setting !== null) {
+      setting.playPath = newPlayPath;
+      setSetting({...setting, currentTime: 0})
+    }
+  }
+
+
+
 
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -184,11 +188,17 @@ export default function MusicPlayerView() {
     } else if (e.key === "Delete") {
       clickRemovePlayList();
     } else if (e.key === "ArrowLeft") {
+      if (setting !== null) {
+        setSetting({...setting, currentTime: 0})
+      }
       const newPlayPath = prevPlayPath()
       if (newPlayPath !== null) {
         scrollPlayPath(newPlayPath)
       }
     } else if (e.key === "ArrowRight") {
+      if (setting !== null) {
+        setSetting({...setting, currentTime: 0})
+      }
       const newPlayPath = nextPlayPath()
       if (newPlayPath !== null) {
         scrollPlayPath(newPlayPath)
@@ -258,14 +268,9 @@ export default function MusicPlayerView() {
           nextPlay = shuffledPlayList[idx]
         }
         setPlayPath(nextPlay);
-        if (autoPlay) {
-          play()?.then();
-        }
+        setSetting({...setting, currentTime: 0})
       } else if (repeat === 'repeat_one') {
-        changeCurrentTime(0);
-        if (autoPlay) {
-          play()?.then();
-        }
+        setSetting({...setting, currentTime: 0})
       } else if (repeat === 'repeat_none') {
         pause();
       }
@@ -273,18 +278,19 @@ export default function MusicPlayerView() {
   }, [ended])
 
   useEffect(() => {
-    if (playPath === null) {
-      return;
-    }
+    if (setting === null) return;
+    if (playPath === null) return;
     if (!ready) return;
-    commands.app_write_to_string(MUSIC_PLAYER_SETTING, JSON.stringify({playPath, volume, currentTime}, null, 2)).then((result) => {
-      if (result.status === 'ok'){
-        console.log("Success save status");
-      } else {
-        console.log("Fail save status");
-      }
-    })
-  }, [playPath, Math.floor(currentTime), volume, ready])
+    if (setting) {
+      commands.app_write_to_string(MUSIC_PLAYER_SETTING, JSON.stringify({...setting}, null, 2)).then((result) => {
+        if (result.status === 'ok'){
+          console.log("Success save status");
+        } else {
+          console.log("Fail save status");
+        }
+      })
+    }
+  }, [setting])
 
   useEffect(() => {
     if (!ready) return;
@@ -359,7 +365,7 @@ export default function MusicPlayerView() {
             <div className="icon" onClick={() => toggleShuffle()}>
               <Icon icon={faShuffle} className={shuffle ? '': 'inactive'}/>
             </div>
-            <div className="icon" onClick={() => prevPlayPath()}>
+            <div className="icon" onClick={() => playPrev()}>
               <Icon icon={faBackwardStep}/>
             </div>
             <div className="icon middle"
@@ -367,7 +373,7 @@ export default function MusicPlayerView() {
             >
               <Icon icon={paused ? faCirclePlay : faCirclePause }/>
             </div>
-            <div className="icon" onClick={() => nextPlayPath()}>
+            <div className="icon" onClick={() => playNext()}>
               <Icon icon={faForwardStep}/>
             </div>
             {repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
@@ -404,15 +410,13 @@ export default function MusicPlayerView() {
           <div className="tm">{formatSeconds(duration)}</div>
         </div>
       </div>
-      <div className="list">
-        <List className="play-list"
-              listRef={listRef}
-              rowHeight={22}
-              rowCount={playList.length}
-              rowComponent={MusicPlayListRowView} rowProps={{playList}}
+      <List className="play-list"
+            listRef={listRef}
+            rowHeight={22}
+            rowCount={playList.length}
+            rowComponent={MusicPlayListRowView} rowProps={{playList}}
 
-        />
-      </div>
+      />
     </div>
   )
 }

@@ -3,9 +3,12 @@ import natsort from "natsort";
 import {type ListImperativeAPI} from 'react-window';
 
 export interface MusicPlayerSetting {
-  playPath: string;
-  currentTime: number;
-  volume: number;
+  playPath?: string;
+  currentTime?: number;
+  volume?: number;
+  playbackRate?: number;
+  muted?: boolean;
+  paused?: boolean;
 }
 
 interface MusicPlayListStore {

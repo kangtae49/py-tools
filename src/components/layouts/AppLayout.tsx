@@ -3,6 +3,7 @@ import {DropFilesListener} from "../../listeners/DropFilesListener.tsx";
 import ErrorView from "../ErrView.tsx";
 import {MosaicLayoutView} from "@/components/layouts/mosaic/MosaicLayoutView.tsx";
 import {MenuListener} from "@/listeners/MenuListener.tsx";
+import {WindowEventListener} from "@/listeners/WindowEventListener.tsx";
 
 export const router = createHashRouter([
   {
@@ -31,6 +32,7 @@ function AppLayout () {
     <>
       <MenuListener />
       <DropFilesListener />
+      <WindowEventListener />
       <Outlet />
     </>
   )

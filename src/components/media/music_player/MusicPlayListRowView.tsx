@@ -54,11 +54,13 @@ export default function MusicPlayListRowView({
       <div className={`title  ${(!paused && isPlayPath) ? 'playing' : ''}`}
            title={playList[index]}
       >
+        <div className="no">{index+1}</div>
         <div><input type="checkbox"
                     checked={isSelected}
                     onChange={(e) => onChangeChecked(e, playList[index])}
-        />
+              />
         </div>
+
         {isPlayPath && <div><Icon icon={faMusic}/></div>}
         <div title={playList[index]} onClick={() => clickPlayPath(playList[index])}>
           {getFilename(playList[index])}

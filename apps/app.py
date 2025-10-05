@@ -2,91 +2,17 @@ import os
 import sys
 import argparse
 import webview
-from webview import Window
-import json
-import string
 
-from webview.dom import DOMEventHandler
 from apps import js_api
-from apps.models import DropFile
 from apps.app_menu import app_menu
+# from apps.listeners.window_event_listener import add_window_event_listener
+from apps.listeners.window_event_listener import WindowEventListener
 
 api = js_api.JsApi()
-
-g_window: Window | None  = None
-
-def on_before_show(window):
-    print('on_before_show', window.native)
-
-def on_initialized(renderer):
-    # return False to cancel initialization
-    print(f'GUI is initialized with renderer: {renderer}')
-
-def on_shown():
-    print('on_shown')
-
-def on_loaded(window):
-    print('on_loaded')
-    # print(f'window: {window}')
-    if window is not None:
-        bind(window)
-        print(f'url: {window.get_current_url()}')
-
-
-
-
-def on_dragenter(e):
-    print(f'Event: {e["type"]}.')
-    pass
-def on_dragstart(e):
-    print(f'Event: {e["type"]}.')
-    pass
-
-def on_dragover(e):
-    print(f'Event: {e["type"]}.')
-    pass
-def on_drop(e):
-    global g_window
-    files = e['dataTransfer']['files']
-    if len(files) == 0:
-        return
-    # print(f'Event: {e["type"]}. Dropped files:')
-    drop_files = [
-        DropFile(name=f.get('name'),
-                 size=f.get('size'),
-                 type=f.get('type'),
-                 lastModified=f.get('lastModified'),
-                 lastModifiedDate=f.get('lastModifiedDate'),
-                 webkitRelativePath=f.get('webkitRelativePath'),
-                 pywebviewFullPath=f.get('pywebviewFullPath'),
-        ) for f in files]
-    jstr = [x.model_dump() for x in drop_files]
-    # js_str = f"""window.reactApi.changeDropFiles({json.dumps(jstr)})"""
-    # g_window.evaluate_js(js_str)
-
-    tmpl = string.Template("""
-        window.dispatchEvent(new CustomEvent("drop-files", 
-            {
-                detail: $drop_files
-            }
-        ))
-    """)
-    print(tmpl.substitute(drop_files=json.dumps(jstr)))
-    g_window.evaluate_js(tmpl.substitute(drop_files=json.dumps(jstr)))
-
-
-
-def bind(window):
-    # print('binding drag events.')
-    window.dom.document.events.dragenter += DOMEventHandler(on_dragenter, False, False)
-    window.dom.document.events.dragstart += DOMEventHandler(on_dragstart, False, False)
-    window.dom.document.events.dragover += DOMEventHandler(on_dragover, False, False, debounce=500)
-    window.dom.document.events.drop += DOMEventHandler(on_drop, False, False)
-
+window_listener = None
 
 
 def run():
-    global g_window
     # webview.settings = {
     #     'ALLOW_DOWNLOADS': False,
     #     'ALLOW_FILE_URLS': True,
@@ -125,15 +51,11 @@ def run():
         text_select=True,
         draggable=True,
         zoomable=True,
+        confirm_close=False,
     )
 
     # events
-    window.events.before_show += on_before_show
-    window.events.initialized += on_initialized
-    window.events.shown += on_shown
-    window.events.loaded += on_loaded
-
-    g_window = window
+    WindowEventListener(window, api)
 
     # webview.start(debug=debug)
     webview.start(debug=debug, menu=app_menu)

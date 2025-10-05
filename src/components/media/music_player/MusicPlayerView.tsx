@@ -83,7 +83,7 @@ export default function MusicPlayerView() {
   }
 
   const loadJson = async (jsonStr: string): Promise<string []> => {
-
+    console.log("loadJson", jsonStr);
     const newList: string [] = JSON.parse(jsonStr);
     appendPlayList(newList);
     let shuffledPlayList: string[];
@@ -160,8 +160,7 @@ export default function MusicPlayerView() {
     const newPlayPath = getPrevPlayPath(playPath);
     if (newPlayPath == null) return
     if (setting !== null) {
-      setting.playPath = newPlayPath;
-      setSetting({...setting, currentTime: 0})
+      setSetting({...setting, currentTime: 0, playPath: newPlayPath})
     }
     setPlayPath(newPlayPath);
   }
@@ -170,8 +169,7 @@ export default function MusicPlayerView() {
     const newPlayPath = getNextPlayPath(playPath);
     if (newPlayPath == null) return
     if (setting !== null) {
-      setting.playPath = newPlayPath;
-      setSetting({...setting, currentTime: 0})
+      setSetting({...setting, currentTime: 0, playPath: newPlayPath})
     }
     setPlayPath(newPlayPath);
   }
@@ -189,22 +187,20 @@ export default function MusicPlayerView() {
       clickRemovePlayList();
     } else if (e.key === "ArrowLeft") {
       const newPlayPath = getPrevPlayPath(playPath)
+      if (newPlayPath == null) return
       if (setting !== null) {
-        setSetting({...setting, currentTime: 0})
+        setSetting({...setting, currentTime: 0, playPath: newPlayPath})
       }
       setPlayPath(newPlayPath)
-      if (newPlayPath !== null) {
-        scrollPlayPath(newPlayPath)
-      }
+      scrollPlayPath(newPlayPath)
     } else if (e.key === "ArrowRight") {
       const newPlayPath = getNextPlayPath(playPath)
+      if (newPlayPath == null) return
       if (setting !== null) {
-        setSetting({...setting, currentTime: 0})
+        setSetting({...setting, currentTime: 0, playPath: newPlayPath})
       }
       setPlayPath(newPlayPath)
-      if (newPlayPath !== null) {
-        scrollPlayPath(newPlayPath)
-      }
+      scrollPlayPath(newPlayPath)
     } else if (e.key === "ArrowUp") {
       const newSelection = getPrevPlayPath(selectionBegin)
       if(newSelection !== null) {
@@ -221,10 +217,9 @@ export default function MusicPlayerView() {
       }
     } else if (e.key === "Enter") {
       if (selectedPlayList.length == 1) {
-        if (paused) {
-          if (setting !== null) {
-            setSetting({...setting, paused: !paused})
-          }
+
+        if (setting !== null) {
+          setSetting({...setting, paused: false, playPath: selectedPlayList[0]})
         }
         setPlayPath(selectedPlayList[0]);
       }
@@ -272,7 +267,7 @@ export default function MusicPlayerView() {
           nextPlay = shuffledPlayList[idx]
         }
         setPlayPath(nextPlay);
-        setSetting({...setting, currentTime: 0})
+        setSetting({...setting, currentTime: 0, playPath: nextPlay})
       } else if (repeat === 'repeat_one') {
         setSetting({...setting, currentTime: 0})
       } else if (repeat === 'repeat_none') {
@@ -286,7 +281,7 @@ export default function MusicPlayerView() {
     if (playPath === null) return;
     if (!ready) return;
     if (setting) {
-      commands.app_write_to_string(MUSIC_PLAYER_SETTING, JSON.stringify({...setting}, null, 2)).then((result) => {
+      commands.app_write(MUSIC_PLAYER_SETTING, JSON.stringify({...setting}, null, 2)).then((result) => {
         if (result.status === 'ok'){
           console.log("Success save status");
         } else {

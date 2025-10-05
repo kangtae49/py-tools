@@ -139,6 +139,13 @@ input[type=range]::-webkit-slider-thumb {
     inset: 0;
     transition: background 0.5s ease;
 }
+.music-player .play-list .row .no {
+    flex: 0 0 40px;
+    display: flex;
+    justify-content: right; align-items: center;
+    inset: 0;
+    transition: background 0.5s ease;
+}
 .music-player .play-list .row .title.playing {
     display: flex;
     background: linear-gradient(270deg, #ff6ec4, #7873f5, #4ade80, #facc15);

@@ -15,6 +15,8 @@ class ApiError(Exception):
         super().__init__(f"{message}")
 
 class JsApi:
+    def __init__(self):
+        self.setting = {}
 
     def dialog_open(self, options: Optional[dict] = None) -> List[str] | None:
         try:
@@ -81,6 +83,23 @@ class JsApi:
             appdata_local = os.getenv("LOCALAPPDATA")
             fullpath = os.path.join(appdata_local, "py-tools", subpath)
             self.write_to_string(fullpath, content)
+            self.setting.update({subpath: content})
+
         except Exception as e:
             raise ApiException(f"{e}")
+
+    def app_read(self, subpath: str):
+        if subpath not in self.setting :
+            raise ApiException(f"not fount {subpath}")
+        return self.setting.get(subpath)
+
+    def app_write(self, subpath: str, content: str):
+        self.setting.update({subpath: content})
+
+    # def app_read(self):
+    #     pass
+    # def app_save(self):
+    #     if self.app_path is None or self.app_content is None:
+    #         return
+    #     self.app_write_to_string(self.app_path, self.app_content)
 

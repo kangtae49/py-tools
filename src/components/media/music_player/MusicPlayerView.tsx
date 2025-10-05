@@ -184,7 +184,13 @@ export default function MusicPlayerView() {
     if (e.ctrlKey && e.key === 'a') {
       setSelectedPlayList(playList);
     } else if (e.key === "Delete") {
+      const nextSelection = getNextPlayPath(selectionBegin);
       clickRemovePlayList();
+      if (nextSelection !== null) {
+        setSelectionBegin(nextSelection);
+        setSelectedPlayList([nextSelection]);
+        scrollPlayPath(nextSelection);
+      }
     } else if (e.key === "ArrowLeft") {
       const newPlayPath = getPrevPlayPath(playPath)
       if (newPlayPath == null) return
@@ -294,7 +300,7 @@ export default function MusicPlayerView() {
   useEffect(() => {
     if (!ready) return;
     const content = JSON.stringify(playList, null, 2);
-    commands.app_write_to_string(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
+    commands.app_write(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
       if (result.status === 'ok'){
         console.log("Success Saved latest playlist");
       } else {

@@ -2,10 +2,10 @@ import json
 import string
 
 from webview import Window
-# from apps.listeners.drop_files_listener import add_dnd_listener
 from apps.listeners.drop_files_listener import DropFilesListener
-from apps.js_api import JsApi
-# g_window: Window | None  = None
+from apps.js_api import JsApi, MUSIC_PLAYER_SETTING, MUSIC_PLAYER_LATEST_PLAYLIST
+
+
 
 class WindowEventListener:
     def __init__(self, window: Window, js_api: JsApi):
@@ -38,10 +38,17 @@ class WindowEventListener:
     def on_closing(self):
         print('closing')
         subpath = "music-player.setting.json"
-        content = self.js_api.setting.get("music-player.setting.json")
-        self.js_api.app_write_to_string(subpath, content)
-        print(f"save: {subpath}")
+        content = self.js_api.setting.get(MUSIC_PLAYER_SETTING)
+        self.js_api.app_write_to_string(MUSIC_PLAYER_SETTING, content)
+        print(f"save: {MUSIC_PLAYER_SETTING}")
         print(f"{content}")
+
+        content = self.js_api.setting.get(MUSIC_PLAYER_LATEST_PLAYLIST)
+        self.js_api.app_write_to_string(MUSIC_PLAYER_LATEST_PLAYLIST, content)
+        print(f"save: {MUSIC_PLAYER_LATEST_PLAYLIST}")
+        print(f"{content}")
+
+
         # self.custom_event("closing")
 
 

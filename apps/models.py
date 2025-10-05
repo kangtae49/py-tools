@@ -5,8 +5,6 @@ from typing import List
 
 
 
-
-
 class DialogType(str, Enum):
     OPEN = "OPEN"
     FOLDER = "FOLDER"

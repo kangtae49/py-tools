@@ -51,16 +51,18 @@ export default function MusicPlayerView() {
     ended, setEnded,
     autoPlay, setAutoPlay,
     setSetting,
+    filter,
   } = useAudioStore();
   const {
     setDropRef
   } = useReceivedDropFilesStore();
 
   const openDialogPlayList = async () => {
+    const filter_ext = filter.map((ext)=> `*.${ext}`).join(";") // *.mp3;*.wav;*.ogg;*.m4a;*.opus;*.webm
     commands.dialog_open({
       dialog_type: "OPEN",
       allow_multiple: true,
-      file_types: [`Audio files (${["*.mp3", "*.wav", "*.ogg", "*.m4a", "*.opus", "*.webm"].join(";")})`]
+      file_types: [`Audio files (${filter_ext})`]
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;
@@ -311,9 +313,14 @@ export default function MusicPlayerView() {
       console.log("drop-files !!!:", e.detail);
       const newDropFiles = e.detail as DropFile[];
       if (newDropFiles !== null) {
-        const files = newDropFiles.map((file) => file.pywebviewFullPath);
-        if (files.length > 0) {
-          appendPlayList(files);
+        let files = newDropFiles
+          .filter((file) => file.type.startsWith("audio/"))
+        if (filter.length > 0) {
+          files = files.filter((file) => filter.some((ext) => file.pywebviewFullPath.endsWith(`.${ext}`)))
+        }
+        const fullpathFiles = files.map((file) => file.pywebviewFullPath);
+        if (fullpathFiles.length > 0) {
+          appendPlayList(fullpathFiles);
         }
       }
     };
@@ -336,7 +343,6 @@ export default function MusicPlayerView() {
   return (
     <div className={`widget music-player`}
          ref={containerRef}
-         id="music-dropzone"
          onKeyDown={onKeyDownHandler} tabIndex={0}
     >
       <AudioView />
@@ -398,13 +404,15 @@ export default function MusicPlayerView() {
           <div className="tm">{formatSeconds(duration)}</div>
         </div>
       </div>
-      <List className="play-list"
-            listRef={listRef}
-            rowHeight={22}
-            rowCount={playList.length}
-            rowComponent={MusicPlayListRowView} rowProps={{playList}}
+      <div className="list">
+        <List className="play-list"
+              listRef={listRef}
+              rowHeight={22}
+              rowCount={playList.length}
+              rowComponent={MusicPlayListRowView} rowProps={{playList}}
 
-      />
+        />
+      </div>
     </div>
   )
 }

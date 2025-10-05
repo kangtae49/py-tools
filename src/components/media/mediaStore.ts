@@ -20,6 +20,8 @@ interface MediaStore<T extends HTMLMediaElement> {
   shuffle: boolean
   ended: boolean
   setting: MusicPlayerSetting | null
+  filter: string[]
+  src: string
 
   setVolume: (volume: number) => void;
   setDuration: (duration: number) => void;
@@ -32,21 +34,38 @@ interface MediaStore<T extends HTMLMediaElement> {
   setShuffle: (shuffle: boolean) => void;
   setEnded: (ended: boolean) => void;
   setSetting: (setting: MusicPlayerSetting | null) => void;
+  setFilter: (filter: string[]) => void;
+  setSrc: (src: string) => void;
 
   changeVolume: (volume: number) => void;
   changeCurrentTime: (currentTime: number) => void;
   changePlaybackRate: (playbackRate: number) => void;
   changeMuted: (muted: boolean) => void;
+  changeSrc: (src: string) => void;
 
   play: () => Promise<void> | undefined;
   pause: () => void | undefined;
+  load: (() => void) | undefined;
   togglePlay: () => Promise<void>;
   toggleRepeat: () => void;
   toggleShuffle: () => void;
 }
+interface MediaDefault {
+  shuffle?: boolean
+  filter?: string[]
+}
 
+export const audioDefault: MediaDefault = {
+  shuffle: true,
+  filter: [],
+};
+export const videoDefault: MediaDefault = {
+  shuffle: false,
+  filter: [],
+}
 
-function createMediaStore<T extends HTMLMediaElement>() {
+function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault = {}) {
+
   return create<MediaStore<T>>((set, get) => ({
     mediaRef: null,
     setMediaRef: (mediaRef) => set({mediaRef}),
@@ -58,9 +77,11 @@ function createMediaStore<T extends HTMLMediaElement>() {
     paused: !INIT_AUTO_PLAY,
     autoPlay: INIT_AUTO_PLAY,
     repeat: 'repeat_all',
-    shuffle: true,
+    shuffle: mediaDefault.shuffle ?? true,
     ended: false,
     setting: null,
+    filter: mediaDefault.filter ?? [],
+    src: '',
 
     setVolume: (volume) => set({volume}),
     setDuration: (duration) => set({duration}),
@@ -73,6 +94,8 @@ function createMediaStore<T extends HTMLMediaElement>() {
     setShuffle: (shuffle) => set({shuffle}),
     setEnded: (ended) => set({ended}),
     setSetting: (setting) => set({setting}),
+    setFilter: (filter) => set({filter}),
+    setSrc: (src) => set({src}),
 
     changeVolume: (volume) => {
       const audio = get().mediaRef?.current;
@@ -90,9 +113,14 @@ function createMediaStore<T extends HTMLMediaElement>() {
       const audio = get().mediaRef?.current;
       if (audio) audio.muted = muted;
     },
+    changeSrc: (src) => {
+      const audio = get().mediaRef?.current;
+      if (audio) audio.src = src;
+    },
 
     play: () => get().mediaRef?.current?.play(),
     pause: () => get().mediaRef?.current?.pause(),
+    load: () => get().mediaRef?.current?.load(),
     togglePlay: async () => {
       return get().paused ? await get().play() : get().pause();
     },
@@ -112,8 +140,11 @@ function createMediaStore<T extends HTMLMediaElement>() {
   }))
 }
 
-export const useAudioStore = createMediaStore<HTMLAudioElement>();
-export const useVideoStore = createMediaStore<HTMLVideoElement>();
+
+
+
+export const useAudioStore = createMediaStore<HTMLAudioElement>(audioDefault);
+export const useVideoStore = createMediaStore<HTMLVideoElement>(videoDefault);
 
 // useAudioStore.setState({
 //   audioOnly: {

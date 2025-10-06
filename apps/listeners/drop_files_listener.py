@@ -5,8 +5,6 @@ from webview import Window
 from webview.dom import DOMEventHandler
 from apps.models import DropFile
 
-# g_window: Window | None  = None
-
 class DropFilesListener:
     def __init__(self, window: Window):
         self.window = window
@@ -26,23 +24,21 @@ class DropFilesListener:
         print(f'Event: {e["type"]}.')
         pass
     def on_drop(self, e):
-        global g_window
         files = e['dataTransfer']['files']
         if len(files) == 0:
             return
         # print(f'Event: {e["type"]}. Dropped files:')
+        print(files)
         drop_files = [
             DropFile(name=f.get('name'),
                      size=f.get('size'),
                      type=f.get('type'),
-                     last_modified=f.get('last_modified'),
-                     last_modified_date=f.get('last_modified_date'),
-                     webkit_relative_path=f.get('webkit_relative_path'),
-                     pywebview_full_path=f.get('pywebview_full_path'),
+                     last_modified=f.get('lastModified'),
+                     last_modified_date=f.get('lastModifiedDate'),
+                     webkit_relative_path=f.get('webkitRelativePath'),
+                     pywebview_full_path=f.get('pywebviewFullPath'),
                      ) for f in files]
         jstr = [x.model_dump() for x in drop_files]
-        # js_str = f"""window.reactApi.changeDropFiles({json.dumps(jstr)})"""
-        # g_window.evaluate_js(js_str)
 
         tmpl = string.Template("""
             window.dispatchEvent(new CustomEvent("drop-files", 
@@ -52,16 +48,5 @@ class DropFilesListener:
             ))
         """)
         print(tmpl.substitute(drop_files=json.dumps(jstr)))
-        g_window.evaluate_js(tmpl.substitute(drop_files=json.dumps(jstr)))
+        self.window.evaluate_js(tmpl.substitute(drop_files=json.dumps(jstr)))
 
-
-    # def add_dnd_listener(window):
-    #     global g_window
-    #     g_window = window
-    #
-    #     # print('binding drag events.')
-    #     window.dom.document.events.dragenter += DOMEventHandler(on_dragenter, False, False)
-    #     window.dom.document.events.dragstart += DOMEventHandler(on_dragstart, False, False)
-    #     window.dom.document.events.dragover += DOMEventHandler(on_dragover, False, False, debounce=500)
-    #     window.dom.document.events.drop += DOMEventHandler(on_drop, False, False)
-    #

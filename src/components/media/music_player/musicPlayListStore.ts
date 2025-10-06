@@ -131,7 +131,6 @@ export const useMusicPlayListStore = create<MusicPlayListStore>((set, get) => ({
     let next: string | null;
     if (value == null) {
       next = curPlayList[0];
-      set({ playPath: next });
       return next;
     }
     let idx = curPlayList.indexOf(value) +1;

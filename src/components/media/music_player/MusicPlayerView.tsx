@@ -8,7 +8,7 @@ import {
   faBackwardStep, faForwardStep,
   faShuffle,
   faFloppyDisk,
-  faArrowsSpin, faRotateRight, faMinus,
+  faArrowsSpin, faRotateRight, faMinus, faMusic,
 } from '@fortawesome/free-solid-svg-icons'
 import {List,  type ListImperativeAPI} from 'react-window'
 import MusicPlayListRowView from "./MusicPlayListRowView.tsx";
@@ -286,14 +286,12 @@ export default function MusicPlayerView() {
 
   useEffect(() => {
     if (setting === null) return;
-    if (playPath === null) return;
     if (!ready) return;
-    if (setting != null) {
-      commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
-        console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
-      })
-    }
-  }, [setting])
+    console.log('setting', setting);
+    commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
+      console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
+    })
+  }, [ready, setting])
 
   useEffect(() => {
     if (!ready) return;
@@ -301,12 +299,11 @@ export default function MusicPlayerView() {
     commands.appWrite(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
       console.log(result.status, 'appWrite', MUSIC_PLAYER_LATEST_PLAYLIST);
     })
-  }, [playList, ready])
+  }, [ready, playList])
 
   useEffect(() => {
     if (listRef?.current !== null) {
       setPlayListRef(listRef.current);
-
     }
   }, [listRef?.current])
 
@@ -342,15 +339,15 @@ export default function MusicPlayerView() {
         await loadJson('[]');
       }
     }).finally(() => {
+      console.log('ready true');
       setReady(true);
     })
     return () => {
+      console.log('unmount ready', ready);
       if (!ready) return;
-      if (setting != null) {
-        commands.appWriteFile(MUSIC_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
-          console.log(result.status, 'appWriteFile', MUSIC_PLAYER_SETTING);
-        })
-      }
+      commands.appWriteFile(MUSIC_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
+        console.log(result.status, 'appWriteFile', MUSIC_PLAYER_SETTING);
+      })
       const content = JSON.stringify(playList, null, 2);
       commands.appWriteFile(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
         console.log(result.status, 'appWriteFile', MUSIC_PLAYER_LATEST_PLAYLIST);
@@ -397,20 +394,19 @@ export default function MusicPlayerView() {
             <input type="range" min={0} max={1} step={0.01} value={volume}
                    onChange={(e) => {
                      const v = Number(e.target.value);
-                     // setVolume(v);
                      changeVolume(v);
-                     // if (mediaRef?.current) {
-                     //   mediaRef.current.volume = v;
-                     // }
                    }}/>
           </div>
           <div className="icon" onClick={() => changeMuted(!muted)}>
             <Icon icon={muted ? faVolumeMute : faVolumeHigh}/>
           </div>
         </div>
-        <div className={`row second ${(!paused && playPath) ? 'playing' : ''}`}>
-          <div><input type="checkbox" onChange={changeAllChecked}/></div>
+        <div className={`row second`}>
+          <Icon icon={faMusic} />
           <div className="title" title={playPath ?? ''}>{getFilename(playPath ?? '')}</div>
+        </div>
+        <div className={`row third ${(!paused && playPath) ? 'playing' : ''}`}>
+          <div><input type="checkbox" onChange={changeAllChecked}/></div>
           <div className="tm">{formatSeconds(currentTime)}</div>
           <div className="slider">
             <input type="range" min={0} max={duration || 0} step={0.01} value={currentTime}

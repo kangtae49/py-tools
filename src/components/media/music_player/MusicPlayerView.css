@@ -72,31 +72,35 @@
     display: flex;
     justify-content: center; align-items: center;
 }
-
 .music-player .top .row.second {
     display: flex;
     padding: 0 5px;
     justify-content: center; align-items: center;
 }
 .music-player .top .row.second .title {
-    flex: 0 0 200px;
+    flex: 1;
     text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.music-player .top .row.second .tm {
+.music-player .top .row.third {
+    display: flex;
+    padding: 0 5px;
+    justify-content: center; align-items: center;
+}
+.music-player .top .row.third .tm {
     flex: 0 0 50px;
     text-align: center; white-space: nowrap;
 }
 
-.music-player .top .row.second .slider {
+.music-player .top .row.third .slider {
     height: var(--icon-size);
     display: flex; justify-content: center; align-items: center;
     flex: 1;
 }
-.music-player .top .row.second .slider input {
+.music-player .top .row.third .slider input {
     width: 100%;
     cursor: pointer;
 }
-.music-player .top .row.second .slider input:focus {
+.music-player .top .row.third .slider input:focus {
     outline: none;
     border: none;
     box-shadow: none;
@@ -157,12 +161,12 @@ input[type=range]::-webkit-slider-thumb {
 .audio-player {
     display: none;
 }
-.second {
+.second,.third {
     inset: 0;
     background: white;
     transition: background 0.5s ease;
 }
-.second.playing {
+.second.playing,.third.playing {
     background: linear-gradient(270deg, #ff6ec4, #7873f5, #4ade80, #facc15);
     background-size: 400% 400%;
     animation: gradientShift 10s ease infinite;

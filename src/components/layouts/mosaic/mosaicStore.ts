@@ -54,17 +54,42 @@ export function getWinType(key: WinKey): WinType {
 
 
 interface MosaicStore {
+  viewRefs: Partial<Record<WinKey, HTMLDivElement | null>>
   mosaicValue: MosaicNode<WinKey> | null;
+  maxScreenView: WinKey | null;
+
   setMosaicValue: (value: MosaicNode<WinKey> | null) => void;
+  setMaxScreenView: (value: WinKey | null) => void;
+
+  updateViewRef: (id: WinKey, el: HTMLDivElement | null) => void;
   addView: (id: WinKey) => void;
   removeView: (id: WinKey) => void;
   maximizeView: (id: WinKey) => void;
   minimizeView: (id: WinKey) => void;
 }
 
+/*
+const viewRefs = useRef<Partial<Record<WinKey, HTMLDivElement | null>>>({});
+const setViewRef = (id: WinKey, el: HTMLDivElement | null) => {
+  viewRefs.current[id] = el;
+};
+
+ */
+
 export const useMosaicStore = create<MosaicStore>((set, get) => ({
   mosaicValue: null,
+  viewRefs: {},
+  maxScreenView: null,
+
   setMosaicValue: (value) => set({ mosaicValue: value }),
+  setMaxScreenView: (value) => set({ maxScreenView: value }),
+
+  updateViewRef: (id, el) => {
+    if (el === null) return;
+    if (get().viewRefs[id]) return;
+    console.log("updateViewRef", id, el);
+    set((state) => ({viewRefs: { ...state.viewRefs, [id]: el }}))
+  },
   addView: (id: WinKey) => {
     console.log("addView", id);
     const current = get().mosaicValue;
@@ -110,6 +135,9 @@ export const useMosaicStore = create<MosaicStore>((set, get) => ({
       return {...node, first, second}
     };
     set({ mosaicValue: updateSplit(current) });
+    if ((document as any).webkitFullscreenElement) {
+      get().viewRefs[id]?.closest(".mosaic-window")?.requestFullscreen();
+    }
 
   },
   removeView: (id: WinKey) => {

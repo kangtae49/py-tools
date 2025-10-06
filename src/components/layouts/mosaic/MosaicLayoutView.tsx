@@ -1,5 +1,5 @@
 import './MosaicLayoutView.css'
-import React, {type JSX, useEffect, useState} from "react";
+import React, {type JSX, useEffect} from "react";
 import AboutView from "@/components/AboutView.tsx";
 import HelpView from "@/components/HelpView.tsx";
 import {DefaultToolbarButton, Mosaic, MosaicWindow} from "react-mosaic-component";
@@ -15,39 +15,40 @@ import {
 interface TitleInfo {
   title: string,
   icon: JSX.Element,
-  view: JSX.Element,
+  // view: JSX.Element,
+  view: (winKey: WinKey) => JSX.Element,
 }
 
 const ELEMENT_MAP: Record<WinType, TitleInfo> = {
   "about": {
     title: "About",
     icon: <div />,
-    view: <AboutView/>
+    view: (winKey) => (<AboutView winKey={winKey} />)
   },
   "help": {
     title: "Help",
     icon: <div />,
-    view: <HelpView/>
+    view: (winKey: WinKey) => (<HelpView winKey={winKey} />)
   },
   "music-player": {
     title: "Music Player",
     icon: <div><Icon icon={faMusic} /></div>,
-    view: <MusicPlayerView />
+    view: (winKey: WinKey) => (<MusicPlayerView winKey={winKey} />)
   },
   "movie-player": {
     title: "Movie Player",
     icon: <div><Icon icon={faMusic} /></div>,
-    view: <HelpView/>
+    view: (winKey: WinKey) => (<HelpView winKey={winKey} />)
   },
   "monaco": {
     title: "Monaco Editor",
     icon: <div />,
-    view: <HelpView/>
+    view: (winKey: WinKey) => (<HelpView winKey={winKey} />)
   },
   "md": {
     title: "MdEditor",
     icon: <div />,
-    view: <HelpView/>
+    view: (winKey: WinKey) => (<HelpView winKey={winKey} />)
   },
   // "music_player": {
   //   title: "Music Player",
@@ -61,18 +62,24 @@ export function MosaicLayoutView() {
     // minimizeView, maximizeView,
     removeView,
     mosaicValue, setMosaicValue,
+    viewRefs, updateViewRef,
+    maxScreenView, setMaxScreenView,
   } = useMosaicStore();
-
-  const [maxScreen, setMaxScreen] = useState<boolean>(false);
-  const toggleMaximizeView = (e: React.MouseEvent, _id: WinKey) => {
+  // const viewRefs = useRef<Partial<Record<WinKey, HTMLDivElement | null>>>({});
+  // const setViewRef = (id: WinKey, el: HTMLDivElement | null) => {
+  //   viewRefs.current[id] = el;
+  // };
+  // const [maxScreen, setMaxScreen] = useState<boolean>(false);
+  const toggleMaximizeView = (_e: React.MouseEvent, id: WinKey) => {
     if ((document as any).webkitFullscreenElement) {
-      document.exitFullscreen();
-      setMaxScreen(false)
+      document.exitFullscreen().then(()=>{
+        setMaxScreenView(null)
+      });
     } else {
-      e.currentTarget.closest(".mosaic-window")?.requestFullscreen();
-      setMaxScreen(true)
+      // e.currentTarget.closest(".mosaic-window")?.requestFullscreen();
+      viewRefs[id]?.closest(".mosaic-window")?.requestFullscreen();
+      setMaxScreenView(id)
     }
-
   }
 
   useEffect(() => {
@@ -97,8 +104,12 @@ export function MosaicLayoutView() {
           path={path}
           title={id}
           renderToolbar={()=> (
-            <div className="title-bar">
-              <div className="title">
+            <div className="title-bar"
+              ref={(el) => updateViewRef(id, el)}
+            >
+              <div className="title"
+                onDoubleClick={(e) => toggleMaximizeView(e, id)}
+              >
                 {ELEMENT_MAP[getWinType(id)].icon}<div>{ELEMENT_MAP[getWinType(id)].title}</div>
               </div>
               <div className="controls">
@@ -109,9 +120,9 @@ export function MosaicLayoutView() {
                 {/*/>*/}
 
                 <DefaultToolbarButton
-                  title={maxScreen ? "Minimize" : "Maximize"}
+                  title={maxScreenView === id ? "Minimize" : "Maximize"}
                   onClick={(e) => toggleMaximizeView(e, id)}
-                  className={maxScreen ? "bp6-icon-minus" : "bp6-icon-maximize"}
+                  className={maxScreenView === id ? "bp6-icon-minus" : "bp6-icon-maximize"}
                 />
                 <DefaultToolbarButton
                   title="Close Window"
@@ -122,7 +133,7 @@ export function MosaicLayoutView() {
             </div>
           )}
         >
-          {ELEMENT_MAP[getWinType(id)].view}
+          {ELEMENT_MAP[getWinType(id)].view(id)}
         </MosaicWindow>
       )}
       className="mosaic-blueprint-theme"

@@ -21,11 +21,16 @@ import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import type {DropFile} from "@/types/models";
+import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 
 const MUSIC_PLAYER_LATEST_PLAYLIST = 'music-player.playlist.latest.json'
 const MUSIC_PLAYER_SETTING = 'music-player.setting.json'
 
-export default function MusicPlayerView() {
+interface Prop {
+  winKey: WinKey
+}
+
+export default function MusicPlayerView({winKey: _}: Prop) {
   const [ready, setReady] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<ListImperativeAPI>(null);

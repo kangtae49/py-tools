@@ -80,6 +80,7 @@
 .music-player .top .row.second .title {
     flex: 1;
     text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    cursor: pointer;
 }
 .music-player .top .row.third {
     display: flex;

@@ -408,7 +408,10 @@ export default function MusicPlayerView({winKey: _}: Prop) {
         </div>
         <div className={`row second`}>
           <Icon icon={faMusic} />
-          <div className="title" title={playPath ?? ''}>{getFilename(playPath ?? '')}</div>
+          <div className="title"
+               title={playPath ?? ''}
+               onClick={() => {playPath && scrollPlayPath(playPath)}}
+          >{getFilename(playPath ?? '')}</div>
         </div>
         <div className={`row third ${(!paused && playPath) ? 'playing' : ''}`}>
           <div><input type="checkbox" onChange={changeAllChecked}/></div>

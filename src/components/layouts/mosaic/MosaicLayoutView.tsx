@@ -1,5 +1,5 @@
 import './MosaicLayoutView.css'
-import {type JSX, useEffect} from "react";
+import React, {type JSX, useEffect, useState} from "react";
 import AboutView from "@/components/AboutView.tsx";
 import HelpView from "@/components/HelpView.tsx";
 import {DefaultToolbarButton, Mosaic, MosaicWindow} from "react-mosaic-component";
@@ -63,6 +63,18 @@ export function MosaicLayoutView() {
     mosaicValue, setMosaicValue,
   } = useMosaicStore();
 
+  const [maxScreen, setMaxScreen] = useState<boolean>(false);
+  const toggleMaximizeView = (e: React.MouseEvent, _id: WinKey) => {
+    if ((document as any).webkitFullscreenElement) {
+      document.exitFullscreen();
+      setMaxScreen(false)
+    } else {
+      e.currentTarget.closest(".mosaic-window")?.requestFullscreen();
+      setMaxScreen(true)
+    }
+
+  }
+
   useEffect(() => {
     setMosaicValue({
       direction: "row",
@@ -74,6 +86,7 @@ export function MosaicLayoutView() {
       }
     })
   }, [])
+
 
   return (
     <Mosaic<WinKey>
@@ -94,11 +107,12 @@ export function MosaicLayoutView() {
                 {/*  onClick={() => minimizeView(id)}*/}
                 {/*  className="bp6-icon-minus"*/}
                 {/*/>*/}
-                {/*<DefaultToolbarButton*/}
-                {/*  title="Maximize"*/}
-                {/*  onClick={() => maximizeView(id)}*/}
-                {/*  className="bp6-icon-maximize"*/}
-                {/*/>*/}
+
+                <DefaultToolbarButton
+                  title={maxScreen ? "Minimize" : "Maximize"}
+                  onClick={(e) => toggleMaximizeView(e, id)}
+                  className={maxScreen ? "bp6-icon-minus" : "bp6-icon-maximize"}
+                />
                 <DefaultToolbarButton
                   title="Close Window"
                   onClick={() => removeView(id)}

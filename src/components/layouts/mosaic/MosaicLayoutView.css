@@ -19,3 +19,5 @@
 
 .fa-music { color: var(--icon-color); font-size: var(--icon-font-size);}
 .fa-music:hover { transform: var(--icon-hover-scale);}
+
+button:focus {outline: none;}

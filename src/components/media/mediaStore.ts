@@ -1,5 +1,4 @@
 import {create} from 'zustand';
-import type {RefObject} from "react";
 import type {MusicPlayerSetting} from "@/components/media/music_player/musicPlayListStore.ts";
 
 export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
@@ -7,8 +6,8 @@ const INIT_AUTO_PLAY = false;
 const INIT_VOLUME = 0.5;
 
 interface MediaStore<T extends HTMLMediaElement> {
-  mediaRef: RefObject<T | null> | null
-  setMediaRef: (mediaRef: RefObject<T | null> | null) => void
+  mediaRef: T | null
+  setMediaRef: (mediaRef: T | null) => void
   volume: number
   duration: number
   currentTime: number
@@ -99,7 +98,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
 
     changeVolume: (volume) => {
       if (!volume) return;
-      const audio = get().mediaRef?.current;
+      const audio = get().mediaRef;
       const setting = get().setting;
       const newVolume = Math.max(0, Math.min(1, volume));
       if (audio) audio.volume = newVolume;
@@ -109,7 +108,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     },
     changeCurrentTime: (currentTime) => {
       if (!currentTime) return;
-      const audio = get().mediaRef?.current;
+      const audio = get().mediaRef;
       const setting = get().setting;
       if (audio) audio.currentTime = currentTime;
       if (setting != null) {
@@ -118,7 +117,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     },
     changePlaybackRate: (playbackRate) => {
       if (!playbackRate) return;
-      const audio = get().mediaRef?.current;
+      const audio = get().mediaRef;
       const setting = get().setting;
       if (audio) audio.playbackRate = playbackRate;
       if (setting != null) {
@@ -127,7 +126,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     },
     changeMuted: (muted) => {
       if (!muted) return;
-      const audio = get().mediaRef?.current;
+      const audio = get().mediaRef;
       const setting = get().setting;
       if (audio) audio.muted = muted;
       if (setting != null) {
@@ -136,7 +135,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     },
     changeSrc: (src) => {
       if (!src) return;
-      const audio = get().mediaRef?.current;
+      const audio = get().mediaRef;
       const playPath = get().setting?.playPath;
       const setting = get().setting;
       if (audio) audio.src = src;
@@ -145,9 +144,9 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
       }
     },
 
-    play: () => get().mediaRef?.current?.play(),
-    pause: () => get().mediaRef?.current?.pause(),
-    load: () => get().mediaRef?.current?.load(),
+    play: () => get().mediaRef?.play(),
+    pause: () => get().mediaRef?.pause(),
+    load: () => get().mediaRef?.load(),
     togglePlay: async () => {
       const setting = get().setting;
       if (setting != null) {

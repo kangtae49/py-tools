@@ -1,4 +1,4 @@
-import {useEffect, useRef} from "react";
+import {useEffect} from "react";
 import {useAudioStore} from "../mediaStore.ts";
 import {useMusicPlayListStore} from "./musicPlayListStore.ts";
 import {srcLocal} from "@/components/utils.ts";
@@ -6,7 +6,6 @@ import {srcLocal} from "@/components/utils.ts";
 
 function AudioView() {
   const {playPath} = useMusicPlayListStore();
-  const ref = useRef<HTMLAudioElement | null>(null);
   const {
     mediaRef, setMediaRef,
     setDuration,
@@ -23,10 +22,10 @@ function AudioView() {
   } = useAudioStore();
 
   const onloadedData = async () => {
-    if (!mediaRef?.current) return;
-    setSrc(mediaRef.current.src);
+    if (!mediaRef) return;
+    setSrc(mediaRef.src);
     if (playPath == null) return;
-    setDuration(mediaRef.current.duration);
+    setDuration(mediaRef.duration);
 
     if (setting){
       changeVolume(setting.volume);
@@ -34,7 +33,7 @@ function AudioView() {
       changePlaybackRate(setting.playbackRate);
       changeMuted(setting.muted)
     }
-    console.log('duration', mediaRef.current.duration)
+    console.log('duration', mediaRef.duration)
 
     if (!setting?.paused) {
       play()?.then();
@@ -45,22 +44,22 @@ function AudioView() {
   }
 
   const onloadedMetaData = async () => {
-    if (!mediaRef?.current) return;
+    if (!mediaRef) return;
   }
 
   const onTimeUpdate = () => {
-    if (!mediaRef?.current) return;
-    setCurrentTime(mediaRef.current.currentTime);
+    if (!mediaRef) return;
+    setCurrentTime(mediaRef.currentTime);
   }
 
   const onVolumeChange = () => {
-    if (!mediaRef?.current) return;
-    setVolume(mediaRef.current.volume);
-    setMuted(mediaRef.current.muted);
+    if (!mediaRef) return;
+    setVolume(mediaRef.volume);
+    setMuted(mediaRef.muted);
   }
   const onRateChange = () => {
-    if (!mediaRef?.current) return;
-    setPlaybackRate(mediaRef.current.playbackRate)
+    if (!mediaRef) return;
+    setPlaybackRate(mediaRef.playbackRate)
   }
   const onPlay = () => {
     setPaused(false);
@@ -76,41 +75,44 @@ function AudioView() {
 
 
   useEffect(() => {
-    if (ref === null) return;
+    // if (ref === null) return;
 
-    setMediaRef(ref);
+    // setMediaRef(ref);
+
+
+
   }, [playPath])
 
   useEffect(() => {
-    if (mediaRef?.current) {
-      mediaRef?.current?.addEventListener("loadeddata", onloadedData);
-      mediaRef?.current?.addEventListener("loadedmetadata", onloadedMetaData);
-      mediaRef?.current?.addEventListener("timeupdate", onTimeUpdate);
-      mediaRef?.current?.addEventListener("volumechange", onVolumeChange);
-      mediaRef?.current?.addEventListener("ratechange", onRateChange);
-      mediaRef?.current?.addEventListener("play", onPlay);
-      mediaRef?.current?.addEventListener("pause", onPause);
-      mediaRef?.current?.addEventListener("ended", onEnded);
+    if (mediaRef) {
+      mediaRef?.addEventListener("loadeddata", onloadedData);
+      mediaRef?.addEventListener("loadedmetadata", onloadedMetaData);
+      mediaRef?.addEventListener("timeupdate", onTimeUpdate);
+      mediaRef?.addEventListener("volumechange", onVolumeChange);
+      mediaRef?.addEventListener("ratechange", onRateChange);
+      mediaRef?.addEventListener("play", onPlay);
+      mediaRef?.addEventListener("pause", onPause);
+      mediaRef?.addEventListener("ended", onEnded);
     }
 
     return () => {
-      mediaRef?.current?.removeEventListener("loadedmetadata", onloadedMetaData);
-      mediaRef?.current?.removeEventListener("timeupdate", onTimeUpdate);
-      mediaRef?.current?.removeEventListener("volumechange", onVolumeChange);
-      mediaRef?.current?.removeEventListener("ratechange", onRateChange);
-      mediaRef?.current?.removeEventListener("play", onPlay);
-      mediaRef?.current?.removeEventListener("pause", onPause);
-      mediaRef?.current?.removeEventListener("ended", onEnded);
+      mediaRef?.removeEventListener("loadedmetadata", onloadedMetaData);
+      mediaRef?.removeEventListener("timeupdate", onTimeUpdate);
+      mediaRef?.removeEventListener("volumechange", onVolumeChange);
+      mediaRef?.removeEventListener("ratechange", onRateChange);
+      mediaRef?.removeEventListener("play", onPlay);
+      mediaRef?.removeEventListener("pause", onPause);
+      mediaRef?.removeEventListener("ended", onEnded);
     };
 
-  }, [mediaRef?.current])
+  }, [mediaRef])
 
   if (playPath === null) return;
   return (
     <div className="audio-player">
       <audio
         key={playPath}
-        ref={ref}
+        ref={setMediaRef}
         controls
         autoPlay={false}
       >

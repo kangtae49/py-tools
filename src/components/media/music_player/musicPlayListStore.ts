@@ -9,6 +9,7 @@ export interface MusicPlayerSetting {
   playbackRate?: number;
   muted?: boolean;
   paused?: boolean;
+  playList?: string[];
 }
 
 interface MusicPlayListStore {

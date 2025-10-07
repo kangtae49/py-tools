@@ -42,10 +42,10 @@ class WindowEventListener:
         self.js_api.app_write_file(MUSIC_PLAYER_SETTING, content)
         print(f"save: {MUSIC_PLAYER_SETTING}")
 
-        content = self.js_api.setting.get(MUSIC_PLAYER_LATEST_PLAYLIST)
-        print(f"{MUSIC_PLAYER_LATEST_PLAYLIST}: {content}")
-        self.js_api.app_write_file(MUSIC_PLAYER_LATEST_PLAYLIST, content)
-        print(f"save: {MUSIC_PLAYER_LATEST_PLAYLIST}")
+        # content = self.js_api.setting.get(MUSIC_PLAYER_LATEST_PLAYLIST)
+        # print(f"{MUSIC_PLAYER_LATEST_PLAYLIST}: {content}")
+        # self.js_api.app_write_file(MUSIC_PLAYER_LATEST_PLAYLIST, content)
+        # print(f"save: {MUSIC_PLAYER_LATEST_PLAYLIST}")
 
 
         # self.custom_event("closing")

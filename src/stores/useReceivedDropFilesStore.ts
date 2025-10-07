@@ -1,15 +1,17 @@
 import {create} from "zustand";
-import type {RefObject} from "react";
 // import type {DropFile} from "../types/models";
 
 export interface ReceivedDropFilesState {
-  dropRef: RefObject<HTMLDivElement | null> | null
+  dropRef: HTMLDivElement | null
 
-  setDropRef: (dropRef: RefObject<HTMLDivElement | null> | null) => void
+  setDropRef: (dropRef: HTMLDivElement | null) => void
 }
 
 export const useReceivedDropFilesStore = create<ReceivedDropFilesState>((set, _get) => ({
   dropRef: null,
 
-  setDropRef: (dropRef) => set(() => ({ dropRef })),
+  setDropRef: (dropRef) => {
+    if (dropRef === null) return;
+    set(() => ({dropRef}))
+  },
 }))

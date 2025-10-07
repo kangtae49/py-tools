@@ -1,5 +1,5 @@
 import "./MusicPlayerView.css"
-import React, {type ChangeEvent, useCallback, useEffect, useRef} from "react";
+import React, {type ChangeEvent, useCallback, useEffect, useRef, useState} from "react";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faBookMedical,
@@ -23,7 +23,6 @@ import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import type {DropFile} from "@/types/models";
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 
-export const MUSIC_PLAYER_LATEST_PLAYLIST = 'music-player.playlist.latest.json'
 export const MUSIC_PLAYER_SETTING = 'music-player.setting.json'
 
 interface Prop {
@@ -33,6 +32,7 @@ interface Prop {
 export default function MusicPlayerView({winKey: _}: Prop) {
   const initialized = useRef(false);
   const ready = useRef(false);
+  const [dropFiles, setDropFiles] = useState<string[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<ListImperativeAPI>(null);
@@ -100,14 +100,15 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     const newPlayList = appendPlayList(playList, files);
     const shuffledPlayList = shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
     setPlayList(shuffledPlayList)
+    let newPlayPath = playPath;
     if (playPath == null && shuffledPlayList.length > 0) {
-      const newPlayPath = shuffledPlayList[0];
-      if (setting) {
-        setSetting({...setting, playPath: newPlayPath})
-      }
+      newPlayPath = shuffledPlayList[0];
       setPlayPath(newPlayPath);
       setSelectionBegin(newPlayPath)
     }
+    const newSetting: MusicPlayerSetting = {...setting, playPath: newPlayPath || undefined, playList: shuffledPlayList}
+    console.log('setSetting readFiles')
+    setSetting(newSetting)
   }, [playList])
 
 
@@ -149,6 +150,8 @@ export default function MusicPlayerView({winKey: _}: Prop) {
         setSelectionBegin(newPlayList[newBeginPos])
       }
     }
+    console.log('setSetting clickRemovePlayList')
+    setSetting({...setting, playList: newPlayList})
   }
 
   const clickTogglePlay = async () => {
@@ -159,6 +162,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     const newPlayPath = getPrevPlayPath(playPath);
     if (newPlayPath == null) return
     if (setting) {
+      console.log('setSetting playPrev')
       setSetting({...setting, currentTime: 0, playPath: newPlayPath})
     }
     setPlayPath(newPlayPath);
@@ -168,6 +172,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     const newPlayPath = getNextPlayPath(playPath);
     if (newPlayPath == null) return
     if (setting) {
+      console.log('setSetting playNext')
       setSetting({...setting, currentTime: 0, playPath: newPlayPath})
     }
     setPlayPath(newPlayPath);
@@ -189,6 +194,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       const newPlayPath = getPrevPlayPath(playPath)
       if (newPlayPath == null) return
       if (setting !== null) {
+        console.log('setSetting ArrowLeft')
         setSetting({...setting, currentTime: 0, playPath: newPlayPath})
       }
       setPlayPath(newPlayPath)
@@ -197,6 +203,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       const newPlayPath = getNextPlayPath(playPath)
       if (newPlayPath == null) return
       if (setting !== null) {
+        console.log('setSetting ArrowRight')
         setSetting({...setting, currentTime: 0, playPath: newPlayPath})
       }
       setPlayPath(newPlayPath)
@@ -205,6 +212,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       if (selectedPlayList.length == 1) {
 
         if (setting !== null) {
+          console.log('setSetting Enter')
           setSetting({...setting, paused: false, playPath: selectedPlayList[0]})
         }
         setPlayPath(selectedPlayList[0]);
@@ -286,10 +294,12 @@ export default function MusicPlayerView({winKey: _}: Prop) {
           nextPlay = shuffledPlayList[idx]
         }
         if (setting){
+          console.log('setSetting useEffect[ended] repeat_all')
           setSetting({...setting, currentTime: 0, playPath: nextPlay})
         }
         setPlayPath(nextPlay);
       } else if (repeat === 'repeat_one') {
+        console.log('setSetting useEffect[ended] repeat_one')
         setSetting({...setting, currentTime: 0})
       } else if (repeat === 'repeat_none') {
         pause();
@@ -298,9 +308,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }, [ended])
 
   useEffect(() => {
-    if (!ready.current) return;
-    if (setting === null) return;
-    console.log('setting', setting, ready);
+    console.log('setting', setting);
     commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
       console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
     })
@@ -308,12 +316,9 @@ export default function MusicPlayerView({winKey: _}: Prop) {
 
   useEffect(() => {
     if (!ready.current) return;
-    console.log('playList', playList, ready.current);
-    const content = JSON.stringify(playList, null, 2);
-    commands.appWrite(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
-      console.log(result.status, 'appWrite', MUSIC_PLAYER_LATEST_PLAYLIST);
-    })
-  }, [playList])
+    console.log('playList ready', playList, ready.current);
+    setSetting({...setting, playList: playList})
+  }, [ready.current])
 
   useEffect(() => {
     if (listRef?.current !== null) {
@@ -322,47 +327,24 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }, [listRef?.current])
 
 
-  useEffect(() => {
-    if (containerRef?.current === null) return;
-    setDropRef(containerRef)
-    const onDropHandler = (e: CustomEvent) => {
-      const newDropFiles = e.detail as DropFile[];
-      if (newDropFiles !== null) {
-        let files = newDropFiles
-          .filter((file) => file.type.startsWith("audio/"))
-        if (filter.length > 0) {
-          files = files.filter((file) => filter.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
-        }
-        const fullpathFiles = files.map((file) => file.pywebview_full_path);
-        if (fullpathFiles.length > 0) {
-          const newPlayList = appendPlayList(playList, fullpathFiles);
-          setPlayList(newPlayList)
-        }
-      }
-    };
-    containerRef?.current?.addEventListener("drop-files", onDropHandler as EventListener);
-    return () => containerRef?.current?.removeEventListener("drop-files", onDropHandler as EventListener);
-  }, [containerRef?.current, playList])
-
-  const onReady = async () => {
-    const result = await commands.appReadFile(MUSIC_PLAYER_LATEST_PLAYLIST);
-
-    const files: string [] = result.status === 'ok' ? JSON.parse(result.data) : [];
-
-    const newPlayList = appendPlayList(playList, files);
-    const shuffledPlayList = shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
 
 
-    const result_setting = await commands.appReadFile(MUSIC_PLAYER_SETTING);
+  const onMount = async () => {
+
+    const result = await commands.appReadFile(MUSIC_PLAYER_SETTING);
     let setting: MusicPlayerSetting | null;
-    if(result_setting.status === 'ok') {
-      setting = JSON.parse(result_setting.data);
+    if(result.status === 'ok') {
+      setting = JSON.parse(result.data);
     } else {
       setting = {}
     }
     console.log('setting', setting);
+    const newPlayList = setting?.playList ?? []
+    const shuffledPlayList = shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
+
     const newPlayPath = setting?.playPath ?? shuffledPlayList[0];
     const newSetting = {...setting, playPath: newPlayPath}
+    console.log('onMount setSetting')
     setSetting(newSetting)
     setPlayPath(newPlayPath);
     setSelectionBegin(newPlayPath)
@@ -371,44 +353,67 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
       console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
     })
-    const content = JSON.stringify(shuffledPlayList, null, 2);
-    commands.appWrite(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
-      console.log(result.status, 'appWrite', MUSIC_PLAYER_LATEST_PLAYLIST);
-    })
   }
 
-  const onDestroy = async () => {
+  const onUnMount = async () => {
 
-    const result_setting = await commands.appRead(MUSIC_PLAYER_SETTING);
-    if (result_setting.status === 'ok') {
+    const result = await commands.appRead(MUSIC_PLAYER_SETTING);
+    if (result.status === 'ok') {
       commands.appWriteFile(MUSIC_PLAYER_SETTING, "{}").then((result) => {
         console.log(result.status, 'appWriteFile', MUSIC_PLAYER_SETTING);
       })
     }
-    const result_lst = await commands.appRead(MUSIC_PLAYER_LATEST_PLAYLIST);
-    if (result_lst.status === 'ok') {
-      commands.appWriteFile(MUSIC_PLAYER_LATEST_PLAYLIST, "[]").then((result) => {
-        console.log(result.status, 'appWriteFile', MUSIC_PLAYER_LATEST_PLAYLIST);
-      })
+  }
+
+  useEffect(() => {
+    if (dropFiles.length > 0) {
+      const newPlayList = appendPlayList(playList, dropFiles);
+      setPlayList(newPlayList)
+      console.log('setSetting useEffect[dropFiles, playList]')
+      setSetting({...setting, playList: newPlayList})
+      setDropFiles([])
+    }
+  }, [dropFiles, playList])
+
+  useEffect(() => {
+    const onDropHandler = (e: CustomEvent) => {
+      const newDropFiles = e.detail as DropFile[];
+      if (newDropFiles !== null) {
+        let files = newDropFiles
+          .filter((file) => file.type.startsWith("audio/"))
+
+        if (filter.length > 0) {
+          files = files.filter((file) => filter.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
+        }
+        const fullpathFiles = files.map((file) => file.pywebview_full_path);
+        if (fullpathFiles.length > 0) {
+          setDropFiles(fullpathFiles)
+        }
+      }
     }
 
-
-  }
+    if(containerRef?.current) {
+      setDropRef(containerRef.current);
+      containerRef?.current?.addEventListener("drop-files", onDropHandler as EventListener);
+    }
+    return () => {
+      containerRef?.current?.removeEventListener("drop-files", onDropHandler as EventListener);
+    }
+  }, [containerRef.current, playList])
 
   useEffect(() => {
     if (!initialized.current) {
       initialized.current = true;
       containerRef.current?.focus();
-      onReady().then(() => {
+      onMount().then(() => {
         ready.current = true;
       });
     }
+
     return () => {
-      console.log('return unmount start ready', ready.current);
       if(ready.current) {
-        onDestroy().then()
+        onUnMount().then()
       }
-      console.log('return unmount end ready', ready.current);
     }
   }, [])
 
@@ -469,7 +474,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
           <div><input type="checkbox" onChange={changeAllChecked}/></div>
           <div className="tm">{formatSeconds(currentTime)}</div>
           <div className="slider">
-            <input type="range" min={0} max={duration || 0} step={0.01}
+            <input type="range" min={0} max={duration || 0} step={1}
                    value={currentTime}
                    onChange={(e) => {
                      console.log('change currentTime', e.target.value);

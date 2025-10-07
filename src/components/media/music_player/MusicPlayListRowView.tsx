@@ -30,15 +30,14 @@ export default function MusicPlayListRowView({
 
 
   const clickPlayPath = (path: string) => {
+    console.log('clickPlayPath', path)
     window.getSelection()?.removeAllRanges();
     setSelectedPlayList([]);
-    if (setting !== null) {
-      setting.playPath = path;
-      setSetting({...setting, currentTime: 0})
-    }
+    console.log('setSetting clickPlayPath')
+    setSetting({...setting, playPath: path, currentTime: 0})
     setPlayPath(path);
   }
-  const clickremovePlay = (path: string) => {
+  const clickRemovePlayPath = (path: string) => {
     const newPlayList = removePlayList(playList, [path]);
     setPlayList(newPlayList);
   }
@@ -74,7 +73,7 @@ export default function MusicPlayListRowView({
         </div>
       </div>
       <div
-        onClick={() => clickremovePlay(playList[index])}
+        onClick={() => clickRemovePlayPath(playList[index])}
       >
         <Icon icon={faCircleXmark} />
       </div>

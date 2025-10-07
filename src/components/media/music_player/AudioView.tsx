@@ -109,8 +109,11 @@ function AudioView() {
   return (
     <div className="audio-player">
       <audio
-        // key={playPath}
-             ref={ref} controls autoPlay={false}>
+        key={playPath}
+        ref={ref}
+        controls
+        autoPlay={false}
+      >
         <source src={srcLocal(playPath)} />
       </audio>
     </div>

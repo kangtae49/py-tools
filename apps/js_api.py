@@ -93,12 +93,14 @@ class JsApi:
         except Exception as e:
             raise ApiException(f"{e}")
 
-    def app_write_file(self, subpath: str, content: str):
+    def app_write_file(self, subpath: str, default: str):
         try:
             appdata_local = os.getenv("LOCALAPPDATA")
             fullpath = os.path.join(appdata_local, "py-tools", subpath)
+            # self.setting.update({subpath: content})
+            content = self.setting.get(subpath, default)
+            print(f"setting.update {subpath}: {content}")
             self.write_file(fullpath, content)
-            self.setting.update({subpath: content})
         except ApiError as e:
             raise e
         except Exception as e:
@@ -110,7 +112,7 @@ class JsApi:
         return self.setting.get(subpath)
 
     def app_write(self, subpath: str, content: str):
-        print(subpath, content)
+        print(f"setting.update! {subpath}: {content}")
         self.setting.update({subpath: content})
 
     # def app_read(self):

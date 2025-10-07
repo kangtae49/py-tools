@@ -1,5 +1,5 @@
 import "./MusicPlayerView.css"
-import React, {type ChangeEvent, useEffect, useRef, useState} from "react";
+import React, {type ChangeEvent, useEffect, useRef} from "react";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faBookMedical,
@@ -13,7 +13,7 @@ import {
 import {List,  type ListImperativeAPI} from 'react-window'
 import MusicPlayListRowView from "./MusicPlayListRowView.tsx";
 import AudioView from "./AudioView.tsx";
-import {useMusicPlayListStore, type MusicPlayerSetting} from "./musicPlayListStore.ts";
+import {type MusicPlayerSetting, useMusicPlayListStore} from "./musicPlayListStore.ts";
 import {useSelectedMusicPlayListStore} from "./selectedMusicPlayListStore.ts";
 import {useAudioStore} from "../mediaStore.ts";
 import {formatSeconds, getFilename} from "@/components/utils.ts";
@@ -23,26 +23,28 @@ import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import type {DropFile} from "@/types/models";
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 
-const MUSIC_PLAYER_LATEST_PLAYLIST = 'music-player.playlist.latest.json'
-const MUSIC_PLAYER_SETTING = 'music-player.setting.json'
+export const MUSIC_PLAYER_LATEST_PLAYLIST = 'music-player.playlist.latest.json'
+export const MUSIC_PLAYER_SETTING = 'music-player.setting.json'
 
 interface Prop {
   winKey: WinKey
 }
 
 export default function MusicPlayerView({winKey: _}: Prop) {
-  const [ready, setReady] = useState<boolean>(false);
+  const initialized = useRef(false);
+  const ready = useRef(false);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<ListImperativeAPI>(null);
   const {
-    playList, appendPlayList, removePlayList, shufflePlayList, natsortPlayList,
+    playList, setPlayList, appendPlayList, removePlayList, shufflePlayList, natsortPlayList,
     playPath, setPlayPath,
     getPrevPlayPath, getNextPlayPath,
     setPlayListRef,
     scrollPlayPath,
   } = useMusicPlayListStore();
   const {
-    selectedPlayList, setSelectedPlayList,
+    selectedPlayList, setSelectedPlayList, removeSelectedPlayList, appendSelectedPlayList,
     selectionBegin, setSelectionBegin,
   } = useSelectedMusicPlayListStore();
   const {
@@ -70,47 +72,44 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       if(result.status === 'ok') {
         const files = result.data;
         if (files === null) { return }
-        appendPlayList(files);
-        let shuffledPlayList: string[];
-        if (shuffle) {
-          shuffledPlayList = shufflePlayList()
-        } else {
-          shuffledPlayList = natsortPlayList()
-        }
-
-        setSelectedPlayList([])
-        setSelectionBegin(null)
-        if (playPath == null) {
-          setPlayPath(shuffledPlayList[0]);
+        const newPlayList = appendPlayList(playList, files);
+        const shuffledPlayList = shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
+        setPlayList(shuffledPlayList)
+        if (playPath == null && shuffledPlayList.length > 0) {
+          const newPlayPath = shuffledPlayList[0];
+          if(setting) {
+            setSetting({...setting, playPath: newPlayPath})
+          }
+          setPlayPath(newPlayPath);
+          setSelectionBegin(newPlayPath)
         }
       }
     })
   }
 
-  const loadJson = async (jsonStr: string): Promise<string []> => {
-    const newList: string [] = JSON.parse(jsonStr);
-    appendPlayList(newList);
-    let shuffledPlayList: string[];
-    if (shuffle) {
-      shuffledPlayList = shufflePlayList()
-    } else {
-      shuffledPlayList = natsortPlayList()
-    }
-    commands.appReadFile(MUSIC_PLAYER_SETTING).then((result) => {
-      if (result.status === 'ok'){
-        const setting: MusicPlayerSetting = JSON.parse(result.data);
-        setPlayPath(setting.playPath ?? null);
-        setSetting({...setting})
-      } else {
-        setSetting({})
-        if(shuffledPlayList.length > 0) {
-          setPlayPath(shuffledPlayList[0]);
-        }
-      }
-    })
 
-    return shuffledPlayList;
-  }
+  // const loadJson = async (jsonStr: string): Promise<string []> => {
+  //   const addList: string [] = JSON.parse(jsonStr);
+  //   // const newPlayList = [...new Set([...playList, ...newList])];
+  //
+  //   const newPlayList = appendPlayList(playList, addList);
+  //   const shuffledPlayList = shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
+  //   setPlayList(shuffledPlayList)
+  //   const result = await commands.appReadFile(MUSIC_PLAYER_SETTING);
+  //   if (result.status === 'ok'){
+  //     let setting: MusicPlayerSetting = JSON.parse(result.data);
+  //     if (setting === null) {
+  //       setting = {}
+  //     }
+  //     if(!setting?.playPath) {
+  //       setting.playPath = shuffledPlayList[0];
+  //     }
+  //     setPlayPath(setting.playPath ?? null);
+  //     setSetting({...setting})
+  //   }
+  //
+  //   return shuffledPlayList;
+  // }
 
   const openDialogOpenJson = async () => {
     commands.dialogOpen({
@@ -123,7 +122,19 @@ export default function MusicPlayerView({winKey: _}: Prop) {
         if(files === null) return;
         commands.readFile(files[0]).then(async (result) => {
           if (result.status === 'ok'){
-            loadJson(result.data).then();
+            const files: string [] = JSON.parse(result.data);
+            const newPlayList = appendPlayList(playList, files);
+            const shuffledPlayList = shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
+            setPlayList(shuffledPlayList)
+            if (playPath == null && shuffledPlayList.length > 0) {
+              const newPlayPath = shuffledPlayList[0];
+              if (setting) {
+                setSetting({...setting, playPath: newPlayPath})
+              }
+              setPlayPath(newPlayPath);
+              setSelectionBegin(newPlayPath)
+            }
+
           }
         })
       }
@@ -154,9 +165,21 @@ export default function MusicPlayerView({winKey: _}: Prop) {
 
   const clickRemovePlayList = () => {
     if (selectedPlayList.length == 0) { return }
-    removePlayList(selectedPlayList);
+
+    const beginPos = playList.indexOf(selectionBegin ||'');
+
+    const newPlayList = removePlayList(playList, selectedPlayList);
+    setPlayList(newPlayList)
     setSelectedPlayList([])
-    setSelectionBegin(null)
+    if (newPlayList.length > 0) {
+      if (newPlayList.indexOf(selectionBegin || '') >= 0) {
+        setSelectionBegin(selectionBegin)
+      } else {
+        let newBeginPos = Math.max(beginPos, 0);
+        newBeginPos = Math.min(newBeginPos, newPlayList.length - 1);
+        setSelectionBegin(newPlayList[newBeginPos])
+      }
+    }
   }
 
   const clickTogglePlay = async () => {
@@ -166,7 +189,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   const playPrev = () => {
     const newPlayPath = getPrevPlayPath(playPath);
     if (newPlayPath == null) return
-    if (setting !== null) {
+    if (setting) {
       setSetting({...setting, currentTime: 0, playPath: newPlayPath})
     }
     setPlayPath(newPlayPath);
@@ -175,7 +198,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   const playNext = () => {
     const newPlayPath = getNextPlayPath(playPath);
     if (newPlayPath == null) return
-    if (setting !== null) {
+    if (setting) {
       setSetting({...setting, currentTime: 0, playPath: newPlayPath})
     }
     setPlayPath(newPlayPath);
@@ -187,17 +210,18 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
     e.preventDefault()
     window.getSelection()?.removeAllRanges();
+    if (playList.length == 0) return;
 
     if (e.ctrlKey && e.key === 'a') {
       setSelectedPlayList(playList);
     } else if (e.key === "Delete") {
-      const nextSelection = getNextPlayPath(selectionBegin);
+      // const nextSelection = getNextPlayPath(selectionBegin);
       clickRemovePlayList();
-      if (nextSelection !== null) {
-        setSelectionBegin(nextSelection);
-        setSelectedPlayList([nextSelection]);
-        scrollPlayPath(nextSelection);
-      }
+      // if (nextSelection !== null) {
+      //   setSelectionBegin(nextSelection);
+      //   setSelectedPlayList([nextSelection]);
+      //   scrollPlayPath(nextSelection);
+      // }
     } else if (e.key === "ArrowLeft") {
       const newPlayPath = getPrevPlayPath(playPath)
       if (newPlayPath == null) return
@@ -214,20 +238,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       }
       setPlayPath(newPlayPath)
       scrollPlayPath(newPlayPath)
-    } else if (e.key === "ArrowUp") {
-      const newSelection = getPrevPlayPath(selectionBegin)
-      if(newSelection !== null) {
-        setSelectionBegin(newSelection)
-        setSelectedPlayList([newSelection])
-        scrollPlayPath(newSelection)
-      }
-    } else if (e.key === "ArrowDown") {
-      const newSelection = getNextPlayPath(selectionBegin)
-      if(newSelection !== null) {
-        setSelectionBegin(newSelection)
-        setSelectedPlayList([newSelection])
-        scrollPlayPath(newSelection)
-      }
     } else if (e.key === "Enter") {
       if (selectedPlayList.length == 1) {
 
@@ -235,6 +245,42 @@ export default function MusicPlayerView({winKey: _}: Prop) {
           setSetting({...setting, paused: false, playPath: selectedPlayList[0]})
         }
         setPlayPath(selectedPlayList[0]);
+      }
+    } else if (e.key === "ArrowUp") {
+      if (selectionBegin == null) {
+        setSelectionBegin(playList[0])
+        scrollPlayPath(playList[0])
+        return;
+      }
+      let newSelection = getPrevPlayPath(selectionBegin)
+      if (newSelection === null) {
+        newSelection = playList[0]
+      }
+      setSelectionBegin(newSelection)
+      scrollPlayPath(newSelection)
+    } else if (e.key === "ArrowDown") {
+      if (selectionBegin == null) {
+        setSelectionBegin(playList[0])
+        scrollPlayPath(playList[0])
+        return;
+      }
+      let newSelection = getNextPlayPath(selectionBegin)
+      if (newSelection === null) {
+        newSelection = playList[0]
+      }
+      setSelectionBegin(newSelection)
+      scrollPlayPath(newSelection)
+    } else if (e.key === " ") {
+      if (selectionBegin == null) {
+        setSelectionBegin(playList[0])
+        scrollPlayPath(playList[0])
+        return;
+      }
+      const pos = selectedPlayList.indexOf(selectionBegin);
+      if (pos >= 0) {
+        removeSelectedPlayList([selectionBegin])
+      } else {
+        appendSelectedPlayList([selectionBegin])
       }
     }
   }
@@ -247,11 +293,8 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   useEffect(() => {
-    if (shuffle) {
-      shufflePlayList()
-    } else {
-      natsortPlayList()
-    }
+    const shuffledPlayList = shuffle ? shufflePlayList(playList) : natsortPlayList(playList);
+    setPlayList(shuffledPlayList)
   }, [shuffle])
 
   useEffect(() => {
@@ -266,7 +309,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
           let idx = playList.indexOf(playPath);
           let shuffledPlayList = playList;
           if (shuffle && idx === playList.length -1) {
-            shuffledPlayList = shufflePlayList();
+            shuffledPlayList = shufflePlayList(playList);
           }
 
           if (idx < 0) {
@@ -279,8 +322,10 @@ export default function MusicPlayerView({winKey: _}: Prop) {
           }
           nextPlay = shuffledPlayList[idx]
         }
+        if (setting){
+          setSetting({...setting, currentTime: 0, playPath: nextPlay})
+        }
         setPlayPath(nextPlay);
-        setSetting({...setting, currentTime: 0, playPath: nextPlay})
       } else if (repeat === 'repeat_one') {
         setSetting({...setting, currentTime: 0})
       } else if (repeat === 'repeat_none') {
@@ -290,21 +335,25 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }, [ended])
 
   useEffect(() => {
+    if (!ready.current) return;
     if (setting === null) return;
-    if (!ready) return;
-    console.log('setting', setting);
+    console.log('setting', setting, ready);
     commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
       console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
     })
-  }, [ready, setting])
+  }, [setting])
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready.current) return;
+    console.log('playList', playList, ready.current);
     const content = JSON.stringify(playList, null, 2);
     commands.appWrite(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
       console.log(result.status, 'appWrite', MUSIC_PLAYER_LATEST_PLAYLIST);
     })
-  }, [ready, playList])
+    // commands.appWriteFile(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
+    //   console.log(result.status, 'appWriteFile', MUSIC_PLAYER_LATEST_PLAYLIST);
+    // })
+  }, [playList])
 
   useEffect(() => {
     if (listRef?.current !== null) {
@@ -326,37 +375,83 @@ export default function MusicPlayerView({winKey: _}: Prop) {
         }
         const fullpathFiles = files.map((file) => file.pywebview_full_path);
         if (fullpathFiles.length > 0) {
-          appendPlayList(fullpathFiles);
+          const newPlayList = appendPlayList(playList, fullpathFiles);
+          setPlayList(newPlayList)
         }
       }
     };
     containerRef?.current?.addEventListener("drop-files", onDropHandler as EventListener);
     return () => containerRef?.current?.removeEventListener("drop-files", onDropHandler as EventListener);
-  }, [containerRef?.current])
+  }, [containerRef?.current, playList])
+
+  const onReady = async () => {
+    const result = await commands.appReadFile(MUSIC_PLAYER_LATEST_PLAYLIST);
+
+    const files: string [] = result.status === 'ok' ? JSON.parse(result.data) : [];
+
+    const newPlayList = appendPlayList(playList, files);
+    const shuffledPlayList = shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
 
 
-  useEffect(() => {
-    containerRef.current?.focus();
-    commands.appReadFile(MUSIC_PLAYER_LATEST_PLAYLIST).then(async (result) => {
-      if (result.status === 'ok'){
-        await loadJson(result.data);
-      } else {
-        await loadJson('[]');
-      }
-    }).finally(() => {
-      console.log('ready true');
-      setReady(true);
+    const result_setting = await commands.appReadFile(MUSIC_PLAYER_SETTING);
+    let setting: MusicPlayerSetting | null;
+    if(result_setting.status === 'ok') {
+      setting = JSON.parse(result_setting.data);
+    } else {
+      setting = {}
+    }
+    console.log('setting', setting);
+    const newPlayPath = setting?.playPath ?? shuffledPlayList[0];
+    const newSetting = {...setting, playPath: newPlayPath}
+    setSetting(newSetting)
+    setPlayPath(newPlayPath);
+    setSelectionBegin(newPlayPath)
+    setPlayList(shuffledPlayList)
+
+    commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
+      console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
     })
-    return () => {
-      console.log('unmount ready', ready);
-      if (!ready) return;
-      commands.appWriteFile(MUSIC_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
+    const content = JSON.stringify(shuffledPlayList, null, 2);
+    commands.appWrite(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
+      console.log(result.status, 'appWrite', MUSIC_PLAYER_LATEST_PLAYLIST);
+    })
+
+
+
+  }
+
+  const onDestory = async () => {
+
+    const result_setting = await commands.appRead(MUSIC_PLAYER_SETTING);
+    if (result_setting.status === 'ok') {
+      commands.appWriteFile(MUSIC_PLAYER_SETTING, "{}").then((result) => {
         console.log(result.status, 'appWriteFile', MUSIC_PLAYER_SETTING);
       })
-      const content = JSON.stringify(playList, null, 2);
-      commands.appWriteFile(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
+    }
+    const result_lst = await commands.appRead(MUSIC_PLAYER_LATEST_PLAYLIST);
+    if (result_lst.status === 'ok') {
+      commands.appWriteFile(MUSIC_PLAYER_LATEST_PLAYLIST, "[]").then((result) => {
         console.log(result.status, 'appWriteFile', MUSIC_PLAYER_LATEST_PLAYLIST);
       })
+    }
+
+
+  }
+
+  useEffect(() => {
+    if (!initialized.current) {
+      initialized.current = true;
+      containerRef.current?.focus();
+      onReady().then(() => {
+        ready.current = true;
+      });
+    }
+    return () => {
+      console.log('return unmount start ready', ready.current);
+      if(ready.current) {
+        onDestory().then()
+      }
+      console.log('return unmount end ready', ready.current);
     }
   }, [])
 
@@ -417,8 +512,10 @@ export default function MusicPlayerView({winKey: _}: Prop) {
           <div><input type="checkbox" onChange={changeAllChecked}/></div>
           <div className="tm">{formatSeconds(currentTime)}</div>
           <div className="slider">
-            <input type="range" min={0} max={duration || 0} step={0.01} value={currentTime}
+            <input type="range" min={0} max={duration || 0} step={0.01}
+                   value={currentTime}
                    onChange={(e) => {
+                     console.log('change currentTime', e.target.value);
                      const tm = Number(e.target.value);
                      changeCurrentTime(tm);
                    }}/>

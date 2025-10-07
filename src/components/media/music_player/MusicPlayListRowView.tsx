@@ -20,9 +20,11 @@ export default function MusicPlayListRowView({
     paused,
     setting, setSetting,
   } = useAudioStore();
-  const {removePlayList, playPath, setPlayPath} = useMusicPlayListStore();
+  const {removePlayList, playPath, setPlayPath, setPlayList} = useMusicPlayListStore();
   const {
-    selectedPlayList, setSelectedPlayList, appendSelectedPlayList, removeSelectedPlayList,
+    selectionBegin,
+    selectedPlayList, setSelectedPlayList,
+    appendSelectedPlayList, removeSelectedPlayList,
   } = useSelectedMusicPlayListStore();
 
 
@@ -36,6 +38,10 @@ export default function MusicPlayListRowView({
     }
     setPlayPath(path);
   }
+  const clickremovePlay = (path: string) => {
+    const newPlayList = removePlayList(playList, [path]);
+    setPlayList(newPlayList);
+  }
 
   const onChangeChecked = (e: ChangeEvent<HTMLInputElement>, path: string) => {
     const checked = e.target.checked;
@@ -47,7 +53,8 @@ export default function MusicPlayListRowView({
   }
 
   const isPlayPath = playPath == playList[index];
-  const isSelected = selectedPlayList.includes(playList[index]);
+  const isChecked = selectedPlayList.includes(playList[index]);
+  const isSelected = playList[index] == selectionBegin;
 
   return (
     <div className={`row ${isSelected ? 'selected': ''}`} style={style}>
@@ -56,7 +63,7 @@ export default function MusicPlayListRowView({
       >
         <div className="no">{index+1}</div>
         <div><input type="checkbox"
-                    checked={isSelected}
+                    checked={isChecked}
                     onChange={(e) => onChangeChecked(e, playList[index])}
               />
         </div>
@@ -67,7 +74,7 @@ export default function MusicPlayListRowView({
         </div>
       </div>
       <div
-        onClick={() => removePlayList([playList[index]])}
+        onClick={() => clickremovePlay(playList[index])}
       >
         <Icon icon={faCircleXmark} />
       </div>

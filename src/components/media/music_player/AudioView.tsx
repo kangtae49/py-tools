@@ -26,18 +26,22 @@ function AudioView() {
     if (!mediaRef?.current) return;
     setSrc(mediaRef.current.src);
     if (playPath == null) return;
-    if (setting == null) return;
-    changeVolume(setting.volume);
-    changeCurrentTime(setting.currentTime);
-    changePlaybackRate(setting.playbackRate);
-    changeMuted(setting.muted)
-    if (!setting.paused) {
+    setDuration(mediaRef.current.duration);
+
+    if (setting){
+      changeVolume(setting.volume);
+      changeCurrentTime(setting.currentTime);
+      changePlaybackRate(setting.playbackRate);
+      changeMuted(setting.muted)
+    }
+    console.log('duration', mediaRef.current.duration)
+
+    if (!setting?.paused) {
       play()?.then();
     } else {
       pause();
     }
 
-    setDuration(mediaRef.current.duration);
   }
 
   const onloadedMetaData = async () => {
@@ -66,7 +70,6 @@ function AudioView() {
   }
 
   const onEnded = () => {
-    console.log("onEnded !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     setPaused(true);
     setEnded(true);
   }
@@ -79,18 +82,16 @@ function AudioView() {
   }, [playPath])
 
   useEffect(() => {
-    // if (!mediaRef?.current) return;
-
-    // audioRef.current.volume = 0.5;
-    mediaRef?.current?.addEventListener("loadeddata", onloadedData);
-    mediaRef?.current?.addEventListener("loadedmetadata", onloadedMetaData);
-    mediaRef?.current?.addEventListener("timeupdate", onTimeUpdate);
-    mediaRef?.current?.addEventListener("volumechange", onVolumeChange);
-    mediaRef?.current?.addEventListener("ratechange", onRateChange);
-    mediaRef?.current?.addEventListener("play", onPlay);
-    mediaRef?.current?.addEventListener("pause", onPause);
-    mediaRef?.current?.addEventListener("ended", onEnded);
-
+    if (mediaRef?.current) {
+      mediaRef?.current?.addEventListener("loadeddata", onloadedData);
+      mediaRef?.current?.addEventListener("loadedmetadata", onloadedMetaData);
+      mediaRef?.current?.addEventListener("timeupdate", onTimeUpdate);
+      mediaRef?.current?.addEventListener("volumechange", onVolumeChange);
+      mediaRef?.current?.addEventListener("ratechange", onRateChange);
+      mediaRef?.current?.addEventListener("play", onPlay);
+      mediaRef?.current?.addEventListener("pause", onPause);
+      mediaRef?.current?.addEventListener("ended", onEnded);
+    }
 
     return () => {
       mediaRef?.current?.removeEventListener("loadedmetadata", onloadedMetaData);
@@ -102,7 +103,7 @@ function AudioView() {
       mediaRef?.current?.removeEventListener("ended", onEnded);
     };
 
-  }, [playPath, mediaRef?.current])
+  }, [mediaRef?.current])
 
   if (playPath === null) return;
   return (

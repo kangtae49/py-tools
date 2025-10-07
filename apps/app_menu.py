@@ -19,7 +19,13 @@ app_menu = [
     Menu(
         'Media', [
             MenuAction('Music Player', lambda: go_menu('music-player'))
+        ],
+    ),
+    MenuSeparator(),
+    Menu(
+        'Help', [
+            MenuAction('Help', lambda: go_menu('help')),
+            MenuAction('About', lambda: go_menu('about')),
         ]
-
     )
 ]

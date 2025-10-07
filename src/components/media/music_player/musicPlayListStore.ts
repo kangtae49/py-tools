@@ -37,7 +37,10 @@ export const useMusicPlayListStore = create<MusicPlayListStore>((set, get) => ({
   playList: [],
   playPath: null,
 
-  setPlayListRef: (value) => set({ playListRef: value }),
+  setPlayListRef: (value) => {
+    if (value === null) return;
+    set({playListRef: value})
+  },
   setPlayList: (value) => set({ playList: value }),
   setPlayPath: (value) => set({ playPath: value }),
 

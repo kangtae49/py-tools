@@ -1,5 +1,4 @@
 import {create} from "zustand";
-// import type {DropFile} from "../types/models";
 
 export interface ReceivedDropFilesState {
   dropRef: HTMLDivElement | null

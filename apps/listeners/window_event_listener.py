@@ -3,8 +3,7 @@ import string
 
 from webview import Window
 from apps.listeners.drop_files_listener import DropFilesListener
-from apps.js_api import JsApi, MUSIC_PLAYER_SETTING, MUSIC_PLAYER_LATEST_PLAYLIST
-
+from apps.js_api import JsApi, MUSIC_PLAYER_SETTING
 
 
 class WindowEventListener:
@@ -17,7 +16,6 @@ class WindowEventListener:
         window.events.loaded += self.on_loaded
         window.events.closing += self.on_closing
         window.events.closed += self.on_closed
-
 
     def on_initialized(self, renderer):
         # return False to cancel initialization
@@ -42,22 +40,11 @@ class WindowEventListener:
         self.js_api.app_write_file(MUSIC_PLAYER_SETTING, content)
         print(f"save: {MUSIC_PLAYER_SETTING}")
 
-        # content = self.js_api.setting.get(MUSIC_PLAYER_LATEST_PLAYLIST)
-        # print(f"{MUSIC_PLAYER_LATEST_PLAYLIST}: {content}")
-        # self.js_api.app_write_file(MUSIC_PLAYER_LATEST_PLAYLIST, content)
-        # print(f"save: {MUSIC_PLAYER_LATEST_PLAYLIST}")
-
-
-        # self.custom_event("closing")
-
-
     def on_closed(self):
         print('closed')
 
 
-
     def custom_event(self, event_name: str):
-        # global g_window
         print(f'pywebview window is {event_name}')
         tmpl = string.Template("""
             window.dispatchEvent(new CustomEvent("window-event", 
@@ -71,9 +58,6 @@ class WindowEventListener:
 
 
     def add_window_event_listener(self):
-        # global g_window
-        # g_window = window
-
         self.window.events.before_show += self.on_before_show
         self.window.events.initialized += self.on_initialized
         self.window.events.shown += self.on_shown

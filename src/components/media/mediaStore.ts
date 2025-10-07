@@ -67,7 +67,6 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
 
   return create<MediaStore<T>>((set, get) => ({
     mediaRef: null,
-    setMediaRef: (mediaRef) => set({mediaRef}),
     volume: INIT_VOLUME,
     duration: 0,
     currentTime: 0,
@@ -82,6 +81,10 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     filter: mediaDefault.filter ?? [],
     src: '',
 
+    setMediaRef: (mediaRef) => {
+      if(mediaRef === null) return;
+      set({mediaRef})
+    },
     setVolume: (volume) => set({volume}),
     setDuration: (duration) => set({duration}),
     setCurrentTime: (currentTime) => set({currentTime}),

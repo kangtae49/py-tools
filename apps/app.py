@@ -5,7 +5,6 @@ import webview
 
 from apps import js_api
 from apps.app_menu import app_menu
-# from apps.listeners.window_event_listener import add_window_event_listener
 from apps.listeners.window_event_listener import WindowEventListener
 
 api = js_api.JsApi()
@@ -57,5 +56,4 @@ def run():
     # events
     WindowEventListener(window, api)
 
-    # webview.start(debug=debug)
     webview.start(debug=debug, menu=app_menu)

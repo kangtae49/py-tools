@@ -115,10 +115,3 @@ class JsApi:
         print(f"setting.update! {subpath}: {content}")
         self.setting.update({subpath: content})
 
-    # def app_read(self):
-    #     pass
-    # def app_save(self):
-    #     if self.app_path is None or self.app_content is None:
-    #         return
-    #     self.app_write_to_string(self.app_path, self.app_content)
-

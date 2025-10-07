@@ -24,8 +24,6 @@ interface MusicPlayListStore {
   removePlayList: (curList: string[], delList: string[]) => string [];
   shufflePlayList: (curList: string[]) => string [];
   natsortPlayList: (curList: string[]) => string [];
-  // prevPlayPath: () => string | null;
-  // nextPlayPath: () => string | null;
   getPrevPlayPath: (value: string | null) => string | null;
   getNextPlayPath: (value: string | null) => string | null;
 
@@ -61,46 +59,6 @@ export const useMusicPlayListStore = create<MusicPlayListStore>((set, get) => ({
     const sorter = natsort();
     return [...curList].sort(sorter);
   },
-  // prevPlayPath: () => {
-  //   const curPlayList = get().playList;
-  //   if (curPlayList.length == 0) {
-  //     return null;
-  //   }
-  //   let prev: string | null;
-  //   const curPlayPath = get().playPath;
-  //   if (curPlayPath == null) {
-  //     prev = curPlayList[0];
-  //     set({ playPath: prev });
-  //     return prev;
-  //   }
-  //   let idx = curPlayList.indexOf(curPlayPath) -1;
-  //   if (idx < 0) {
-  //     idx = curPlayList.length - 1;
-  //   }
-  //   prev = curPlayList[idx]
-  //   set({ playPath: prev });
-  //   return prev;
-  // },
-  // nextPlayPath: () => {
-  //   const curPlayList = get().playList;
-  //   if (curPlayList.length == 0) {
-  //     return null;
-  //   }
-  //   let next: string | null;
-  //   const curPlayPath = get().playPath;
-  //   if (curPlayPath == null) {
-  //     next = curPlayList[0];
-  //     set({ playPath: next });
-  //     return next;
-  //   }
-  //   let idx = curPlayList.indexOf(curPlayPath) +1;
-  //   if (idx > curPlayList.length -1) {
-  //     idx = 0;
-  //   }
-  //   next = curPlayList[idx]
-  //   set({ playPath: next });
-  //   return next;
-  // },
   getPrevPlayPath: (value) => {
     const curPlayList = get().playList;
     if (curPlayList.length == 0) {

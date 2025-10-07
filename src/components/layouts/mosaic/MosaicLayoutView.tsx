@@ -1,6 +1,6 @@
 import './MosaicLayoutView.css'
 import React, {type JSX, useEffect} from "react";
-import AboutView from "@/components/AboutView.tsx";
+import AboutView from "@/components/about/AboutView.tsx";
 import HelpView from "@/components/HelpView.tsx";
 import {DefaultToolbarButton, Mosaic, MosaicWindow} from "react-mosaic-component";
 import 'react-mosaic-component/react-mosaic-component.css'

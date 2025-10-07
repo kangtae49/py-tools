@@ -21,3 +21,10 @@
 .fa-music:hover { transform: var(--icon-hover-scale);}
 
 button:focus {outline: none;}
+
+.widget {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    background-color: white;
+}

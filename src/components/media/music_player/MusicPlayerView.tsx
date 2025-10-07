@@ -178,9 +178,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     setPlayPath(newPlayPath);
   }
 
-
-
-
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
     e.preventDefault()
     window.getSelection()?.removeAllRanges();
@@ -326,8 +323,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       setPlayListRef(listRef.current);
     }
   }, [listRef?.current])
-
-
 
 
   const onMount = async () => {

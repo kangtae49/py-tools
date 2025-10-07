@@ -51,9 +51,9 @@ export const commands = {
       }
     }
   },
-  async appWriteFile(subpath: string, content: string): Promise<Result<void, Error>> {
+  async appWriteFile(subpath: string, default_val: string): Promise<Result<void, Error>> {
     try {
-      return { status: "ok", data: await window.pywebview.api.app_write_file(subpath, content) };
+      return { status: "ok", data: await window.pywebview.api.app_write_file(subpath, default_val) };
     } catch (e: Error | any) {
       if (e?.name === 'ApiError') {
         return { status: "error", error: e  as any };

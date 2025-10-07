@@ -10,7 +10,7 @@ declare global {
         read_file(fullpath: string): Promise<string>
         write_file(fullpath: string, content: string): Promise<void>
         app_read_file(subpath: string): Promise<string>
-        app_write_file(subpath: string, content: string): Promise<void>
+        app_write_file(subpath: string, default_val: string): Promise<void>
         app_read(subpath: string): Promise<string>
         app_write(subpath: string, content: string): Promise<void>
       },

@@ -85,4 +85,15 @@ export const commands = {
       }
     }
   },
+  async unload(): Promise<Result<void, Error>> {
+    try {
+      return { status: "ok", data: await window.pywebview.api.unload() };
+    } catch (e: Error | any) {
+      if (e?.name === 'ApiError') {
+        return { status: "error", error: e  as any };
+      } else {
+        throw e;
+      }
+    }
+  }
 }

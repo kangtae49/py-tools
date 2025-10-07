@@ -115,3 +115,7 @@ class JsApi:
         print(f"setting.update! {subpath}: {content}")
         self.setting.update({subpath: content})
 
+    def unload(self):
+        for k, v in self.setting.items():
+            self.app_write_file(k, v)
+            print(f'save {k}: {v}')

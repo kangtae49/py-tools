@@ -13,6 +13,7 @@ declare global {
         app_write_file(subpath: string, default_val: string): Promise<void>
         app_read(subpath: string): Promise<string>
         app_write(subpath: string, content: string): Promise<void>
+        unload(): Promise<void>
       },
     },
 

@@ -308,6 +308,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }, [ended])
 
   useEffect(() => {
+    if(setting === null) return;
     console.log('setting', setting);
     commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
       console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);

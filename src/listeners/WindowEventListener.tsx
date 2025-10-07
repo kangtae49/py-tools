@@ -1,10 +1,6 @@
 import {useEffect} from "react";
 import {commands} from "@/bindings.ts";
-import {MUSIC_PLAYER_SETTING} from "@/components/media/music_player/MusicPlayerView.tsx";
-// import {commands} from "@/bindings.ts";
-// import {MUSIC_PLAYER_LATEST_PLAYLIST, MUSIC_PLAYER_SETTING} from "@/components/media/music_player/MusicPlayerView.tsx";
-// import {useMusicPlayListStore} from "@/components/media/music_player/musicPlayListStore.ts";
-// import {useAudioStore} from "@/components/media/mediaStore.ts";
+// import {MUSIC_PLAYER_SETTING} from "@/components/media/music_player/MusicPlayerView.tsx";
 
 export function WindowEventListener() {
   useEffect(() => {
@@ -16,19 +12,9 @@ export function WindowEventListener() {
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       console.log('React app closing...');
-      commands.appWriteFile(MUSIC_PLAYER_SETTING, "{}").then((result) => {
-        console.log(result.status, 'appWriteFile', MUSIC_PLAYER_SETTING);
+      commands.unload().then(() => {
+        console.log('appWriteFiles');
       })
-
-
-
-      // commands.appWriteFile(MUSIC_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
-      //   console.log(result.status, 'appWriteFile', MUSIC_PLAYER_SETTING);
-      // })
-      // const content = JSON.stringify(playList, null, 2);
-      // commands.appWriteFile(MUSIC_PLAYER_LATEST_PLAYLIST, content).then((result) => {
-      //   console.log(result.status, 'appWriteFile', MUSIC_PLAYER_LATEST_PLAYLIST);
-      // })
 
     }
 

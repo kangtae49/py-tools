@@ -499,6 +499,9 @@ export default function MusicPlayerView({winKey: _}: Prop) {
                    onChange={(e) => {
                      const v = Number(e.target.value);
                      changeVolume(v);
+                     if (v > 0) {
+                       changeMuted(false);
+                     }
                    }}/>
           </div>
           <div className="icon" onClick={() => changeMuted(!muted)}>

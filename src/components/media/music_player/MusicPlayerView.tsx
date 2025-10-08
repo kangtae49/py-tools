@@ -387,6 +387,10 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }, [playList]);
 
   useEffect(() => {
+    changeMuted(volume == 0);
+  }, [volume])
+
+  useEffect(() => {
     if (playPath === null) return;
     fetch(srcLocal(playPath), {method: "HEAD"})
       .then( (res) => {
@@ -495,13 +499,10 @@ export default function MusicPlayerView({winKey: _}: Prop) {
           </div>
 
           <div className="slider">
-            <input type="range" min={0} max={1} step={0.01} value={volume}
+            <input type="range" min={-0.1} max={1} step={0.1} value={volume}
                    onChange={(e) => {
-                     const v = Number(e.target.value);
-                     changeVolume(v);
-                     if (v > 0) {
-                       changeMuted(false);
-                     }
+                     let v = Number(e.target.value);
+                     setTimeout(()=>changeVolume(v), 0);
                    }}/>
           </div>
           <div className="icon" onClick={() => changeMuted(!muted)}>

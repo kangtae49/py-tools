@@ -41,6 +41,7 @@ function MusicPlayListRowView({
     const newPlayList = removePlayList(playList, [path]);
     removeSelectedPlayList([path]);
     setPlayList(newPlayList);
+    setSetting({...setting, playList: newPlayList})
   }
 
   const onChangeChecked = (e: ChangeEvent<HTMLInputElement>, path: string) => {

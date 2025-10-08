@@ -123,6 +123,7 @@ input[type=range]::-webkit-slider-thumb {
     background: #f4a261;
     border-radius: 50%;
     margin-top: -7px;
+    margin-left: 0;
 }
 .music-player .play-list-con {
     position: relative;

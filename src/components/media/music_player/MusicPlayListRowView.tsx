@@ -23,7 +23,7 @@ export default function MusicPlayListRowView({
   const {removePlayList, playPath, setPlayPath, setPlayList} = useMusicPlayListStore();
   const {
     selectionBegin,
-    selectedPlayList, setSelectedPlayList,
+    selectedPlayList,
     appendSelectedPlayList, removeSelectedPlayList,
   } = useSelectedMusicPlayListStore();
 
@@ -31,14 +31,15 @@ export default function MusicPlayListRowView({
 
   const clickPlayPath = (path: string) => {
     console.log('clickPlayPath', path)
-    window.getSelection()?.removeAllRanges();
-    setSelectedPlayList([]);
+    // window.getSelection()?.removeAllRanges();
+    // setSelectedPlayList([]);
     console.log('setSetting clickPlayPath')
     setSetting({...setting, playPath: path, currentTime: 0})
     setPlayPath(path);
   }
   const clickRemovePlayPath = (path: string) => {
     const newPlayList = removePlayList(playList, [path]);
+    removeSelectedPlayList([path]);
     setPlayList(newPlayList);
   }
 

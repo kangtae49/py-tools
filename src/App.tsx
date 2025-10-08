@@ -1,8 +1,8 @@
 import './App.css'
 import {RouterProvider} from "react-router-dom";
 import {router} from "./components/layouts/AppLayout.tsx";
-// import MusicPlayerView from "@/components/media/music_player/MusicPlayerView.tsx";
 import {useEffect, useState} from "react";
+import {Toaster} from "react-hot-toast";
 
 function App() {
   const [ready, setReady] = useState(false);
@@ -21,13 +21,12 @@ function App() {
   }, []);
   return (
     <>
+      <Toaster />
       {ready ? (
-        // <MusicPlayerView />
         <RouterProvider router={router} />
       ) : (
         <div>loading...</div>
       )}
-      {/*<RouterProvider router={router} />*/}
     </>
   )
 }

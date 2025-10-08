@@ -1,5 +1,5 @@
 import "./MusicPlayerView.css"
-import React, {type ChangeEvent, useCallback, useEffect, useRef, useState} from "react";
+import React, {type ChangeEvent, useCallback, useEffect, useRef} from "react";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faBookMedical,
@@ -16,7 +16,7 @@ import AudioView from "./AudioView.tsx";
 import {type MusicPlayerSetting, useMusicPlayListStore} from "./musicPlayListStore.ts";
 import {useSelectedMusicPlayListStore} from "./selectedMusicPlayListStore.ts";
 import {useAudioStore} from "../mediaStore.ts";
-import {formatSeconds, getFilename} from "@/components/utils.ts";
+import {formatSeconds, getFilename, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
@@ -32,7 +32,7 @@ interface Prop {
 export default function MusicPlayerView({winKey: _}: Prop) {
   const initialized = useRef(false);
   const ready = useRef(false);
-  const [dropFiles, setDropFiles] = useState<string[]>([]);
+  // const [dropFiles, setDropFiles] = useState<string[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<ListImperativeAPI>(null);
@@ -59,7 +59,8 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     filter,
   } = useAudioStore();
   const {
-    setDropRef
+    setDropRef,
+    dropRef,
   } = useReceivedDropFilesStore();
 
   const openDialogPlayList = async () => {
@@ -139,6 +140,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     const beginPos = playList.indexOf(selectionBegin ||'');
 
     const newPlayList = removePlayList(playList, selectedPlayList);
+    removeSelectedPlayList(selectedPlayList);
     setPlayList(newPlayList)
     setSelectedPlayList([])
     if (newPlayList.length > 0) {
@@ -361,41 +363,78 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     }
   }
 
-  useEffect(() => {
-    if (dropFiles.length > 0) {
-      const newPlayList = appendPlayList(playList, dropFiles);
-      setPlayList(newPlayList)
-      console.log('setSetting useEffect[dropFiles, playList]')
-      setSetting({...setting, playList: newPlayList})
-      setDropFiles([])
-    }
-  }, [dropFiles, playList])
+  const onDropPlayPath = useCallback((file: string) => {
+    console.log('setSetting onDropPlayPath')
+    setPlayPath(file);
+    const newPlayList = appendPlayList(playList, [file]);
+    setSetting({...setting, playPath: file, paused: false, playList: newPlayList})
+    setPlayList(newPlayList);
+    appendSelectedPlayList([file]);
+  }, [playList]);
+
+  const onDropPlayList = useCallback((files: string[]) => {
+    const addPlayList = files.filter((file) => playList.indexOf(file) < 0);
+    const newPlayList = appendPlayList(playList, addPlayList);
+    setPlayList(newPlayList)
+    appendSelectedPlayList(addPlayList);
+    console.log('setSetting onDropPlayList')
+    setSetting({...setting, playList: newPlayList})
+  }, [playList]);
 
   useEffect(() => {
-    const onDropHandler = (e: CustomEvent) => {
+    if (playPath === null) return;
+    fetch(srcLocal(playPath), {method: "HEAD"})
+      .then( (res) => {
+        if(!res.ok) {
+          toast.error( `Fail ${playPath}`);
+          console.log('fetch error', res.status);
+          const newPlayPath = getNextPlayPath(playPath)
+          if (newPlayPath == null) return
+          if (setting !== null) {
+            console.log('setSetting ArrowRight')
+            setSetting({...setting, currentTime: 0, playPath: newPlayPath})
+          }
+          setPlayPath(newPlayPath)
+          scrollPlayPath(newPlayPath)
+        }
+      })
+    ;
+  }, [playPath]);
+
+  useEffect(() => {
+    const onDropFullPathHandler = (e: CustomEvent) => {
+      setDropRef(null);
+
+      console.log('onDropTopHandler', dropRef);
       const newDropFiles = e.detail as DropFile[];
-      if (newDropFiles !== null) {
-        let files = newDropFiles
-          .filter((file) => file.type.startsWith("audio/"))
-
-        if (filter.length > 0) {
-          files = files.filter((file) => filter.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
-        }
-        const fullpathFiles = files.map((file) => file.pywebview_full_path);
-        if (fullpathFiles.length > 0) {
-          setDropFiles(fullpathFiles)
-        }
+      let files = newDropFiles
+        .filter((file) => file.type.startsWith("audio/"))
+      if (filter.length > 0) {
+        files = files.filter((file) => filter.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
       }
+      const fullpathFiles = files.map((file) => file.pywebview_full_path);
+      if (fullpathFiles.length == 0) {
+        return;
+      }
+      if (dropRef?.classList.contains('drop-top')){
+        console.log('drop-top');
+        if (fullpathFiles.length == 1) {
+          onDropPlayPath(fullpathFiles[0])
+        } else {
+          onDropPlayList(fullpathFiles)
+        }
+      } else if (dropRef?.classList.contains('drop-list')) {
+        console.log('drop-list');
+        onDropPlayList(fullpathFiles);
+      }
+      // setDropFiles(fullpathFiles)
     }
-
-    if(containerRef?.current) {
-      setDropRef(containerRef.current);
-      containerRef?.current?.addEventListener("drop-files", onDropHandler as EventListener);
-    }
+    dropRef?.addEventListener("drop-files", onDropFullPathHandler as EventListener)
     return () => {
-      containerRef?.current?.removeEventListener("drop-files", onDropHandler as EventListener);
+      console.log('remove onDropTopHandler', dropRef);
+      dropRef?.removeEventListener("drop-files", onDropFullPathHandler as EventListener)
     }
-  }, [containerRef.current, playList])
+  }, [dropRef])
 
   useEffect(() => {
     if (!initialized.current) {
@@ -419,7 +458,9 @@ export default function MusicPlayerView({winKey: _}: Prop) {
          onKeyDown={onKeyDownHandler} tabIndex={0}
     >
       <AudioView />
-      <div className="top">
+      <div className="top drop-top"
+           onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+      >
         <div className="row first">
           <div className="icon" onClick={openDialogPlayList} title="Open Audio Files"><Icon icon={faFolderPlus}/></div>
           <div className="icon" onClick={openDialogOpenJson} title="Open Audio Book"><Icon icon={faBookMedical}/></div>
@@ -481,12 +522,17 @@ export default function MusicPlayerView({winKey: _}: Prop) {
           <div className="tm">{formatSeconds(duration)}</div>
         </div>
       </div>
-      <List className="play-list"
-            listRef={listRef}
-            rowHeight={22}
-            rowCount={playList.length}
-            rowComponent={MusicPlayListRowView} rowProps={{playList}}
-      />
+      <div className="play-list-con drop-list"
+           onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+      >
+
+        <List className="play-list"
+              listRef={listRef}
+              rowHeight={22}
+              rowCount={playList.length}
+              rowComponent={MusicPlayListRowView} rowProps={{playList}}
+        />
+      </div>
     </div>
   )
 }

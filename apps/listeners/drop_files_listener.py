@@ -8,9 +8,9 @@ from apps.models import DropFile
 class DropFilesListener:
     def __init__(self, window: Window):
         self.window = window
-        window.dom.document.events.dragenter += DOMEventHandler(self.on_dragenter, False, False)
-        window.dom.document.events.dragstart += DOMEventHandler(self.on_dragstart, False, False)
-        window.dom.document.events.dragover += DOMEventHandler(self.on_dragover, False, False, debounce=500)
+        # window.dom.document.events.dragenter += DOMEventHandler(self.on_dragenter, False, False)
+        # window.dom.document.events.dragstart += DOMEventHandler(self.on_dragstart, False, False)
+        # window.dom.document.events.dragover += DOMEventHandler(self.on_dragover, False, False, debounce=500)
         window.dom.document.events.drop += DOMEventHandler(self.on_drop, False, False)
 
     def on_dragenter(self, e):

@@ -18,12 +18,11 @@ function AudioView() {
     setEnded,
     changePlaybackRate,
     setting,
-    setSrc,
   } = useAudioStore();
 
   const onloadedData = async () => {
     if (!mediaRef) return;
-    setSrc(mediaRef.src);
+    // setSrc(mediaRef.src);
     if (playPath == null) return;
     setDuration(mediaRef.duration);
 
@@ -73,15 +72,10 @@ function AudioView() {
     setEnded(true);
   }
 
+  const onError = () => {
+    console.log('onError')
+  }
 
-  useEffect(() => {
-    // if (ref === null) return;
-
-    // setMediaRef(ref);
-
-
-
-  }, [playPath])
 
   useEffect(() => {
     if (mediaRef) {
@@ -93,6 +87,7 @@ function AudioView() {
       mediaRef?.addEventListener("play", onPlay);
       mediaRef?.addEventListener("pause", onPause);
       mediaRef?.addEventListener("ended", onEnded);
+      mediaRef?.addEventListener("error", onError);
     }
 
     return () => {
@@ -103,6 +98,7 @@ function AudioView() {
       mediaRef?.removeEventListener("play", onPlay);
       mediaRef?.removeEventListener("pause", onPause);
       mediaRef?.removeEventListener("ended", onEnded);
+      mediaRef?.removeEventListener("error", onError);
     };
 
   }, [mediaRef])

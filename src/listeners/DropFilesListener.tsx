@@ -17,6 +17,5 @@ export function DropFilesListener() {
     return () => window?.removeEventListener("drop-files", onDropHandler as EventListener);
   }, [dropRef])
 
-
   return null;
 }

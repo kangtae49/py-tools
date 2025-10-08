@@ -139,3 +139,21 @@ uv run main.py
 ```sh
 uv run pydantic2ts --module apps/models.py --output src/types/models.d.ts
 ```
+
+### python 3.10.18 -> 3.13.8
+## .python-version
+```
+3.13.7
+```
+## pyproject.toml
+```
+requires-python = ">=3.13"
+```
+
+```sh
+uv python list
+uv python install 3.13.7
+uv venv --python 3.13.7
+uv python pin
+uv run python --version
+```

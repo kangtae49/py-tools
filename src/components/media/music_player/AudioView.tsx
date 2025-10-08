@@ -30,7 +30,7 @@ function AudioView() {
       changeVolume(setting.volume);
       changeCurrentTime(setting.currentTime);
       changePlaybackRate(setting.playbackRate);
-      changeMuted(setting.muted)
+      changeMuted(setting.muted ?? false)
     }
     console.log('duration', mediaRef.duration)
 

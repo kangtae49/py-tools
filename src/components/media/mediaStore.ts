@@ -39,7 +39,7 @@ interface MediaStore<T extends HTMLMediaElement> {
   changeVolume: (volume: number | null | undefined) => void;
   changeCurrentTime: (currentTime: number | null | undefined) => void;
   changePlaybackRate: (playbackRate: number | null | undefined) => void;
-  changeMuted: (muted: boolean | null | undefined) => void;
+  changeMuted: (muted: boolean) => void;
   changeSrc: (src: string | null | undefined) => void;
 
   play: () => Promise<void> | undefined;
@@ -128,7 +128,6 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
       }
     },
     changeMuted: (muted) => {
-      if (!muted) return;
       const audio = get().mediaRef;
       const setting = get().setting;
       if (audio) audio.muted = muted;

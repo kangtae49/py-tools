@@ -32,7 +32,6 @@ interface Prop {
 export default function MusicPlayerView({winKey: _}: Prop) {
   const initialized = useRef(false);
   const ready = useRef(false);
-  // const [dropFiles, setDropFiles] = useState<string[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<ListImperativeAPI>(null);
@@ -48,7 +47,8 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     selectionBegin, setSelectionBegin,
   } = useSelectedMusicPlayListStore();
   const {
-    paused, pause, togglePlay,
+    play, togglePlay,
+    paused, pause,
     volume, changeVolume,
     duration, currentTime, changeCurrentTime,
     muted, changeMuted,
@@ -299,7 +299,12 @@ export default function MusicPlayerView({winKey: _}: Prop) {
         setPlayPath(nextPlay);
       } else if (repeat === 'repeat_one') {
         console.log('setSetting useEffect[ended] repeat_one')
-        setSetting({...setting, currentTime: 0})
+        if (playPath) {
+          setSetting({...setting, playPath: playPath, currentTime: 0})
+          if(!setting?.paused) {
+            play()?.then();
+          }
+        }
       } else if (repeat === 'repeat_none') {
         pause();
       }
@@ -479,7 +484,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
             <div className="icon middle"
                  onClick={() => clickTogglePlay()}
             >
-              <Icon icon={paused ? faCirclePlay : faCirclePause }/>
+              <Icon icon={paused ? faCirclePlay : faCirclePause } className={paused ? 'blink': ''}/>
             </div>
             <div className="icon" onClick={() => playNext()}>
               <Icon icon={faForwardStep}/>
@@ -497,7 +502,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
                    }}/>
           </div>
           <div className="icon" onClick={() => changeMuted(!muted)}>
-            <Icon icon={muted ? faVolumeMute : faVolumeHigh}/>
+            <Icon icon={muted ? faVolumeMute : faVolumeHigh} className={muted ? 'blink': ''}/>
           </div>
         </div>
         <div className={`row second`}>

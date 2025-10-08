@@ -1,4 +1,4 @@
-import type {ChangeEvent} from "react";
+import React, {type ChangeEvent} from "react";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faCircleXmark,
@@ -9,7 +9,7 @@ import {getFilename} from "@/components/utils.ts";
 import {useMusicPlayListStore} from "./musicPlayListStore.ts";
 import {useSelectedMusicPlayListStore} from "./selectedMusicPlayListStore.ts";
 import {useAudioStore} from "../mediaStore.ts";
-export default function MusicPlayListRowView({
+function MusicPlayListRowView({
                            index,
                            playList,
                            style
@@ -81,61 +81,4 @@ export default function MusicPlayListRowView({
     </div>
   );
 }
-
-/*
-onClick={(e) => handleClick(e, playList[index])}
-
-  const handleClick = (e: React.MouseEvent<HTMLDivElement>, item: string) => {
-    e.preventDefault();
-    window.getSelection()?.removeAllRanges();
-    if (!e.shiftKey) {
-      setSelectionBegin(item);
-    }
-
-    let selection: string[] = [];
-    let begin = 0;
-    let end = 0;
-    if (e.shiftKey) {
-      if (selectionBegin === null) {
-        return;
-      }
-      begin = playList.indexOf(selectionBegin);
-      end = playList.indexOf(item);
-      selection = playList.slice(Math.min(begin, end), Math.max(begin, end) + 1);
-    } else {
-      selection = [item]
-    }
-
-    if (selection.length == 0) {
-      return;
-    }
-
-    if (e.ctrlKey) {
-      if (selection.length == 1) {
-        if (selectedPlayList.includes(selection[0])) {
-          removeSelectedPlayList(selection);
-        } else {
-          appendSelectedPlayList(selection);
-        }
-      } else {
-        if (selectedPlayList.includes(playList[begin])) {
-          appendSelectedPlayList(selection);
-        } else {
-          removeSelectedPlayList(selection);
-        }
-      }
-    } else {
-      if (selection.length == 1) {
-        setSelectedPlayList(selection);
-      } else {
-        if (selectedPlayList.includes(playList[begin])) {
-          setSelectedPlayList(selection);
-        } else {
-          removeSelectedPlayList(selection);
-        }
-      }
-    }
-
-  };
-
- */
+export default React.memo(MusicPlayListRowView);

@@ -274,27 +274,21 @@ export default function MusicPlayerView({winKey: _}: Prop) {
         return;
       }
       if (repeat === 'repeat_all') {
-        let nextPlay = playList[0];
-        if (playPath !== null) {
-          let idx = playList.indexOf(playPath);
-          let shuffledPlayList = playList;
-          if (shuffle && idx === playList.length -1) {
-            shuffledPlayList = shufflePlayList(playList);
-          }
+        if (playList.length == 0) return;
+        let idx = playList.indexOf(playPath || '');
 
-          if (idx < 0) {
-            idx = 0;
-          } else {
-            idx++;
-          }
-          if (idx > shuffledPlayList.length - 1) {
-            idx = 0;
-          }
-          nextPlay = shuffledPlayList[idx]
+        let shuffledPlayList = playList;
+        if (shuffle && idx === playList.length -1) {
+          shuffledPlayList = shufflePlayList(playList);
+          idx = 0
+        } else {
+          idx++
         }
+        const nextPlay = shuffledPlayList[idx]
+        setPlayList(shuffledPlayList);
         if (setting){
           console.log('setSetting useEffect[ended] repeat_all')
-          setSetting({...setting, currentTime: 0, playPath: nextPlay})
+          setSetting({...setting, currentTime: 0, playPath: nextPlay, playList: shuffledPlayList})
         }
         setPlayPath(nextPlay);
       } else if (repeat === 'repeat_one') {

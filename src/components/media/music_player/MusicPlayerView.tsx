@@ -520,7 +520,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
           <div><input type="checkbox" onChange={changeAllChecked}/></div>
           <div className="tm">{formatSeconds(currentTime)}</div>
           <div className="slider">
-            <input type="range" min={0} max={duration || 0} step={1}
+            <input type="range" min={-1} max={duration || 0} step={1}
                    value={currentTime}
                    onChange={(e) => {
                      console.log('change currentTime', e.target.value);

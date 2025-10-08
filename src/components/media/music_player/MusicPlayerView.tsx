@@ -278,12 +278,15 @@ export default function MusicPlayerView({winKey: _}: Prop) {
         let idx = playList.indexOf(playPath || '');
 
         let shuffledPlayList = playList;
-        if (shuffle && idx === playList.length -1) {
-          shuffledPlayList = shufflePlayList(playList);
+        if (idx === playList.length -1) {
+          if (shuffle) {
+            shuffledPlayList = shufflePlayList(playList);
+          }
           idx = 0
         } else {
-          idx++
+          idx++;
         }
+
         const nextPlay = shuffledPlayList[idx]
         setPlayList(shuffledPlayList);
         if (setting){

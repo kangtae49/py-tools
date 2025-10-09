@@ -157,6 +157,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   const clickTogglePlay = async () => {
+    setSetting({...setting, paused: !paused})
     togglePlay().then();
   }
 
@@ -496,14 +497,17 @@ export default function MusicPlayerView({winKey: _}: Prop) {
           </div>
 
           <div className="slider">
-            <input type="range" min={-0.1} max={1} step={0.1} value={volume}
+            <input type="range" min={0} max={1} step={0.1}
+                   value={setting?.volume || 0}
                    onChange={(e) => {
                      let v = Number(e.target.value);
-                     setTimeout(()=>changeVolume(v), 0);
+                     console.log('change volume', v);
+                     setSetting({...setting, volume: v});
+                     changeVolume(v);
                    }}/>
           </div>
           <div className="icon" onClick={() => changeMuted(!muted)}>
-            <Icon icon={muted ? faVolumeMute : faVolumeHigh} className={muted ? 'blink': ''}/>
+            <Icon icon={muted ? faVolumeMute : faVolumeHigh} className={setting?.muted ? 'blink': ''}/>
           </div>
         </div>
         <div className={`row second`}>
@@ -517,11 +521,12 @@ export default function MusicPlayerView({winKey: _}: Prop) {
           <div><input type="checkbox" onChange={changeAllChecked}/></div>
           <div className="tm">{formatSeconds(currentTime)}</div>
           <div className="slider">
-            <input type="range" min={-1} max={duration || 0} step={1}
-                   value={currentTime}
+            <input type="range" min={0} max={duration || 0} step={1}
+                   value={setting?.currentTime ?? 0}
                    onChange={(e) => {
-                     console.log('change currentTime', e.target.value);
                      const tm = Number(e.target.value);
+                     console.log('change currentTime', tm);
+                     setSetting({...setting, currentTime: tm});
                      changeCurrentTime(tm);
                    }}/>
           </div>

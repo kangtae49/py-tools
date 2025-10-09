@@ -31,8 +31,6 @@ function MusicPlayListRowView({
 
   const clickPlayPath = (path: string) => {
     console.log('clickPlayPath', path)
-    // window.getSelection()?.removeAllRanges();
-    // setSelectedPlayList([]);
     console.log('setSetting clickPlayPath')
     setSetting({...setting, playPath: path, currentTime: 0})
     setPlayPath(path);

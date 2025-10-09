@@ -100,60 +100,34 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     setSrc: (src) => set({src}),
 
     changeVolume: (volume) => {
-      if (!volume) return;
       const audio = get().mediaRef;
-      const setting = get().setting;
-      const newVolume = Math.max(0, Math.min(1, volume));
+      const newVolume = Math.max(0, Math.min(1, volume??0));
+      console.log("changeVolume", newVolume);
       if (audio) audio.volume = newVolume;
-      if (setting != null) {
-        set({setting: {...setting, volume: newVolume}})
-      }
     },
     changeCurrentTime: (currentTime) => {
-      if (!currentTime) return;
       const audio = get().mediaRef;
-      const setting = get().setting;
-      if (audio) audio.currentTime = currentTime;
-      if (setting != null) {
-        set({setting: {...setting, currentTime: currentTime}})
-      }
+      console.log("changeCurrentTime", currentTime);
+      if (audio) audio.currentTime = currentTime ?? 0;
     },
     changePlaybackRate: (playbackRate) => {
-      if (!playbackRate) return;
       const audio = get().mediaRef;
-      const setting = get().setting;
-      if (audio) audio.playbackRate = playbackRate;
-      if (setting != null) {
-        set({setting: {...setting, playbackRate: playbackRate}})
-      }
+      if (audio) audio.playbackRate = playbackRate ?? 1.0;
     },
     changeMuted: (muted) => {
       const audio = get().mediaRef;
-      const setting = get().setting;
       if (audio) audio.muted = muted;
-      if (setting != null) {
-        set({setting: {...setting, muted: muted}})
-      }
     },
     changeSrc: (src) => {
       if (!src) return;
       const audio = get().mediaRef;
-      const playPath = get().setting?.playPath;
-      const setting = get().setting;
       if (audio) audio.src = src;
-      if (setting && playPath) {
-        set({setting: {...setting, playPath: playPath}})
-      }
     },
 
     play: () => get().mediaRef?.play(),
     pause: () => get().mediaRef?.pause(),
     load: () => get().mediaRef?.load(),
     togglePlay: async () => {
-      const setting = get().setting;
-      if (setting != null) {
-        set({setting: {...setting, paused: !get().paused}})
-      }
       return get().paused ? await get().play() : get().pause();
     },
     toggleRepeat: () => {

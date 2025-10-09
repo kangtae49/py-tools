@@ -2,8 +2,6 @@ import {create} from 'zustand';
 import natsort from "natsort";
 
 export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
-const INIT_AUTO_PLAY = false;
-const INIT_VOLUME = 0.5;
 
 export interface PlayerSetting {
   playPath?: string
@@ -48,15 +46,25 @@ interface MediaStore<T extends HTMLMediaElement> {
 interface MediaDefault {
   shuffle?: boolean
   filter?: string[]
+  setting?: PlayerSetting
 }
 
 export const audioDefault: MediaDefault = {
-  shuffle: true,
   filter: ["mp3", "wav", "ogg", "m4a", "opus", "webm"],
+  setting: {
+    playPath: undefined,
+    currentTime: 0,
+    volume: 0.5,
+    playbackRate: 1.0,
+    muted: false,
+    paused: true,
+    shuffle: true,
+    repeat: "repeat_all",
+    playList: []
+  }
 
 };
 export const videoDefault: MediaDefault = {
-  shuffle: false,
   filter: ["*.*"],
 }
 
@@ -64,19 +72,9 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
 
   return create<MediaStore<T>>((set, get) => ({
     mediaRef: null,
-    volume: INIT_VOLUME,
-    duration: 0,
-    currentTime: 0,
-    playbackRate: 1.0,
-    muted: false,
-    paused: !INIT_AUTO_PLAY,
-    autoPlay: INIT_AUTO_PLAY,
-    repeat: 'repeat_all',
-    shuffle: mediaDefault.shuffle ?? true,
     ended: false,
-    setting: null,
     filter: mediaDefault.filter ?? [],
-    src: '',
+    setting: mediaDefault.setting ?? null,
 
     setMediaRef: (mediaRef) => {
       if(mediaRef === null) return;

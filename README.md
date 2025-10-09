@@ -140,7 +140,7 @@ uv run main.py
 uv run pydantic2ts --module apps/models.py --output src/types/models.d.ts
 ```
 
-### python 3.10.18 -> 3.13.8
+### python 3.10.18 -> 3.13.7
 ## .python-version
 ```
 3.13.7

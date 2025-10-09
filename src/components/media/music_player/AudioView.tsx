@@ -19,9 +19,6 @@ function AudioView() {
     if (mediaRef === null) return;
 
     changeVolume(setting.volume);
-    // const newCurrentTime = setting.currentTime ?? 0 < 0 ? 0 : setting.currentTime ?? 0;
-    // changeCurrentTime(newCurrentTime);
-    // changeCurrentTime(0);
     changeCurrentTime(setting.currentTime ?? 0);
     changePlaybackRate(setting.playbackRate);
     changeMuted(setting.muted ?? false)
@@ -44,7 +41,12 @@ function AudioView() {
     if (!mediaRef) return;
     if (setting == null) return;
     if (setting.currentTime === -1) return;
-    const settingSrc = new URL(srcLocal(setting.playPath ?? '')).href;
+    let settingSrc;
+    if (import.meta.env.PROD) {
+      settingSrc = new URL(srcLocal(setting.playPath ?? '')).href;
+    } else {
+      settingSrc = srcLocal(setting.playPath ?? '')
+    }
 
     if (mediaRef.currentSrc.endsWith(settingSrc)) {
       setSetting({...setting, currentTime: mediaRef.currentTime})

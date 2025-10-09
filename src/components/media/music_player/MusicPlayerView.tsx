@@ -15,7 +15,7 @@ import MusicPlayListRowView from "./MusicPlayListRowView.tsx";
 import AudioView from "./AudioView.tsx";
 import {useMusicPlayListStore} from "./musicPlayListStore.ts";
 import {useSelectedMusicPlayListStore} from "./selectedMusicPlayListStore.ts";
-import {type PlayerSetting, useAudioStore} from "../mediaStore.ts";
+import {audioDefault, type PlayerSetting, useAudioStore} from "../mediaStore.ts";
 import {formatSeconds, getFilename, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
@@ -339,24 +339,13 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     const result = await commands.appReadFile(MUSIC_PLAYER_SETTING);
     let newSetting: PlayerSetting | null;
 
-    const defaultSetting: PlayerSetting = {
-      playPath: undefined,
-      currentTime: 0,
-      volume: 0.5,
-      playbackRate: 1.0,
-      muted: false,
-      paused: true,
-      shuffle: true,
-      repeat: "repeat_all",
-      playList: []
-    }
     if(result.status === 'ok') {
       newSetting = JSON.parse(result.data);
       if (result.data === "{}") {
-        newSetting = defaultSetting;
+        newSetting = audioDefault.setting ?? null;
       }
     } else {
-      newSetting = defaultSetting;
+      newSetting = audioDefault.setting ?? null;
     }
     console.log('setting', newSetting);
     const newPlayList = newSetting?.playList ?? []

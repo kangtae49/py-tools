@@ -1,40 +1,32 @@
 import {create} from 'zustand';
-import type {MusicPlayerSetting} from "@/components/media/music_player/musicPlayListStore.ts";
+import natsort from "natsort";
 
 export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
 const INIT_AUTO_PLAY = false;
 const INIT_VOLUME = 0.5;
 
+export interface PlayerSetting {
+  playPath?: string
+  currentTime?: number
+  volume?: number
+  playbackRate?: number
+  muted?: boolean
+  paused?: boolean
+  shuffle?: boolean
+  repeat?: RepeatType
+  playList?: string[]
+}
+
 interface MediaStore<T extends HTMLMediaElement> {
   mediaRef: T | null
   setMediaRef: (mediaRef: T | null) => void
-  volume: number
-  duration: number
-  currentTime: number
-  playbackRate: number
-  paused: boolean
-  muted: boolean
-  autoPlay: boolean
-  repeat: RepeatType
-  shuffle: boolean
   ended: boolean
-  setting: MusicPlayerSetting | null
+  setting: PlayerSetting | null
   filter: string[]
-  src: string
 
-  setVolume: (volume: number) => void;
-  setDuration: (duration: number) => void;
-  setCurrentTime: (currentTime: number) => void;
-  setPlaybackRate: (playbackRate: number) => void;
-  setPaused: (paused: boolean) => void;
-  setMuted: (muted: boolean) => void;
-  setAutoPlay: (autoPlay: boolean) => void;
-  setRepeat: (repeat: RepeatType) => void;
-  setShuffle: (shuffle: boolean) => void;
   setEnded: (ended: boolean) => void;
-  setSetting: (setting: MusicPlayerSetting | null) => void;
+  setSetting: (setting: PlayerSetting | null) => void;
   setFilter: (filter: string[]) => void;
-  setSrc: (src: string) => void;
 
   changeVolume: (volume: number | null | undefined) => void;
   changeCurrentTime: (currentTime: number | null | undefined) => void;
@@ -42,12 +34,16 @@ interface MediaStore<T extends HTMLMediaElement> {
   changeMuted: (muted: boolean) => void;
   changeSrc: (src: string | null | undefined) => void;
 
-  play: () => Promise<void> | undefined;
-  pause: () => void | undefined;
-  load: (() => void) | undefined;
   togglePlay: () => Promise<void>;
   toggleRepeat: () => void;
   toggleShuffle: () => void;
+
+  appendPlayList: (curList: string[], addList: string []) => string [];
+  removePlayList: (curList: string[], delList: string[]) => string [];
+  shufflePlayList: (curList: string[]) => string [];
+  natsortPlayList: (curList: string[]) => string [];
+  getPrevPlayPath: (value: string | null) => string | null;
+  getNextPlayPath: (value: string | null) => string | null;
 }
 interface MediaDefault {
   shuffle?: boolean
@@ -56,7 +52,8 @@ interface MediaDefault {
 
 export const audioDefault: MediaDefault = {
   shuffle: true,
-  filter: ["mp3", "wav", "ogg", "m4a", "opus", "webm"]
+  filter: ["mp3", "wav", "ogg", "m4a", "opus", "webm"],
+
 };
 export const videoDefault: MediaDefault = {
   shuffle: false,
@@ -85,19 +82,9 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
       if(mediaRef === null) return;
       set({mediaRef})
     },
-    setVolume: (volume) => set({volume}),
-    setDuration: (duration) => set({duration}),
-    setCurrentTime: (currentTime) => set({currentTime}),
-    setPlaybackRate: (playbackRate) => set({playbackRate}),
-    setPaused: (paused) => set({paused}),
-    setMuted: (muted) => set({muted}),
-    setAutoPlay: (autoPlay) => set({autoPlay}),
-    setRepeat: (repeat) => set({repeat}),
-    setShuffle: (shuffle) => set({shuffle}),
     setEnded: (ended) => set({ended}),
     setSetting: (setting) => set({setting}),
     setFilter: (filter) => set({filter}),
-    setSrc: (src) => set({src}),
 
     changeVolume: (volume) => {
       const audio = get().mediaRef;
@@ -124,25 +111,87 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
       if (audio) audio.src = src;
     },
 
-    play: () => get().mediaRef?.play(),
-    pause: () => get().mediaRef?.pause(),
-    load: () => get().mediaRef?.load(),
     togglePlay: async () => {
-      return get().paused ? await get().play() : get().pause();
+      const setting = get().setting;
+      if (setting == null) return;
+      return setting.paused ? get().mediaRef?.pause(): await get().mediaRef?.play();
     },
     toggleRepeat: () => {
-      const repeat = get().repeat;
+      const setting = get().setting;
+      if (setting === null) return;
+      const repeat = get().setting?.repeat;
+      const setSetting = get().setSetting;
       if (repeat === 'repeat_all') {
-        set({repeat: 'repeat_one'});
+        setSetting({...setting, repeat: 'repeat_one'})
       } else if (repeat === 'repeat_one') {
-        set({repeat: 'repeat_none'});
+        setSetting({...setting, repeat: 'repeat_none'})
       } else if (repeat === 'repeat_none') {
-        set({repeat: 'repeat_all'});
+        setSetting({...setting, repeat: 'repeat_all'})
       }
     },
     toggleShuffle: () => {
-      set({shuffle: !get().shuffle});
+      const setting = get().setting;
+      if (setting === null) return;
+      const setSetting = get().setSetting;
+      setSetting({...setting, shuffle: !setting.shuffle})
     },
+
+    appendPlayList: (curList, addList) => {
+      const addNewList = addList.filter((v) => !curList.includes(v))
+      return [...addNewList, ...curList];
+    },
+    removePlayList: (curList, delList) => {
+      return [...curList.filter(v => !delList.includes(v))]
+    },
+    shufflePlayList: (curList) => {
+      const arr = [...curList]
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr
+    },
+    natsortPlayList: (curList) => {
+      const sorter = natsort();
+      return [...curList].sort(sorter);
+    },
+    getPrevPlayPath: (value) => {
+      const curPlayList = get().setting?.playList;
+      if (curPlayList === undefined) return null;
+      if (curPlayList.length == 0) {
+        return null;
+      }
+      let prev: string | null;
+      if (value == null) {
+        prev = curPlayList[0];
+        return prev
+      }
+      let idx = curPlayList.indexOf(value) -1;
+      if (idx < 0) {
+        idx = curPlayList.length - 1;
+      }
+      prev = curPlayList[idx]
+      return prev;
+    },
+    getNextPlayPath: (value) => {
+      const curPlayList = get().setting?.playList;
+      if (curPlayList === undefined) return null;
+      if (curPlayList.length == 0) {
+        return null;
+      }
+      let next: string | null;
+      if (value == null) {
+        next = curPlayList[0];
+        return next;
+      }
+      let idx = curPlayList.indexOf(value) +1;
+      if (idx > curPlayList.length -1) {
+        idx = 0;
+      }
+      next = curPlayList[idx]
+      return next;
+    },
+
   }))
 }
 
@@ -151,6 +200,18 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
 
 export const useAudioStore = createMediaStore<HTMLAudioElement>(audioDefault);
 export const useVideoStore = createMediaStore<HTMLVideoElement>(videoDefault);
+// useAudioStore.setState({
+//   audioOnly: {
+//     setAudioBalance: (l, r) => {
+//       const el = useAudioStore.getState().mediaRef?.current;
+//       if (el) {
+//         // AudioContext 같은 로직 적용 가능
+//       }
+//     },
+//   },
+// });
+
+
 
 // useAudioStore.setState({
 //   audioOnly: {

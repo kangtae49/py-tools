@@ -1,80 +1,64 @@
-import {useEffect} from "react";
+import {useCallback, useEffect} from "react";
 import {useAudioStore} from "../mediaStore.ts";
-import {useMusicPlayListStore} from "./musicPlayListStore.ts";
 import {srcLocal} from "@/components/utils.ts";
 
 
 function AudioView() {
-  const {playPath} = useMusicPlayListStore();
   const {
     mediaRef, setMediaRef,
-    setDuration,
-    setCurrentTime, changeCurrentTime,
-    setVolume, changeVolume,
-    play,
-    pause, setPaused,
-    setMuted, changeMuted,
-    setPlaybackRate,
+    changeCurrentTime,
+    changeVolume,
+    changeMuted,
     setEnded,
     changePlaybackRate,
-    setting,
+    setting, setSetting,
   } = useAudioStore();
 
-  const onloadedData = async () => {
-    if (!mediaRef) return;
-    // setSrc(mediaRef.src);
-    if (playPath == null) return;
-    setDuration(mediaRef.duration);
+  const onloadedData = useCallback(async () => {
+    if (setting === null) return;
+    if (mediaRef === null) return;
 
-    if (setting){
-      changeVolume(setting.volume);
-      changeCurrentTime(setting.currentTime);
-      changePlaybackRate(setting.playbackRate);
-      changeMuted(setting.muted ?? false)
-    }
+    changeVolume(setting.volume);
+    // const newCurrentTime = setting.currentTime ?? 0 < 0 ? 0 : setting.currentTime ?? 0;
+    // changeCurrentTime(newCurrentTime);
+    // changeCurrentTime(0);
+    changeCurrentTime(setting.currentTime ?? 0);
+    changePlaybackRate(setting.playbackRate);
+    changeMuted(setting.muted ?? false)
+    // setSetting({...setting, currentTime: newCurrentTime})
     console.log('duration', mediaRef.duration)
 
-    if (!setting?.paused) {
-      play()?.then();
+    if (setting.paused) {
+      mediaRef.pause();
     } else {
-      pause();
+      mediaRef.play()?.then();
     }
 
-  }
+  }, [setting])
 
   const onloadedMetaData = async () => {
     if (!mediaRef) return;
   }
 
-  const onTimeUpdate = () => {
+  const onTimeUpdate = useCallback(() => {
     if (!mediaRef) return;
-    setCurrentTime(mediaRef.currentTime);
-  }
-
-  const onVolumeChange = () => {
-    if (!mediaRef) return;
-    setVolume(mediaRef.volume);
-    setMuted(mediaRef.muted);
-  }
-  const onRateChange = () => {
-    if (!mediaRef) return;
-    setPlaybackRate(mediaRef.playbackRate)
-  }
-  const onPlay = () => {
-    setPaused(false);
-  }
-  const onPause = () => {
-    setPaused(true);
-  }
+    if (setting == null) return;
+    if (setting.currentTime === -1) return;
+    if (mediaRef.currentSrc.endsWith(srcLocal(setting.playPath ?? ''))) {
+      setSetting({...setting, currentTime: mediaRef.currentTime})
+    } else {
+      setSetting({...setting, currentTime: 0})
+    }
+  }, [setting])
 
   const onEnded = () => {
-    setPaused(true);
     setEnded(true);
   }
-
-  const onError = () => {
-    console.log('onError')
-  }
+  const onVolumeChange = () => {}
+  const onRateChange = () => {}
+  const onPlay = () => {}
+  const onPause = () => {}
+  const onError = () => {}
 
 
   useEffect(() => {
@@ -101,18 +85,17 @@ function AudioView() {
       mediaRef?.removeEventListener("error", onError);
     };
 
-  }, [mediaRef])
+  }, [setting])
 
-  if (playPath === null) return;
   return (
     <div className="audio-player">
       <audio
-        key={playPath}
+        key={setting?.playPath}
         ref={setMediaRef}
         controls
         autoPlay={false}
       >
-        <source src={srcLocal(playPath)} />
+        <source src={srcLocal(setting?.playPath ?? '')} />
       </audio>
     </div>
   )

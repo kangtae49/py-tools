@@ -4,7 +4,6 @@ from typing import Optional
 import webview
 from apps.models import DialogType, DialogOptions
 
-MUSIC_PLAYER_LATEST_PLAYLIST = 'music-player.playlist.latest.json'
 MUSIC_PLAYER_SETTING = 'music-player.setting.json'
 
 class ApiException(Exception):
@@ -20,7 +19,6 @@ class ApiError(Exception):
 class JsApi:
     def __init__(self):
         self.setting = {
-            MUSIC_PLAYER_LATEST_PLAYLIST: "[]",
             MUSIC_PLAYER_SETTING: "{}"
         }
 

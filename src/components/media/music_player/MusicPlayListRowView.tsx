@@ -6,7 +6,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { type RowComponentProps } from "react-window";
 import {getFilename} from "@/components/utils.ts";
-import {useMusicPlayListStore} from "./musicPlayListStore.ts";
 import {useSelectedMusicPlayListStore} from "./selectedMusicPlayListStore.ts";
 import {useAudioStore} from "../mediaStore.ts";
 function MusicPlayListRowView({
@@ -17,10 +16,10 @@ function MusicPlayListRowView({
   playList: string[];
 }>) {
   const {
-    paused,
+    mediaRef,
     setting, setSetting,
+    removePlayList,
   } = useAudioStore();
-  const {removePlayList, playPath, setPlayPath, setPlayList} = useMusicPlayListStore();
   const {
     selectionBegin,
     selectedPlayList,
@@ -30,15 +29,16 @@ function MusicPlayListRowView({
 
 
   const clickPlayPath = (path: string) => {
+    if (setting === null) return;
     console.log('clickPlayPath', path)
     console.log('setSetting clickPlayPath')
-    setSetting({...setting, playPath: path, currentTime: 0})
-    setPlayPath(path);
+    // mediaRef?.load();
+    setSetting({...setting, currentTime: 0, playPath: path})
   }
   const clickRemovePlayPath = (path: string) => {
+    if (setting === null) return;
     const newPlayList = removePlayList(playList, [path]);
     removeSelectedPlayList([path]);
-    setPlayList(newPlayList);
     setSetting({...setting, playList: newPlayList})
   }
 
@@ -51,13 +51,13 @@ function MusicPlayListRowView({
     }
   }
 
-  const isPlayPath = playPath == playList[index];
+  if (setting === null) return;
+  const isPlayPath = setting.playPath == playList[index];
   const isChecked = selectedPlayList.includes(playList[index]);
   const isSelected = playList[index] == selectionBegin;
-
   return (
     <div className={`row ${isSelected ? 'selected': ''}`} style={style}>
-      <div className={`title  ${(!paused && isPlayPath) ? 'playing' : ''}`}
+      <div className={`title  ${(!mediaRef?.paused && isPlayPath) ? 'playing' : ''}`}
            title={playList[index]}
       >
         <div className="no">{index+1}</div>

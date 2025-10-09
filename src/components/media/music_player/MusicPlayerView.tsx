@@ -202,9 +202,12 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       setSetting({...setting, currentTime: 0, playPath: newPlayPath})
       scrollPlayPath(setting?.playList, newPlayPath)
     } else if (e.key === "Enter") {
-      if (selectedPlayList.length == 1) {
+      if (selectionBegin !== null) {
         console.log('setSetting Enter')
-        setSetting({...setting, paused: false, playPath: selectedPlayList[0]})
+        if(setting.paused) {
+          mediaRef?.play().then();
+        }
+        setSetting({...setting, paused: false, playPath: selectionBegin})
       }
     } else if (e.key === "ArrowUp") {
       if (selectionBegin == null) {

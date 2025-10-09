@@ -471,9 +471,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     }
 
     return () => {
-      if(ready) {
-        onUnMount().then()
-      }
+      onUnMount().then()
     }
   }, [])
   if (setting === null) return null;

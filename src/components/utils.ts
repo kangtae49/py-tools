@@ -2,7 +2,7 @@ import type {Ref, RefCallback} from "react";
 
 export const srcLocal = (fullpath: string): string =>  {
   if (import.meta.env.PROD) {
-    return `file://${fullpath}`
+    return `${fullpath}`
   } else {
     return `/local/file?path=${encodeURIComponent(fullpath)}`
   }

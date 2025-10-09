@@ -44,7 +44,7 @@ function AudioView() {
     if (!mediaRef) return;
     if (setting == null) return;
     if (setting.currentTime === -1) return;
-    const settingSrc  = import.meta.env.PROD ? new URL(srcLocal(setting.playPath ?? '')).href : srcLocal(setting.playPath ?? '');
+    const settingSrc = new URL(srcLocal(setting.playPath ?? '')).href;
 
     if (mediaRef.currentSrc.endsWith(settingSrc)) {
       setSetting({...setting, currentTime: mediaRef.currentTime})

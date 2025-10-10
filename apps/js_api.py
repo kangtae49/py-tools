@@ -5,6 +5,7 @@ import webview
 from apps.models import DialogType, DialogOptions
 
 MUSIC_PLAYER_SETTING = 'music-player.setting.json'
+MOVIE_PLAYER_SETTING = 'movie-player.setting.json'
 
 class ApiException(Exception):
     def __init__(self, message: str):
@@ -19,7 +20,8 @@ class ApiError(Exception):
 class JsApi:
     def __init__(self):
         self.setting = {
-            MUSIC_PLAYER_SETTING: "{}"
+            MUSIC_PLAYER_SETTING: "{}",
+            MOVIE_PLAYER_SETTING: "{}",
         }
 
     def dialog_open(self, options: Optional[dict] = None) -> List[str] | None:

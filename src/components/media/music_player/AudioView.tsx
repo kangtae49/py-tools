@@ -25,6 +25,7 @@ function AudioView() {
 
   useEffect(() => {
     if (!ready) return;
+    if(mediaRef === null) return;
     if(setting?.playPath == null) return;
 
     console.log('ready state', mediaRef?.readyState)
@@ -49,7 +50,7 @@ function AudioView() {
 
   const onloadedMetaData = async () => {
     const setting = useAudioStore.getState().setting;
-    // if (mediaRef === null) return;
+    if (mediaRef === null) return;
     if (setting === null) return;
 
     changeVolume(setting.volume);

@@ -1,4 +1,4 @@
-import "./MusicPlayerView.css"
+import "./MoviePlayerView.css"
 import React, {type ChangeEvent, useEffect, useRef, useState} from "react";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
@@ -8,14 +8,14 @@ import {
   faBackwardStep, faForwardStep,
   faShuffle,
   faFloppyDisk,
-  faArrowsSpin, faRotateRight, faMinus, faMusic,
+  faArrowsSpin, faRotateRight, faMinus, faFilm,
 } from '@fortawesome/free-solid-svg-icons'
 import {List} from 'react-window'
-import MusicPlayListRowView from "./MusicPlayListRowView.tsx";
-import AudioView from "./AudioView.tsx";
-import {useMusicPlayListStore} from "./musicPlayListStore.ts";
-import {useSelectedMusicPlayListStore} from "./selectedMusicPlayListStore.ts";
-import {audioDefault, type PlayerSetting, useAudioStore} from "../mediaStore.ts";
+import MoviePlayListRowView from "./MoviePlayListRowView.tsx";
+import VideoView from "./VideoView.tsx";
+import {useMoviePlayListStore} from "./moviePlayListStore.ts";
+import {useSelectedMoviePlayListStore} from "./selectedMoviePlayListStore.ts";
+import {videoDefault, type PlayerSetting, useVideoStore} from "../mediaStore.ts";
 import {formatSeconds, getFilename, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
@@ -23,13 +23,13 @@ import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import type {DropFile} from "@/types/models";
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 
-export const MUSIC_PLAYER_SETTING = 'music-player.setting.json'
+export const MOVIE_PLAYER_SETTING = 'movie-player.setting.json'
 
 interface Prop {
   winKey: WinKey
 }
 
-export default function MusicPlayerView({winKey: _}: Prop) {
+export default function MoviePlayerView({winKey: _}: Prop) {
   const [initialized, setInitialized] = useState(false);
   const [ready, setReady] = useState(false);
 
@@ -37,11 +37,11 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   const {
     setPlayListRef,
     scrollPlayPath,
-  } = useMusicPlayListStore();
+  } = useMoviePlayListStore();
   const {
     selectedPlayList, setSelectedPlayList, removeSelectedPlayList, appendSelectedPlayList,
     selectionBegin, setSelectionBegin,
-  } = useSelectedMusicPlayListStore();
+  } = useSelectedMoviePlayListStore();
   const {
     mediaRef,
     // togglePlay,
@@ -55,7 +55,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     filter,
     appendPlayList, removePlayList, shufflePlayList, natsortPlayList,
     getPrevPlayPath, getNextPlayPath,
-  } = useAudioStore();
+  } = useVideoStore();
   const {
     setDropRef,
     dropRef,
@@ -66,7 +66,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     commands.dialogOpen({
       dialog_type: "OPEN",
       allow_multiple: true,
-      file_types: [`Audio files (${filter_ext})`]
+      file_types: [`Video files (${filter_ext})`]
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;
@@ -80,7 +80,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     commands.dialogOpen({
       dialog_type: "OPEN",
       allow_multiple: false,
-      file_types: [`OpenAudio Book (${["*.json"].join(";")})`]
+      file_types: [`OpenVideo Book (${["*.json"].join(";")})`]
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;
@@ -111,12 +111,12 @@ export default function MusicPlayerView({winKey: _}: Prop) {
 
 
   const openDialogSaveAsJson = async () => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useVideoStore.getState().setting;
     if (setting?.playList == null) return;
     commands.dialogOpen({
       dialog_type: "SAVE",
       allow_multiple: true,
-      file_types: [`Save Audio Book (${["*.json"].join(";")})`]
+      file_types: [`Save Video Book (${["*.json"].join(";")})`]
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;
@@ -134,7 +134,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   const clickRemovePlayList = () => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useVideoStore.getState().setting;
     if (setting?.playList == null) return;
     if (selectedPlayList.length == 0) return;
 
@@ -157,14 +157,14 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   const clickTogglePlay = async () => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useVideoStore.getState().setting;
     if(setting === null) return;
     setSetting({...setting, caller: "clickTogglePlay", paused: !setting.paused})
     // togglePlay().then();
   }
 
   const playPrev = () => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useVideoStore.getState().setting;
     if(setting?.playPath == null) return;
     const newPlayPath = getPrevPlayPath(setting.playPath);
     if (newPlayPath == null) return
@@ -173,7 +173,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   const playNext = () => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useVideoStore.getState().setting;
     if(setting?.playPath == null) return;
     const newPlayPath = getNextPlayPath(setting.playPath);
     if (newPlayPath == null) return
@@ -181,9 +181,9 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     setSetting({...setting, caller: "playNext", currentTime: 0, playPath: newPlayPath})
   }
 
-  const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const setting = useAudioStore.getState().setting;
-    const selectionBegin = useSelectedMusicPlayListStore.getState().selectionBegin;
+  const onKeyDownHandler = async (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const setting = useVideoStore.getState().setting;
+    const selectionBegin = useSelectedMoviePlayListStore.getState().selectionBegin;
 
     if (setting?.playList == null) return;
     e.preventDefault()
@@ -252,14 +252,20 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       } else {
         appendSelectedPlayList([selectionBegin])
       }
-    } else if (e.key === "F11") {
+    }
+    else if (e.key === "F11") {
       console.log('F11')
-      mediaRef?.requestFullscreen().then()
+      await commands.toggleFullscreen();
+      if (document.fullscreenElement === mediaRef) {
+        document.exitFullscreen().then();
+      } else {
+        await mediaRef?.requestFullscreen()
+      }
     }
   }
 
   const changeAllChecked = (e: ChangeEvent<HTMLInputElement>) => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useVideoStore.getState().setting;
     if (setting?.playList == null) return;
     let newPlayList: string[] = []
     if (e.target.checked) {
@@ -318,8 +324,8 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     if(!ready) return;
     if(setting === null) return;
     console.log('setting', setting);
-    commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
-      console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
+    commands.appWrite(MOVIE_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
+      console.log(result.status, 'appWrite', MOVIE_PLAYER_SETTING);
     })
   }, [ready, setting])
 
@@ -335,16 +341,16 @@ export default function MusicPlayerView({winKey: _}: Prop) {
 
   const onMount = async () => {
 
-    const result = await commands.appReadFile(MUSIC_PLAYER_SETTING);
+    const result = await commands.appReadFile(MOVIE_PLAYER_SETTING);
     let newSetting: PlayerSetting | null;
 
     if(result.status === 'ok') {
       newSetting = JSON.parse(result.data);
       if (result.data === "{}") {
-        newSetting = audioDefault.setting ?? null;
+        newSetting = videoDefault.setting ?? null;
       }
     } else {
-      newSetting = audioDefault.setting ?? null;
+      newSetting = videoDefault.setting ?? null;
     }
     console.log('setting', newSetting);
     const newPlayList = newSetting?.playList ?? []
@@ -358,23 +364,23 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     setSetting(newSetting)
     setSelectionBegin(newPlayPath)
 
-    commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-      console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
+    commands.appWrite(MOVIE_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
+      console.log(result.status, 'appWrite', MOVIE_PLAYER_SETTING);
     })
   }
 
   const onUnMount = async () => {
 
-    const result = await commands.appRead(MUSIC_PLAYER_SETTING);
+    const result = await commands.appRead(MOVIE_PLAYER_SETTING);
     if (result.status === 'ok') {
-      commands.appWriteFile(MUSIC_PLAYER_SETTING, "{}").then((result) => {
-        console.log(result.status, 'appWriteFile', MUSIC_PLAYER_SETTING);
+      commands.appWriteFile(MOVIE_PLAYER_SETTING, "{}").then((result) => {
+        console.log(result.status, 'appWriteFile', MOVIE_PLAYER_SETTING);
       })
     }
   }
 
   const onDropPlayPath = (file: string) => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useVideoStore.getState().setting;
     if (setting?.playList == null) return;
     console.log('setSetting onDropPlayPath')
     if(setting.playList.indexOf(file) < 0) {
@@ -385,7 +391,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   };
 
   const onDropPlayList = (files: string[]) => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useVideoStore.getState().setting;
     if (setting?.playList == null) return;
     const addPlayList = files.filter((file) => setting.playList!.indexOf(file) < 0);
     const newPlayList = appendPlayList(setting.playList, addPlayList);
@@ -426,7 +432,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       console.log('onDropTopHandler', dropRef);
       const newDropFiles = e.detail as DropFile[];
       let files = newDropFiles
-        .filter((file) => file.type.startsWith("audio/"))
+        .filter((file) => file.type.startsWith("video/"))
       if (filter.length > 0) {
         files = files.filter((file) => filter.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
       }
@@ -469,18 +475,18 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }, [])
   if (setting === null) return null;
   return (
-    <div className={`widget music-player`}
+    <div className={`widget movie-player`}
          ref={containerRef}
          onKeyDown={onKeyDownHandler} tabIndex={0}
     >
-      <AudioView />
+      <VideoView />
       <div className="top drop-top"
            onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
       >
         <div className="row first">
-          <div className="icon" onClick={openDialogPlayList} title="Open Audio Files"><Icon icon={faFolderPlus}/></div>
-          <div className="icon" onClick={openDialogOpenJson} title="Open Audio Book"><Icon icon={faBookMedical}/></div>
-          <div className="icon" onClick={openDialogSaveAsJson} title="Save Audio Book"><Icon icon={faFloppyDisk}/></div>
+          <div className="icon" onClick={openDialogPlayList} title="Open Video Files"><Icon icon={faFolderPlus}/></div>
+          <div className="icon" onClick={openDialogOpenJson} title="Open Video Book"><Icon icon={faBookMedical}/></div>
+          <div className="icon" onClick={openDialogSaveAsJson} title="Save Video Book"><Icon icon={faFloppyDisk}/></div>
           <div className="icon badge-wrap" onClick={clickRemovePlayList} title="Delete Selection Files">
             <Icon icon={faTrashCan} className={selectedPlayList.length > 0 ? '': 'inactive'}/>
             {selectedPlayList.length > 0 && <div className="badge">{selectedPlayList.length}</div>}
@@ -532,7 +538,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
           </div>
         </div>
         <div className={`row second`}>
-          <Icon icon={faMusic} />
+          <Icon icon={faFilm} />
           <div className="title"
                title={setting.playPath ?? ''}
                onClick={() => {setting.playPath && scrollPlayPath(setting.playList ?? [], setting.playPath)}}
@@ -561,7 +567,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
               listRef={setPlayListRef}
               rowHeight={22}
               rowCount={setting.playList?.length ?? 0}
-              rowComponent={MusicPlayListRowView} rowProps={{ playList: setting.playList ?? []}}
+              rowComponent={MoviePlayListRowView} rowProps={{ playList: setting.playList ?? []}}
         />
       </div>
     </div>

@@ -1,0 +1,16 @@
+.app-menu {
+    --icon-font-size: 17px;
+    --icon-color: #f4a261;
+    --icon-hover-scale: scale(1.2);
+}
+
+.app-menu button {
+    padding: 3px;
+    font-weight: normal;
+    border-radius: 5px;
+}
+
+.fa-music { color: var(--icon-color); font-size: var(--icon-font-size);}
+.fa-music:hover { transform: var(--icon-hover-scale);}
+.fa-film { color: var(--icon-color); font-size: var(--icon-font-size);}
+.fa-film:hover { transform: var(--icon-hover-scale);}

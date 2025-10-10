@@ -20,6 +20,9 @@ importers:
       '@fortawesome/react-fontawesome':
         specifier: ^3.1.0
         version: 3.1.0(@fortawesome/fontawesome-svg-core@7.1.0)(react@19.1.1)
+      '@szhsin/react-menu':
+        specifier: ^4.5.0
+        version: 4.5.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       natsort:
         specifier: ^2.0.3
         version: 2.0.3
@@ -579,6 +582,12 @@ packages:
     resolution: {integrity: sha512-zGIbEVVXVtauFgl3MRwGWEN36P5ZGenHRMgNw88X5wEhEBpq0XrMEZwOn07+ICrwM17XO5xfMZqh0OldCH5VTA==}
     cpu: [x64]
     os: [win32]
+
+  '@szhsin/react-menu@4.5.0':
+    resolution: {integrity: sha512-fblZBPxFGjg+QxSbdDsWk3H8brupuQG+ayYXElwg+FdCxwLQLvrHG9K6O9+4pE8qLyDy5REn/2HmffPXcBZviA==}
+    peerDependencies:
+      react: '>=16.14.0'
+      react-dom: '>=16.14.0'
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -1237,6 +1246,12 @@ packages:
       react: '>=16.6.0'
       react-dom: '>=16.6.0'
 
+  react-transition-state@2.3.1:
+    resolution: {integrity: sha512-Z48el73x+7HUEM131dof9YpcQ5IlM4xB+pKWH/lX3FhxGfQaNTZa16zb7pWkC/y5btTZzXfCtglIJEGc57giOw==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
   react-window@2.2.0:
     resolution: {integrity: sha512-Y2L7yonHq6K1pQA2P98wT5QdIsEcjBTB7T8o6Mub12hH9eYppXoYu6vgClmcjlh3zfNcW2UrXiJJJqDxUY7GVw==}
     peerDependencies:
@@ -1862,6 +1877,12 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.52.3':
     optional: true
+
+  '@szhsin/react-menu@4.5.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+    dependencies:
+      react: 19.1.1
+      react-dom: 19.1.1(react@19.1.1)
+      react-transition-state: 2.3.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
 
   '@types/babel__core@7.20.5':
     dependencies:
@@ -2601,6 +2622,11 @@ snapshots:
       dom-helpers: 5.2.1
       loose-envify: 1.4.0
       prop-types: 15.8.1
+      react: 19.1.1
+      react-dom: 19.1.1(react@19.1.1)
+
+  react-transition-state@2.3.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+    dependencies:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
 

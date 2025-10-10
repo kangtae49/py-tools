@@ -117,3 +117,9 @@ class JsApi:
         for k, v in self.setting.items():
             self.app_write_file(k, v)
             print(f'save {k}: {v}')
+
+    def toggle_fullscreen(self):
+        window = webview.active_window()
+        window.toggle_fullscreen()
+
+

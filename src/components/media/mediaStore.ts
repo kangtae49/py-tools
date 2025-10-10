@@ -66,7 +66,18 @@ export const audioDefault: MediaDefault = {
 
 };
 export const videoDefault: MediaDefault = {
-  filter: ["*.*"],
+  filter: ["mp4"],
+  setting: {
+    playPath: undefined,
+    currentTime: 0,
+    volume: 0.5,
+    playbackRate: 1.0,
+    muted: false,
+    paused: true,
+    shuffle: false,
+    repeat: "repeat_all",
+    playList: []
+  }
 }
 
 function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault = {}) {

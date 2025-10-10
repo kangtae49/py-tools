@@ -2,8 +2,8 @@ import {createHashRouter, Outlet} from "react-router-dom";
 import {DropFilesListener} from "../../listeners/DropFilesListener.tsx";
 import ErrorView from "../ErrView.tsx";
 import {MosaicLayoutView} from "@/components/layouts/mosaic/MosaicLayoutView.tsx";
-import {MenuListener} from "@/listeners/MenuListener.tsx";
 import {WindowEventListener} from "@/listeners/WindowEventListener.tsx";
+import AppMenuView from "@/components/menu/AppMenuView.tsx";
 
 export const router = createHashRouter([
   {
@@ -30,10 +30,12 @@ export const router = createHashRouter([
 function AppLayout () {
   return (
     <>
-      <MenuListener />
       <DropFilesListener />
       <WindowEventListener />
-      <Outlet />
+      <div className="app-layout">
+        <AppMenuView />
+        <Outlet />
+      </div>
     </>
   )
 }

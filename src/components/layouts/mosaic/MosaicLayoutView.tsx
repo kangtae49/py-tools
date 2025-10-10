@@ -10,8 +10,9 @@ import {type WinKey, type WinType, getWinType, useMosaicStore} from "./mosaicSto
 import MusicPlayerView from "@/components/media/music_player/MusicPlayerView.tsx";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
-  faMusic
+  faMusic, faFilm,
 } from '@fortawesome/free-solid-svg-icons'
+import MoviePlayerView from "@/components/media/movie_player/MoviePlayerView.tsx";
 interface TitleInfo {
   title: string,
   icon: JSX.Element,
@@ -37,8 +38,8 @@ const ELEMENT_MAP: Record<WinType, TitleInfo> = {
   },
   "movie-player": {
     title: "Movie Player",
-    icon: <div><Icon icon={faMusic} /></div>,
-    view: (winKey: WinKey) => (<HelpView winKey={winKey} />)
+    icon: <div><Icon icon={faFilm} /></div>,
+    view: (winKey: WinKey) => (<MoviePlayerView winKey={winKey} />)
   },
   "monaco": {
     title: "Monaco Editor",
@@ -79,8 +80,8 @@ export function MosaicLayoutView() {
 
   useEffect(() => {
     setMosaicValue({
-      direction: "row",
-      first: "music-player",
+      direction: "column",
+      first: "movie-player",
       second: {
         direction: "column",
         first: "about",

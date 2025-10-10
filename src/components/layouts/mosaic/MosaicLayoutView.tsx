@@ -70,14 +70,13 @@ export function MosaicLayoutView() {
   //   viewRefs.current[id] = el;
   // };
   // const [maxScreen, setMaxScreen] = useState<boolean>(false);
-  const toggleMaximizeView = (_e: React.MouseEvent, id: WinKey) => {
+  const toggleMaximizeView = async (e: React.MouseEvent, id: WinKey) => {
     if ((document as any).webkitFullscreenElement) {
       document.exitFullscreen().then(()=>{
         setMaxScreenView(null)
       });
     } else {
-      // e.currentTarget.closest(".mosaic-window")?.requestFullscreen();
-      viewRefs[id]?.closest(".mosaic-window")?.requestFullscreen();
+      e.currentTarget.closest(".mosaic-window")?.requestFullscreen().then();
       setMaxScreenView(id)
     }
   }

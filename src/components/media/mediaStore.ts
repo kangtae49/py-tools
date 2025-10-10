@@ -4,6 +4,7 @@ import natsort from "natsort";
 export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
 
 export interface PlayerSetting {
+  caller?: string
   playPath?: string
   currentTime?: number
   volume?: number
@@ -77,7 +78,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     setting: mediaDefault.setting ?? null,
 
     setMediaRef: (mediaRef) => {
-      if(mediaRef === null) return;
+      // if(mediaRef === null) return;
       set({mediaRef})
     },
     setEnded: (ended) => set({ended}),
@@ -120,18 +121,18 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
       const repeat = get().setting?.repeat;
       const setSetting = get().setSetting;
       if (repeat === 'repeat_all') {
-        setSetting({...setting, repeat: 'repeat_one'})
+        setSetting({...setting, caller: "toggleRepeat", repeat: 'repeat_one'})
       } else if (repeat === 'repeat_one') {
-        setSetting({...setting, repeat: 'repeat_none'})
+        setSetting({...setting, caller: "toggleRepeat", repeat: 'repeat_none'})
       } else if (repeat === 'repeat_none') {
-        setSetting({...setting, repeat: 'repeat_all'})
+        setSetting({...setting, caller: "toggleRepeat", repeat: 'repeat_all'})
       }
     },
     toggleShuffle: () => {
       const setting = get().setting;
       if (setting === null) return;
       const setSetting = get().setSetting;
-      setSetting({...setting, shuffle: !setting.shuffle})
+      setSetting({...setting, caller: "toggleShuffle", shuffle: !setting.shuffle})
     },
 
     appendPlayList: (curList, addList) => {

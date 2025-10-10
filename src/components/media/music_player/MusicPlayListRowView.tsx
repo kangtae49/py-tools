@@ -33,13 +33,13 @@ function MusicPlayListRowView({
     console.log('clickPlayPath', path)
     console.log('setSetting clickPlayPath')
     // mediaRef?.load();
-    setSetting({...setting, currentTime: 0, playPath: path})
+    setSetting({...setting, caller: "clickPlayPath", currentTime: 0, playPath: path})
   }
   const clickRemovePlayPath = (path: string) => {
     if (setting === null) return;
     const newPlayList = removePlayList(playList, [path]);
     removeSelectedPlayList([path]);
-    setSetting({...setting, playList: newPlayList})
+    setSetting({...setting, caller: "clickRemovePlayPath", playList: newPlayList})
   }
 
   const onChangeChecked = (e: ChangeEvent<HTMLInputElement>, path: string) => {

@@ -62,14 +62,10 @@ export function MosaicLayoutView() {
     // minimizeView, maximizeView,
     removeView,
     mosaicValue, setMosaicValue,
-    viewRefs, updateViewRef,
+    updateViewRef,
     maxScreenView, setMaxScreenView,
   } = useMosaicStore();
-  // const viewRefs = useRef<Partial<Record<WinKey, HTMLDivElement | null>>>({});
-  // const setViewRef = (id: WinKey, el: HTMLDivElement | null) => {
-  //   viewRefs.current[id] = el;
-  // };
-  // const [maxScreen, setMaxScreen] = useState<boolean>(false);
+
   const toggleMaximizeView = async (e: React.MouseEvent, id: WinKey) => {
     if ((document as any).webkitFullscreenElement) {
       document.exitFullscreen().then(()=>{

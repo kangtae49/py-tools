@@ -21,7 +21,7 @@ import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import type {DropFile} from "@/types/models";
-import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
+import {type WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 
 export const MOVIE_PLAYER_SETTING = 'movie-player.setting.json'
 
@@ -34,6 +34,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   const [ready, setReady] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+
   const {
     setPlayListRef,
     scrollPlayPath,
@@ -44,7 +45,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   } = useSelectedMoviePlayListStore();
   const {
     mediaRef,
-    // togglePlay,
     changeVolume,
     changeCurrentTime,
     changeMuted,
@@ -184,6 +184,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   const onKeyDownHandler = async (e: React.KeyboardEvent<HTMLDivElement>) => {
     const setting = useVideoStore.getState().setting;
     const selectionBegin = useSelectedMoviePlayListStore.getState().selectionBegin;
+    const fullscreen = useVideoStore.getState().fullscreen;
 
     if (setting?.playList == null) return;
     e.preventDefault()
@@ -255,9 +256,16 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     }
     else if (e.key === "F11") {
       console.log('F11')
-      await commands.toggleFullscreen();
-      if (document.fullscreenElement === mediaRef) {
-        document.exitFullscreen().then();
+      // if (document.fullscreenElement) {
+      //   await document.exitFullscreen();
+      //   setMaxScreenView(null)
+      // } else {
+      //   await mediaRef?.requestFullscreen()
+      //   setMaxScreenView(winKey)
+      // }
+
+      if (fullscreen) {
+        await document.exitFullscreen();
       } else {
         await mediaRef?.requestFullscreen()
       }

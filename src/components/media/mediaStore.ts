@@ -22,10 +22,12 @@ interface MediaStore<T extends HTMLMediaElement> {
   ended: boolean
   setting: PlayerSetting | null
   filter: string[]
+  fullscreen: boolean
 
   setEnded: (ended: boolean) => void;
   setSetting: (setting: PlayerSetting | null) => void;
   setFilter: (filter: string[]) => void;
+  setFullscreen: (fullscreen: boolean) => void;
 
   changeVolume: (volume: number | null | undefined) => void;
   changeCurrentTime: (currentTime: number | null | undefined) => void;
@@ -87,6 +89,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     ended: false,
     filter: mediaDefault.filter ?? [],
     setting: mediaDefault.setting ?? null,
+    fullscreen: false,
 
     setMediaRef: (mediaRef) => {
       // if(mediaRef === null) return;
@@ -95,6 +98,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     setEnded: (ended) => set({ended}),
     setSetting: (setting) => set({setting}),
     setFilter: (filter) => set({filter}),
+    setFullscreen: (fullscreen) => set({fullscreen}),
 
     changeVolume: (volume) => {
       const audio = get().mediaRef;

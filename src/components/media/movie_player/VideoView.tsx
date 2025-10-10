@@ -1,6 +1,8 @@
 import {useEffect, useState} from "react";
 import {useVideoStore} from "../mediaStore.ts";
 import {srcLocal} from "@/components/utils.ts";
+import {commands} from "@/bindings.ts";
+// import {useMosaicStore} from "@/components/layouts/mosaic/mosaicStore.ts";
 
 
 function VideoView() {
@@ -15,6 +17,7 @@ function VideoView() {
     setEnded,
     changePlaybackRate,
     setting, setSetting,
+    setFullscreen,
   } = useVideoStore();
 
 
@@ -99,6 +102,26 @@ function VideoView() {
   const onPlay = () => {}
   const onPause = () => {}
   const onError = () => {}
+  const onFullscreenChange = async () => {
+    const videoState = useVideoStore.getState();
+    // const setMaxScreenView = useMosaicStore.getState().setMaxScreenView;
+    const fullscreen = document.fullscreenElement === mediaRef;
+    console.log('fullscreenchange', fullscreen);
+    await commands.toggleFullscreen();
+    setFullscreen(fullscreen)
+
+    if (!fullscreen) {
+      // setMaxScreenView(null)
+      if (mediaRef?.paused !== videoState.setting?.paused) {
+        if(videoState.setting?.paused) {
+          mediaRef?.pause()
+        } else {
+          mediaRef?.play().then()
+        }
+      }
+    }
+  }
+
   useEffect(() => {
     if (mediaRef) {
       // refresh start
@@ -113,6 +136,7 @@ function VideoView() {
       mediaRef.addEventListener("pause", onPause);
       mediaRef.addEventListener("ended", onEnded);
       mediaRef.addEventListener("error", onError);
+      mediaRef.addEventListener("fullscreenchange", onFullscreenChange)
 
     }
 
@@ -134,6 +158,7 @@ function VideoView() {
       mediaRef?.removeEventListener("pause", onPause);
       mediaRef?.removeEventListener("ended", onEnded);
       mediaRef?.removeEventListener("error", onError);
+      mediaRef?.removeEventListener("fullscreenchange", onFullscreenChange);
     }
 
   }

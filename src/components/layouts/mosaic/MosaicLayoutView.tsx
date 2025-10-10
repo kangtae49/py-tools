@@ -16,7 +16,6 @@ import MoviePlayerView from "@/components/media/movie_player/MoviePlayerView.tsx
 interface TitleInfo {
   title: string,
   icon: JSX.Element,
-  // view: JSX.Element,
   view: (winKey: WinKey) => JSX.Element,
 }
 
@@ -68,7 +67,7 @@ export function MosaicLayoutView() {
   } = useMosaicStore();
 
   const toggleMaximizeView = async (e: React.MouseEvent, id: WinKey) => {
-    if ((document as any).webkitFullscreenElement) {
+    if (document.fullscreenElement) {
       document.exitFullscreen().then(()=>{
         setMaxScreenView(null)
       });
@@ -117,8 +116,10 @@ export function MosaicLayoutView() {
 
                 <DefaultToolbarButton
                   title={maxScreenView === id ? "Minimize" : "Maximize"}
+                  // title={document.fullscreenElement !== null ? "Minimize" : "Maximize"}
                   onClick={(e) => toggleMaximizeView(e, id)}
                   className={maxScreenView === id ? "bp6-icon-minus" : "bp6-icon-maximize"}
+                  // className={document.fullscreenElement !== null ? "bp6-icon-minus" : "bp6-icon-maximize"}
                 />
                 <DefaultToolbarButton
                   title="Close Window"

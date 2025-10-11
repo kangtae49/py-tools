@@ -72,30 +72,52 @@ function AudioView() {
   }
 
   const onTimeUpdate = () => {
+    const state = useAudioStore.getState();
+    // const setting = useAudioStore.getState().setting;
+    // const setSetting = useAudioStore.getState().setSetting;
+    if (state.setting == null) return;
+    if (state.setting.playPath == null) return;
+    if (!mediaRef) return;
+    if (mediaRef.currentSrc === '') return;
+    let settingSrc;
+    if (import.meta.env.PROD) {
+      settingSrc = new URL(srcLocal(state.setting.playPath ?? '')).href;
+    } else {
+      settingSrc = srcLocal(state.setting.playPath ?? '')
+    }
+
+    if (mediaRef.currentSrc.endsWith(settingSrc)) {
+      state.setSetting({...state.setting, caller: "onTimeUpdate", currentTime: mediaRef.currentTime})
+    } else {
+      state.setSetting({...state.setting, caller: "onTimeUpdate", currentTime: 0})
+    }
+  }
+
+  const onEnded = () => {
     const setting = useAudioStore.getState().setting;
     if (setting == null) return;
     if (setting.playPath == null) return;
     if (!mediaRef) return;
     if (mediaRef.currentSrc === '') return;
-    let settingSrc;
-    if (import.meta.env.PROD) {
-      settingSrc = new URL(srcLocal(setting.playPath ?? '')).href;
-    } else {
-      settingSrc = srcLocal(setting.playPath ?? '')
-    }
-
-    if (mediaRef.currentSrc.endsWith(settingSrc)) {
-      setSetting({...setting, caller: "onTimeUpdate", currentTime: mediaRef.currentTime})
-    } else {
-      setSetting({...setting, caller: "onTimeUpdate", currentTime: 0})
-    }
-  }
-
-  const onEnded = () => {
+    mediaRef.loop = false;
     setEnded(true);
   }
-  const onVolumeChange = () => {}
-  const onRateChange = () => {}
+  const onVolumeChange = () => {
+    const setting = useAudioStore.getState().setting;
+    if (setting == null) return;
+    if (setting.playPath == null) return;
+    if (!mediaRef) return;
+    if (mediaRef.currentSrc === '') return;
+    setSetting({...setting, caller: "onVolumeChange", volume: mediaRef.volume, muted: mediaRef.muted})
+  }
+  const onRateChange = () => {
+    const setting = useAudioStore.getState().setting;
+    if (setting == null) return;
+    if (setting.playPath == null) return;
+    if (!mediaRef) return;
+    if (mediaRef.currentSrc === '') return;
+    setSetting({...setting, caller: "onRateChange", playbackRate: mediaRef.playbackRate})
+  }
   const onPlay = () => {}
   const onPause = () => {}
   const onError = () => {}

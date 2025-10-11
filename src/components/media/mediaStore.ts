@@ -68,7 +68,7 @@ export const audioDefault: MediaDefault = {
 
 };
 export const videoDefault: MediaDefault = {
-  filter: ["mp4"],
+  filter: ["mp4", "webm", "mkv", "ogg"],
   setting: {
     playPath: undefined,
     currentTime: 0,

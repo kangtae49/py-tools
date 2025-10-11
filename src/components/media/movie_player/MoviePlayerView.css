@@ -85,6 +85,15 @@
     box-shadow: none;
 }
 
+.controller .top .row.first .speed select {
+    border: none;
+}
+.controller .top .row.first .speed select:focus {
+    outline: none;
+    border: none;
+    box-shadow: none;
+}
+
 .controller .top .row.first .center {
     margin: 0 10px 0 10px;
     padding: 5px 15px;
@@ -130,6 +139,8 @@
     border: none;
     box-shadow: none;
 }
+
+
 
 input[type=range] {
     -webkit-appearance: none;

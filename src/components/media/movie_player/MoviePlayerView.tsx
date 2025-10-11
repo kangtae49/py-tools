@@ -58,6 +58,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     filter,
     appendPlayList, removePlayList, shufflePlayList, natsortPlayList,
     getPrevPlayPath, getNextPlayPath,
+    changePlaybackRate,
   } = useVideoStore();
   const {
     setDropRef,
@@ -542,6 +543,23 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                   {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
                 </div>
 
+                <div className="speed">
+                  <select value={setting?.playbackRate || "1"}
+                          onChange={(e) => {
+                            const v = Number(e.target.value);
+                            setSetting({...setting, caller: "mute click", playbackRate: v})
+                            changePlaybackRate(v);
+                          }}>
+                    <option value="0.25">x0.25</option>
+                    <option value="0.5">x0.5</option>
+                    <option value="0.75">x0.75</option>
+                    <option value="1">x1</option>
+                    <option value="1.25">x1.25</option>
+                    <option value="1.5">x1.5</option>
+                    <option value="1.75">x1.75</option>
+                    <option value="2">x2</option>
+                  </select>
+                </div>
                 <div className="slider">
                   <input type="range" min={0} max={1} step={0.1}
                          value={setting?.volume || 0}

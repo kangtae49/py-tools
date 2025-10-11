@@ -25,3 +25,9 @@ export interface DropFile {
   type: string;
   pywebview_full_path: string;
 }
+export interface Sub {
+  fullpath: string;
+  subtype: string;
+  lang: string;
+  priority: number;
+}

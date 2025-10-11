@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build --outDir gui --emptyOutDir --minify && uv run pyinstaller build-windows.spec",
     "lint": "eslint .",
     "preview": "vite preview",
-    "models": "uv run pydantic2ts --module apps/models.py --output src/types/models.d.ts"
+    "models": "uv run pydantic2ts --module apps/models.py --output src/types/models.d.ts",
+    "test": "uv run python -m unittest discover"
   },
   "dependencies": {
     "@blueprintjs/core": "^6.3.1",

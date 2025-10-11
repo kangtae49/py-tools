@@ -34,36 +34,57 @@ function AudioView() {
       if (setting.paused) {
         mediaRef.pause();
       } else {
-        mediaRef.play()?.then();
+        mediaRef.play().then();
       }
     }
   }, [ready, setting?.paused]);
 
+
+  const isNullPlaying = () => {
+    const state = useAudioStore.getState();
+    if (state.mediaRef === null) return true;
+    if (state.setting === null) return true;
+    if (state.setting.playPath == null) return true;
+    if (!state.mediaRef) return true;
+    return state.mediaRef.currentSrc === '';
+  }
+
+  const isValidSrc = () => {
+    const state = useAudioStore.getState();
+    let settingSrc;
+    if (import.meta.env.PROD) {
+      settingSrc = new URL(srcLocal(state.setting?.playPath ?? '')).href;
+    } else {
+      settingSrc = srcLocal(state.setting?.playPath ?? '')
+    }
+    return !!state.mediaRef?.currentSrc.endsWith(settingSrc);
+  }
+
   const loadSrc = () => {
-    const setting = useAudioStore.getState().setting;
-    if(setting?.playPath == null) return;
-    if (mediaRef === null) return;
-    console.log('playPath', setting.playPath);
-    mediaRef.src = srcLocal(setting.playPath);
-    mediaRef.load();
+    const state = useAudioStore.getState();
+    if(state.setting?.playPath == null) return;
+    if (state.mediaRef === null) return;
+    console.log('playPath', state.setting.playPath);
+    state.mediaRef.src = srcLocal(state.setting.playPath);
+    state.mediaRef.load();
   }
 
   const onloadedMetaData = async () => {
-    const setting = useAudioStore.getState().setting;
-    if (mediaRef === null) return;
-    if (setting === null) return;
+    if (isNullPlaying()) return;
+    if (!isValidSrc()) return;
+    const state = useAudioStore.getState();
 
-    changeVolume(setting.volume);
-    changeCurrentTime(setting.currentTime ?? 0);
-    changePlaybackRate(setting.playbackRate);
-    changeMuted(setting.muted ?? false)
-    console.log('duration', mediaRef.duration)
+    changeVolume(state.setting!.volume);
+    changeCurrentTime(state.setting!.currentTime);
+    changePlaybackRate(state.setting!.playbackRate);
+    changeMuted(state.setting!.muted ?? false)
+    console.log('duration', state.mediaRef!.duration)
 
-    if (setting.paused !== mediaRef.paused) {
-      if (setting.paused) {
-        mediaRef.pause();
+    if (state.setting!.paused !== state.mediaRef!.paused) {
+      if (state.setting!.paused) {
+        state.mediaRef!.pause();
       } else {
-        mediaRef.play()?.then();
+        state.mediaRef!.play().then();
       }
     }
   }
@@ -72,51 +93,37 @@ function AudioView() {
   }
 
   const onTimeUpdate = () => {
-    const state = useAudioStore.getState();
-    // const setting = useAudioStore.getState().setting;
-    // const setSetting = useAudioStore.getState().setSetting;
-    if (state.setting == null) return;
-    if (state.setting.playPath == null) return;
-    if (!mediaRef) return;
-    if (mediaRef.currentSrc === '') return;
-    let settingSrc;
-    if (import.meta.env.PROD) {
-      settingSrc = new URL(srcLocal(state.setting.playPath ?? '')).href;
-    } else {
-      settingSrc = srcLocal(state.setting.playPath ?? '')
-    }
+    if (isNullPlaying()) return;
 
-    if (mediaRef.currentSrc.endsWith(settingSrc)) {
-      state.setSetting({...state.setting, caller: "onTimeUpdate", currentTime: mediaRef.currentTime})
+    const state = useAudioStore.getState();
+    if (isValidSrc()) {
+      state.setSetting({...state.setting, caller: "onTimeUpdate", currentTime: state.mediaRef!.currentTime})
     } else {
       state.setSetting({...state.setting, caller: "onTimeUpdate", currentTime: 0})
     }
   }
 
   const onEnded = () => {
-    const setting = useAudioStore.getState().setting;
-    if (setting == null) return;
-    if (setting.playPath == null) return;
-    if (!mediaRef) return;
-    if (mediaRef.currentSrc === '') return;
-    mediaRef.loop = false;
+    if (isNullPlaying()) return;
+    if (!isValidSrc()) return;
+    const state = useAudioStore.getState();
+
+    state.mediaRef!.loop = false;
     setEnded(true);
   }
   const onVolumeChange = () => {
-    const setting = useAudioStore.getState().setting;
-    if (setting == null) return;
-    if (setting.playPath == null) return;
-    if (!mediaRef) return;
-    if (mediaRef.currentSrc === '') return;
-    setSetting({...setting, caller: "onVolumeChange", volume: mediaRef.volume, muted: mediaRef.muted})
+    if (isNullPlaying()) return;
+    if (!isValidSrc()) return;
+
+    const state = useAudioStore.getState();
+
+    setSetting({...state.setting, caller: "onVolumeChange", volume: state.mediaRef!.volume, muted: state.mediaRef!.muted})
   }
   const onRateChange = () => {
-    const setting = useAudioStore.getState().setting;
-    if (setting == null) return;
-    if (setting.playPath == null) return;
-    if (!mediaRef) return;
-    if (mediaRef.currentSrc === '') return;
-    setSetting({...setting, caller: "onRateChange", playbackRate: mediaRef.playbackRate})
+    if (isNullPlaying()) return;
+    if (!isValidSrc()) return;
+    const state = useAudioStore.getState();
+    setSetting({...state.setting, caller: "onRateChange", playbackRate: state.mediaRef!.playbackRate})
   }
   const onPlay = () => {}
   const onPause = () => {}

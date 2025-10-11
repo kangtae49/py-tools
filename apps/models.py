@@ -24,3 +24,10 @@ class DropFile(BaseModel):
     type: str
     pywebview_full_path: str
 
+
+class Sub(BaseModel):
+    fullpath: str
+    subtype: str
+    lang: str
+    priority: int
+

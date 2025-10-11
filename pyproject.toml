@@ -10,4 +10,6 @@ dependencies = [
     "setuptools",
     "pydantic",
     "pydantic-to-typescript",
+    "pysubs2",
+    "charset_normalizer",
 ]

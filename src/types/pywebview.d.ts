@@ -1,4 +1,4 @@
-import type { DialogOptions } from "./models";
+import type { DialogOptions, Sub } from "./models";
 
 export {};
 
@@ -15,6 +15,8 @@ declare global {
         app_write(subpath: string, content: string): Promise<void>
         unload(): Promise<void>
         toggle_fullscreen(): Promise<void>
+        get_subs(fullpath): Promise<Sub[]>
+        read_sub(fullpath): Promise<string>
       },
     },
 

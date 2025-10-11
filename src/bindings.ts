@@ -1,4 +1,4 @@
-import type {DialogOptions} from "./types/models";
+import type {DialogOptions, Sub} from "./types/models";
 export type Result<T, E> =
   | { status: "ok"; data: T }
   | { status: "error"; error: E };
@@ -99,6 +99,28 @@ export const commands = {
   async toggleFullscreen(): Promise<Result<void, Error>> {
     try {
       return { status: "ok", data: await window.pywebview.api.toggle_fullscreen() };
+    } catch (e: Error | any) {
+      if (e?.name === 'ApiError') {
+        return { status: "error", error: e  as any };
+      } else {
+        throw e;
+      }
+    }
+  },
+  async get_subs(fullpath: string): Promise<Result<Sub[], Error>> {
+    try {
+      return { status: "ok", data: await window.pywebview.api.get_subs(fullpath) };
+    } catch (e: Error | any) {
+      if (e?.name === 'ApiError') {
+        return { status: "error", error: e  as any };
+      } else {
+        throw e;
+      }
+    }
+  },
+  async read_sub(fullpath: string): Promise<Result<string, Error>> {
+    try {
+      return { status: "ok", data: await window.pywebview.api.read_sub(fullpath) };
     } catch (e: Error | any) {
       if (e?.name === 'ApiError') {
         return { status: "error", error: e  as any };

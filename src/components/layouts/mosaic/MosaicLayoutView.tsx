@@ -1,18 +1,23 @@
 import './MosaicLayoutView.css'
-import React, {type JSX, useEffect} from "react";
+import React, {type JSX, useEffect, useState} from "react";
 import AboutView from "@/components/about/AboutView.tsx";
 import HelpView from "@/components/help/HelpView.tsx";
 import {DefaultToolbarButton, Mosaic, MosaicWindow} from "react-mosaic-component";
 import 'react-mosaic-component/react-mosaic-component.css'
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
-import {type WinKey, type WinType, getWinType, useMosaicStore} from "./mosaicStore.ts";
+import {type WinKey, type WinType, getWinType, useMosaicStore, defaultLayout} from "./mosaicStore.ts";
 import MusicPlayerView from "@/components/media/music_player/MusicPlayerView.tsx";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faMusic, faFilm,
 } from '@fortawesome/free-solid-svg-icons'
 import MoviePlayerView from "@/components/media/movie_player/MoviePlayerView.tsx";
+import {commands} from "@/bindings.ts";
+import {videoDefault} from "@/components/media/mediaStore.ts";
+
+export const MOSAIC_LAYOUT_SETTING = 'mosaic-layout.setting.json'
+
 interface TitleInfo {
   title: string,
   icon: JSX.Element,
@@ -58,12 +63,14 @@ const ELEMENT_MAP: Record<WinType, TitleInfo> = {
 }
 
 export function MosaicLayoutView() {
+  const [initialized, setInitialized] = useState(false);
   const {
     // minimizeView, maximizeView,
     removeView,
     mosaicValue, setMosaicValue,
     updateViewRef,
     maxScreenView, setMaxScreenView,
+    setReady,
   } = useMosaicStore();
 
   const toggleMaximizeView = async (e: React.MouseEvent, id: WinKey) => {
@@ -77,18 +84,65 @@ export function MosaicLayoutView() {
     }
   }
 
-  useEffect(() => {
-    setMosaicValue({
-      direction: "column",
-      first: "movie-player",
-      second: {
-        direction: "column",
-        first: "about",
-        second: "help"
+  const onMount = async () => {
+    console.log('onMount')
+
+    const result = await commands.appReadFile(MOSAIC_LAYOUT_SETTING);
+    let newSetting;
+    if (result.status === 'ok') {
+      newSetting = JSON.parse(result.data);
+      if (result.data === "{}") {
+        newSetting = videoDefault.setting ?? null;
       }
+      commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
+        console.log(result.status, 'appWrite', MOSAIC_LAYOUT_SETTING);
+      })
+    } else {
+      newSetting = defaultLayout;
+      commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
+        console.log(result.status, 'appWrite', MOSAIC_LAYOUT_SETTING);
+      })
+      commands.appWriteFile(MOSAIC_LAYOUT_SETTING, "{}").then((result) => {
+        console.log(result.status, 'appWriteFile', MOSAIC_LAYOUT_SETTING);
+      })
+    }
+    setMosaicValue(newSetting);
+  }
+
+  const onUnMount = async () => {
+    console.log('onUnMount')
+    const state = useMosaicStore.getState();
+    if (state.ready) {
+      commands.appWriteFile(MOSAIC_LAYOUT_SETTING, "{}").then((result) => {
+        console.log(result.status, 'appWriteFile', MOSAIC_LAYOUT_SETTING);
+      })
+    }
+  }
+
+  useEffect(() => {
+    // const state = useMosaicStore.getState();
+    // if(!state.ready) return;
+    if(mosaicValue === null) return;
+    console.log('mosaicValue', mosaicValue);
+    commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(mosaicValue, null, 2)).then((result) => {
+      console.log(result.status, 'appWrite', MOSAIC_LAYOUT_SETTING);
     })
+  }, [mosaicValue])
+
+
+  useEffect(() => {
+    if (!initialized) {
+      setInitialized(true);
+      onMount().then(() => {
+        setReady(true);
+      });
+    }
+    return () => {
+      onUnMount().then();
+    }
   }, [])
 
+  if (mosaicValue === null) return null;
 
   return (
     <Mosaic<WinKey>

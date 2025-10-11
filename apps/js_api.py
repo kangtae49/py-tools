@@ -13,6 +13,7 @@ from apps.models import DialogType, DialogOptions, Sub
 
 MUSIC_PLAYER_SETTING = 'music-player.setting.json'
 MOVIE_PLAYER_SETTING = 'movie-player.setting.json'
+MOSAIC_LAYOUT_SETTING = 'mosaic-layout.setting.json'
 
 class ApiException(Exception):
     def __init__(self, message: str):
@@ -29,6 +30,7 @@ class JsApi:
         self.setting = {
             MUSIC_PLAYER_SETTING: "{}",
             MOVIE_PLAYER_SETTING: "{}",
+            MOSAIC_LAYOUT_SETTING: "{}",
         }
 
     def dialog_open(self, options: Optional[dict] = None) -> List[str] | None:

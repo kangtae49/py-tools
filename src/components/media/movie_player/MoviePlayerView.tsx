@@ -34,7 +34,6 @@ interface Prop {
 
 export default function MoviePlayerView({winKey: _}: Prop) {
   const [initialized, setInitialized] = useState(false);
-  const [ready, setReady] = useState(false);
   const [_isResizing, setIsResizing] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -60,6 +59,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     appendPlayList, removePlayList, shufflePlayList, natsortPlayList,
     getPrevPlayPath, getNextPlayPath,
     changePlaybackRate,
+    ready, setReady,
   } = useVideoStore();
   const {
     setDropRef,
@@ -165,9 +165,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     const setting = useVideoStore.getState().setting;
     if(setting === null) return;
     setSetting({...setting, caller: "clickTogglePlay", paused: !setting.paused})
-    // togglePlay().then();
   }
-
 
   const clickSpeed = (_e: any, speed: string) => {
     const v = Number(speed);
@@ -223,9 +221,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     } else if (e.key === "Enter") {
       if (selectionBegin !== null) {
         console.log('setSetting Enter')
-        // if(setting.paused) {
-        //   mediaRef?.play().then();
-        // }
         setSetting({...setting, caller: "onKeyDownHandler", paused: false, playPath: selectionBegin})
       }
     } else if (e.key === "ArrowUp") {
@@ -291,12 +286,13 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   useEffect(() => {
+    const setting = useVideoStore.getState().setting;
     if(setting?.playList == null) return;
     if(!ready) return;
-    console.log('shuffle');
-    const shuffledPlayList = setting?.shuffle ? shufflePlayList(setting.playList) : natsortPlayList(setting.playList);
+    const shuffledPlayList = setting.shuffle ? shufflePlayList(setting.playList) : natsortPlayList(setting.playList);
+    console.log('shuffle', setting.shuffle, setting.playList, shuffledPlayList);
     setSetting({...setting, caller: "useEffect[setting?.shuffle, ready]", playList: shuffledPlayList})
-  }, [ready, setting?.shuffle])
+  }, [setting?.shuffle])
 
   useEffect(() => {
     if (setting === null) return;
@@ -337,26 +333,22 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }, [ended])
 
   useEffect(() => {
-    if(!ready) return;
+    const state = useVideoStore.getState();
+    const setting = useVideoStore.getState().setting;
     if(setting === null) return;
+    if(!state.ready) return;
     console.log('setting', setting);
     commands.appWrite(MOVIE_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
       console.log(result.status, 'appWrite', MOVIE_PLAYER_SETTING);
     })
-  }, [ready, setting])
+  }, [setting])
 
   useEffect(() => {
     console.log('ready', ready)
-    if (!ready) return;
-    if (setting === null) return;
-    console.log('playList ready', setting.playList, ready);
-    setSetting({...setting, caller: "useEffect[ready]", playList: setting.playList})
   }, [ready])
 
-
-
   const onMount = async () => {
-
+    console.log('onMount')
     const result = await commands.appReadFile(MOVIE_PLAYER_SETTING);
     let newSetting: PlayerSetting | null;
 
@@ -365,28 +357,29 @@ export default function MoviePlayerView({winKey: _}: Prop) {
       if (result.data === "{}") {
         newSetting = videoDefault.setting ?? null;
       }
+      commands.appWrite(MOVIE_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
+        console.log(result.status, 'appWrite', MOVIE_PLAYER_SETTING);
+      })
     } else {
       newSetting = videoDefault.setting ?? null;
+      commands.appWrite(MOVIE_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
+        console.log(result.status, 'appWrite', MOVIE_PLAYER_SETTING);
+      })
+      commands.appWriteFile(MOVIE_PLAYER_SETTING, "{}").then((result) => {
+        console.log(result.status, 'appWriteFile', MOVIE_PLAYER_SETTING);
+      })
     }
-    console.log('setting', newSetting);
     const newPlayList = newSetting?.playList ?? []
-    // const shuffledPlayList = newSetting?.shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
-    // const newPlayPath = setting?.playPath ?? shuffledPlayList[0];
-    console.log('onMount playPath', newSetting?.playPath)
     const newPlayPath = newSetting?.playPath ?? newPlayList[0];
 
     newSetting = {...newSetting, caller: "onMount", playPath: newPlayPath}
-    console.log('onMount setSetting')
     setSetting(newSetting)
     setSelectionBegin(newPlayPath)
 
-    commands.appWrite(MOVIE_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-      console.log(result.status, 'appWrite', MOVIE_PLAYER_SETTING);
-    })
   }
 
   const onUnMount = async () => {
-
+    console.log('onUnMount')
     const result = await commands.appRead(MOVIE_PLAYER_SETTING);
     if (result.status === 'ok') {
       commands.appWriteFile(MOVIE_PLAYER_SETTING, "{}").then((result) => {
@@ -481,7 +474,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
       containerRef.current?.focus();
       onMount().then(() => {
         setReady(true);
-        console.log('ready', true)
       });
     }
 

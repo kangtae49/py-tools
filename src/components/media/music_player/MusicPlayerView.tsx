@@ -32,9 +32,9 @@ interface Prop {
 
 export default function MusicPlayerView({winKey: _}: Prop) {
   const [initialized, setInitialized] = useState(false);
-  const [ready, setReady] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+
   const {
     setPlayListRef,
     scrollPlayPath,
@@ -45,7 +45,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   } = useSelectedMusicPlayListStore();
   const {
     mediaRef,
-    // togglePlay,
     changeVolume,
     changeCurrentTime,
     changeMuted,
@@ -57,6 +56,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     appendPlayList, removePlayList, shufflePlayList, natsortPlayList,
     getPrevPlayPath, getNextPlayPath,
     changePlaybackRate,
+    ready, setReady,
   } = useAudioStore();
   const {
     setDropRef,
@@ -162,7 +162,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     const setting = useAudioStore.getState().setting;
     if(setting === null) return;
     setSetting({...setting, caller: "clickTogglePlay", paused: !setting.paused})
-    // togglePlay().then();
   }
 
   const clickSpeed = (_e: any, speed: string) => {
@@ -219,9 +218,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     } else if (e.key === "Enter") {
       if (selectionBegin !== null) {
         console.log('setSetting Enter')
-        // if(setting.paused) {
-        //   mediaRef?.play().then();
-        // }
         setSetting({...setting, caller: "onKeyDownHandler", paused: false, playPath: selectionBegin})
       }
     } else if (e.key === "ArrowUp") {
@@ -277,12 +273,13 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   useEffect(() => {
+    const setting = useAudioStore.getState().setting;
     if(setting?.playList == null) return;
     if(!ready) return;
-    console.log('shuffle');
-    const shuffledPlayList = setting?.shuffle ? shufflePlayList(setting.playList) : natsortPlayList(setting.playList);
+    const shuffledPlayList = setting.shuffle ? shufflePlayList(setting.playList) : natsortPlayList(setting.playList);
+    console.log('shuffle', setting.shuffle, setting.playList, shuffledPlayList);
     setSetting({...setting, caller: "useEffect[setting?.shuffle, ready]", playList: shuffledPlayList})
-  }, [ready, setting?.shuffle])
+  }, [setting?.shuffle])
 
   useEffect(() => {
     if (setting === null) return;
@@ -323,26 +320,22 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }, [ended])
 
   useEffect(() => {
-    if(!ready) return;
+    const state = useAudioStore.getState();
+    const setting = useAudioStore.getState().setting;
     if(setting === null) return;
+    if(!state.ready) return;
     console.log('setting', setting);
     commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
       console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
     })
-  }, [ready, setting])
+  }, [setting])
 
   useEffect(() => {
     console.log('ready', ready)
-    if (!ready) return;
-    if (setting === null) return;
-    console.log('playList ready', setting.playList, ready);
-    setSetting({...setting, caller: "useEffect[ready]", playList: setting.playList})
   }, [ready])
 
-
-
   const onMount = async () => {
-
+    console.log('onMount')
     const result = await commands.appReadFile(MUSIC_PLAYER_SETTING);
     let newSetting: PlayerSetting | null;
 
@@ -351,24 +344,25 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       if (result.data === "{}") {
         newSetting = audioDefault.setting ?? null;
       }
+      commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
+        console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
+      })
     } else {
       newSetting = audioDefault.setting ?? null;
+      commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
+        console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
+      })
+      commands.appWriteFile(MUSIC_PLAYER_SETTING, "{}").then((result) => {
+        console.log(result.status, 'appWriteFile', MUSIC_PLAYER_SETTING);
+      })
     }
-    console.log('setting', newSetting);
     const newPlayList = newSetting?.playList ?? []
-    // const shuffledPlayList = newSetting?.shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
-    // const newPlayPath = setting?.playPath ?? shuffledPlayList[0];
-    console.log('onMount playPath', newSetting?.playPath)
     const newPlayPath = newSetting?.playPath ?? newPlayList[0];
 
     newSetting = {...newSetting, caller: "onMount", playPath: newPlayPath}
-    console.log('onMount setSetting')
     setSetting(newSetting)
     setSelectionBegin(newPlayPath)
 
-    commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-      console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
-    })
   }
 
   const onUnMount = async () => {
@@ -467,7 +461,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       containerRef.current?.focus();
       onMount().then(() => {
         setReady(true);
-        console.log('ready', true)
       });
     }
 

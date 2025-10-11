@@ -22,6 +22,8 @@ import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import type {DropFile} from "@/types/models";
 import {type WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
+import {SplitPane} from "@rexxars/react-split-pane";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 export const MOVIE_PLAYER_SETTING = 'movie-player.setting.json'
 
@@ -32,6 +34,7 @@ interface Prop {
 export default function MoviePlayerView({winKey: _}: Prop) {
   const [initialized, setInitialized] = useState(false);
   const [ready, setReady] = useState(false);
+  const [_isResizing, setIsResizing] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -487,97 +490,123 @@ export default function MoviePlayerView({winKey: _}: Prop) {
          ref={containerRef}
          onKeyDown={onKeyDownHandler} tabIndex={0}
     >
-      <VideoView />
-      <div className="top drop-top"
-           onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+      <SplitPane
+        split="horizontal"
+        minSize={50}
+        primary="second"
+        defaultSize={200}
+        onDragStarted={() => setIsResizing(true)}
+        onDragFinished={() => setIsResizing(false)}
       >
-        <div className="row first">
-          <div className="icon" onClick={openDialogPlayList} title="Open Video Files"><Icon icon={faFolderPlus}/></div>
-          <div className="icon" onClick={openDialogOpenJson} title="Open Video Book"><Icon icon={faBookMedical}/></div>
-          <div className="icon" onClick={openDialogSaveAsJson} title="Save Video Book"><Icon icon={faFloppyDisk}/></div>
-          <div className="icon badge-wrap" onClick={clickRemovePlayList} title="Delete Selection Files">
-            <Icon icon={faTrashCan} className={selectedPlayList.length > 0 ? '': 'inactive'}/>
-            {selectedPlayList.length > 0 && <div className="badge">{selectedPlayList.length}</div>}
-          </div>
-          <div className="center">
-            <div className="icon" onClick={() => toggleShuffle()}>
-              <Icon icon={faShuffle} className={setting.shuffle ? '': 'inactive'}/>
-            </div>
-            <div className="icon" onClick={() => playPrev()}>
-              <Icon icon={faBackwardStep}/>
-            </div>
-            <div className="icon middle"
-                 onClick={() => clickTogglePlay()}
+        <AutoSizer>
+          {({ height, width }) => (
+            <div className="video-player"
+                 style={{width, height}}
             >
-              <Icon icon={mediaRef?.paused ? faCirclePlay : faCirclePause } className={mediaRef?.paused ? 'blink': ''}/>
+              <VideoView  />
             </div>
-            <div className="icon" onClick={() => playNext()}>
-              <Icon icon={faForwardStep}/>
-            </div>
-            {setting.repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
-            {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
-            {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
-          </div>
+            )
+          }
+        </AutoSizer>
+        <AutoSizer>
+          {({ height, width }) => (
+          <div className="controller" style={{width, height}}>
+            <div className="top drop-top"
+                 onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+            >
+              <div className="row first">
+                <div className="icon" onClick={openDialogPlayList} title="Open Video Files"><Icon icon={faFolderPlus}/></div>
+                <div className="icon" onClick={openDialogOpenJson} title="Open Video Book"><Icon icon={faBookMedical}/></div>
+                <div className="icon" onClick={openDialogSaveAsJson} title="Save Video Book"><Icon icon={faFloppyDisk}/></div>
+                <div className="icon badge-wrap" onClick={clickRemovePlayList} title="Delete Selection Files">
+                  <Icon icon={faTrashCan} className={selectedPlayList.length > 0 ? '': 'inactive'}/>
+                  {selectedPlayList.length > 0 && <div className="badge">{selectedPlayList.length}</div>}
+                </div>
+                <div className="center">
+                  <div className="icon" onClick={() => toggleShuffle()}>
+                    <Icon icon={faShuffle} className={setting.shuffle ? '': 'inactive'}/>
+                  </div>
+                  <div className="icon" onClick={() => playPrev()}>
+                    <Icon icon={faBackwardStep}/>
+                  </div>
+                  <div className="icon middle"
+                       onClick={() => clickTogglePlay()}
+                  >
+                    <Icon icon={mediaRef?.paused ? faCirclePlay : faCirclePause } className={mediaRef?.paused ? 'blink': ''}/>
+                  </div>
+                  <div className="icon" onClick={() => playNext()}>
+                    <Icon icon={faForwardStep}/>
+                  </div>
+                  {setting.repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
+                  {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
+                  {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
+                </div>
 
-          <div className="slider">
-            <input type="range" min={0} max={1} step={0.1}
-                   value={setting?.volume || 0}
-                   onChange={(e) => {
-                     let v = Number(e.target.value);
-                     console.log('change volume', v);
-                     setSetting({...setting, caller: "input range", volume: v});
-                     changeVolume(v);
-                   }}/>
+                <div className="slider">
+                  <input type="range" min={0} max={1} step={0.1}
+                         value={setting?.volume || 0}
+                         onChange={(e) => {
+                           let v = Number(e.target.value);
+                           console.log('change volume', v);
+                           setSetting({...setting, caller: "input range", volume: v});
+                           changeVolume(v);
+                         }}/>
+                </div>
+                <div className="icon"
+                     onClick={
+                      () => {
+                        const newMuted = !setting.muted;
+                        let newVolume = setting?.volume ?? 0;
+                        if(!newMuted && setting?.volume === 0) {
+                          newVolume = 0.5;
+                        }
+                        setSetting({...setting, caller: "mute click", muted: newMuted, volume: newVolume})
+                        changeMuted(newMuted)
+                        changeVolume(newVolume)
+                      }
+                  }>
+                  <Icon icon={setting.muted ? faVolumeMute : faVolumeHigh} className={setting?.muted ? 'blink': ''}/>
+                </div>
+              </div>
+              <div className={`row second`}>
+                <Icon icon={faFilm} />
+                <div className="title"
+                     title={setting.playPath ?? ''}
+                     onClick={() => {setting.playPath && scrollPlayPath(setting.playList ?? [], setting.playPath)}}
+                >{getFilename(setting.playPath ?? '')}</div>
+              </div>
+              <div className={`row third ${(!mediaRef?.paused && setting.playPath) ? 'playing' : ''}`}>
+                <div><input type="checkbox" onChange={changeAllChecked}/></div>
+                <div className="tm">{formatSeconds(setting.currentTime ?? 0)}</div>
+                <div className="slider">
+                  <input type="range" min={0} max={mediaRef?.duration || 0} step={1}
+                         value={setting.currentTime ?? 0}
+                         onChange={(e) => {
+                           const tm = Number(e.target.value);
+                           console.log('change currentTime', tm);
+                           setSetting({...setting, caller: "input range", currentTime: tm});
+                           changeCurrentTime(tm);
+                         }}/>
+                </div>
+                <div className="tm">{formatSeconds(mediaRef?.duration ?? 0)}</div>
+              </div>
+            </div>
+            <div className="play-list-con drop-list"
+                 style={{ height: "calc(100% - 105px)", width }}
+                 onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+            >
+              <List className="play-list"
+                    listRef={setPlayListRef}
+                    rowHeight={22}
+                    rowCount={setting.playList?.length ?? 0}
+                    rowComponent={MoviePlayListRowView}
+                    rowProps={{ playList: setting.playList ?? []}}
+              />
+            </div>
           </div>
-          <div className="icon"
-               onClick={
-                () => {
-                  const newMuted = !setting.muted;
-                  let newVolume = setting?.volume ?? 0;
-                  if(!newMuted && setting?.volume === 0) {
-                    newVolume = 0.5;
-                  }
-                  setSetting({...setting, caller: "mute click", muted: newMuted, volume: newVolume})
-                  changeMuted(newMuted)
-                  changeVolume(newVolume)
-                }
-            }>
-            <Icon icon={setting.muted ? faVolumeMute : faVolumeHigh} className={setting?.muted ? 'blink': ''}/>
-          </div>
-        </div>
-        <div className={`row second`}>
-          <Icon icon={faFilm} />
-          <div className="title"
-               title={setting.playPath ?? ''}
-               onClick={() => {setting.playPath && scrollPlayPath(setting.playList ?? [], setting.playPath)}}
-          >{getFilename(setting.playPath ?? '')}</div>
-        </div>
-        <div className={`row third ${(!mediaRef?.paused && setting.playPath) ? 'playing' : ''}`}>
-          <div><input type="checkbox" onChange={changeAllChecked}/></div>
-          <div className="tm">{formatSeconds(setting.currentTime ?? 0)}</div>
-          <div className="slider">
-            <input type="range" min={0} max={mediaRef?.duration || 0} step={1}
-                   value={setting.currentTime ?? 0}
-                   onChange={(e) => {
-                     const tm = Number(e.target.value);
-                     console.log('change currentTime', tm);
-                     setSetting({...setting, caller: "input range", currentTime: tm});
-                     changeCurrentTime(tm);
-                   }}/>
-          </div>
-          <div className="tm">{formatSeconds(mediaRef?.duration ?? 0)}</div>
-        </div>
-      </div>
-      <div className="play-list-con drop-list"
-           onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
-      >
-        <List className="play-list"
-              listRef={setPlayListRef}
-              rowHeight={22}
-              rowCount={setting.playList?.length ?? 0}
-              rowComponent={MoviePlayListRowView} rowProps={{ playList: setting.playList ?? []}}
-        />
-      </div>
+        )}
+        </AutoSizer>
+      </SplitPane>
     </div>
   )
 }

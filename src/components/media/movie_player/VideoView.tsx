@@ -184,7 +184,7 @@ function VideoView() {
   }, []);
 
   return (
-    <div className="video-player">
+
       <video
         ref={setMediaRef}
         controls={false}
@@ -193,7 +193,6 @@ function VideoView() {
       >
         <source />
       </video>
-    </div>
   )
 }
 

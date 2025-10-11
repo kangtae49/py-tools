@@ -244,6 +244,17 @@ input[type=checkbox]:focus {
     outline: none;
 }
 
+.menu-select {
+    width: 45px;
+    padding: 5px;
+    border: 1px solid #d9d9d9;
+    font-weight: normal;
+    border-radius: 5px;
+}
+.menu-item.selected {
+    background-color: #d9d9d9;
+}
+
 .fa-folder { color: var(--icon-color); font-size: var(--icon-font-size); }
 .fa-folder:hover { transform: var(--icon-hover-scale); cursor: pointer;}
 .fa-folder-plus { color: var(--icon-color); font-size: var(--icon-font-size);}
@@ -286,6 +297,9 @@ input[type=checkbox]:focus {
 .fa-circle-xmark:hover { transform: var(--icon-hover-scale); cursor: pointer;}
 .fa-film { color: var(--icon-color); font-size: var(--icon-font-size);}
 .fa-film:hover { transform: var(--icon-hover-scale);}
+
+.fa-expand { color: var(--icon-color); font-size: var(--icon-font-size);}
+.fa-expand:hover { transform: var(--icon-hover-scale); cursor: pointer;}
 
 svg.blink {
     transition: transform 0.25s ease-in-out;

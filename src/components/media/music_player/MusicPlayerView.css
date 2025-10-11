@@ -225,6 +225,17 @@ input[type=checkbox]:focus {
     outline: none;
 }
 
+.menu-select {
+    width: 45px;
+    padding: 5px;
+    border: 1px solid #d9d9d9;
+    font-weight: normal;
+    border-radius: 5px;
+}
+.menu-item.selected {
+    background-color: #d9d9d9;
+}
+
 .fa-folder { color: var(--icon-color); font-size: var(--icon-font-size); }
 .fa-folder:hover { transform: var(--icon-hover-scale); cursor: pointer;}
 .fa-folder-plus { color: var(--icon-color); font-size: var(--icon-font-size);}

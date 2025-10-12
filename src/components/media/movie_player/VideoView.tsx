@@ -66,9 +66,9 @@ function VideoView() {
   }
 
   const loadSrc = () => {
-    clearTracks();
 
     const state = useVideoStore.getState();
+    state.changeAllTrackMode('disabled');
     if(state.setting?.playPath == null) return;
     if (state.mediaRef === null) return;
     console.log('playPath', state.setting.playPath);
@@ -233,15 +233,6 @@ function VideoView() {
     return URL.createObjectURL(blob);
   }
 
-  const clearTracks = () => {
-    const mediaRef = useVideoStore.getState().mediaRef;
-    if (mediaRef == null) return;
-
-    for (let i = 0; i < mediaRef.textTracks.length; i++) {
-      const track = mediaRef.textTracks[i];
-      track.mode = "hidden";
-    }
-  }
   const loadVtt = async () => {
 
     const newMap: Record<string, string> = {};

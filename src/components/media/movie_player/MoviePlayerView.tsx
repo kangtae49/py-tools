@@ -176,6 +176,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const clickSubType = (_e: any, subType: string) => {
+    useVideoStore.getState().changeAllTrackMode('disabled');
     const setting = useVideoStore.getState().setting;
     let newSubType = undefined;
     if (subType !== '') newSubType = subType;
@@ -289,8 +290,10 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     const fullscreen = useVideoStore.getState().fullscreen;
     if (fullscreen) {
       await document.exitFullscreen();
+      containerRef.current?.focus();
     } else {
       await mediaRef?.requestFullscreen()
+      mediaRef?.focus();
     }
   }
 

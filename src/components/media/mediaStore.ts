@@ -40,6 +40,7 @@ interface MediaStore<T extends HTMLMediaElement> {
   changePlaybackRate: (playbackRate: number | null | undefined) => void;
   changeMuted: (muted: boolean) => void;
   changeSrc: (src: string | null | undefined) => void;
+  changeAllTrackMode: (mode: TextTrackMode) => void;
 
   togglePlay: () => Promise<void>;
   toggleRepeat: () => void;
@@ -133,6 +134,15 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
       if (!src) return;
       const audio = get().mediaRef;
       if (audio) audio.src = src;
+    },
+    changeAllTrackMode: (mode) => {
+      const mediaRef = get().mediaRef;
+      if (mediaRef) {
+        const tracks = mediaRef.textTracks;
+        for(const track of tracks) {
+          track.mode = mode;
+        }
+      }
     },
 
     togglePlay: async () => {

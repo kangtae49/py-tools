@@ -139,7 +139,18 @@ class JsApi:
         os_lang = locale_str.split("_")[0]
         print(f"os_lang: {os_lang}")
 
-        sub_exts = ["srt", "vtt", "smi"]
+        sub_exts = [
+            "ass",
+            "mpl",
+            "json",
+            "smi", "sami",
+            "srt",
+            "ssa",
+            "sub",
+            "tmp",
+            "ttml",
+            "vtt",
+        ]
 
         p = Path(fullpath)
         base_dir = p.parent

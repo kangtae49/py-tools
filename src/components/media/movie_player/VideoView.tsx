@@ -145,15 +145,13 @@ function VideoView() {
     await commands.toggleFullscreen();
     setFullscreen(fullscreen)
 
-    if (!fullscreen) {
+    if (fullscreen) {
+      mediaRef?.focus();
+    } else {
       if (state.mediaRef!.paused !== state.setting!.paused) {
         state.setSetting({...state.setting, caller: "onPause", paused: state.mediaRef!.paused})
-        // if(state.setting!.paused) {
-        //   state.mediaRef!.pause()
-        // } else {
-        //   state.mediaRef?.play().then()
-        // }
       }
+      state.containerRef?.focus();
     }
   }
 

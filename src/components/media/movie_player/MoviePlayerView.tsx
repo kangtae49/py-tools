@@ -1,5 +1,5 @@
 import "./MoviePlayerView.css"
-import React, {type ChangeEvent, useEffect, useRef, useState} from "react";
+import React, {type ChangeEvent, useEffect, useState} from "react";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faBookMedical,
@@ -20,7 +20,7 @@ import {formatSeconds, getFilename, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
-import type {DropFile} from "@/types/models";
+import type {DropFile, Sub} from "@/types/models";
 import {type WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 import {SplitPane} from "@rexxars/react-split-pane";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -36,7 +36,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   const [initialized, setInitialized] = useState(false);
   const [_isResizing, setIsResizing] = useState(false);
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  // const containerRef = useRef<HTMLDivElement>(null);
 
   const {
     setPlayListRef,
@@ -48,6 +48,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   } = useSelectedMoviePlayListStore();
   const {
     mediaRef,
+    containerRef, setContainerRef,
     changeVolume,
     changeCurrentTime,
     changeMuted,
@@ -299,10 +300,8 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     const fullscreen = useVideoStore.getState().fullscreen;
     if (fullscreen) {
       await document.exitFullscreen();
-      containerRef.current?.focus();
     } else {
       await mediaRef?.requestFullscreen()
-      mediaRef?.focus();
     }
   }
 
@@ -473,29 +472,48 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   useEffect(() => {
     const onDropFullPathHandler = (e: CustomEvent) => {
       setDropRef(null);
+      console.log('onDropFullPathHandler', dropRef);
+      const filter_video = useVideoStore.getState().filter;
+      const state = useVideoStore.getState();
+      const filter_sub = [
+        "ass", "mpl", "json", "smi", "sami", "srt", "ssa", "sub", "tmp", "ttml", "vtt",];
 
-      console.log('onDropTopHandler', dropRef);
       const newDropFiles = e.detail as DropFile[];
-      let files = newDropFiles
-        .filter((file) => file.type.startsWith("video/"))
-      if (filter.length > 0) {
-        files = files.filter((file) => filter.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
-      }
-      const fullpathFiles = files.map((file) => file.pywebview_full_path);
-      if (fullpathFiles.length == 0) {
-        return;
-      }
-      if (dropRef?.classList.contains('drop-top')){
-        console.log('drop-top');
-        if (fullpathFiles.length == 1) {
-          onDropPlayPath(fullpathFiles[0])
-        } else {
-          onDropPlayList(fullpathFiles)
+
+      const videoFiles = newDropFiles.filter((file) => filter_video.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)));
+      const subFiles = newDropFiles.filter((file) => filter_sub.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)));
+
+      const videoFullpathFiles = videoFiles.map((file) => file.pywebview_full_path);
+      const subFullpathFiles = subFiles.map((file) => file.pywebview_full_path);
+
+      if (dropRef?.classList.contains('drop-video') || dropRef?.classList.contains('drop-top')) {
+        console.log('drop-top or drop-video');
+        if (videoFullpathFiles.length + subFullpathFiles.length === 1) {
+          if (videoFullpathFiles.length == 1) {
+            onDropPlayPath(videoFullpathFiles[0])
+            onDropPlayList(videoFullpathFiles);
+          } else {
+            if (!state.subs.find((sub) => sub.fullpath === subFullpathFiles[0])) {
+              const newSub: Sub = {
+                fullpath: subFullpathFiles[0],
+                lang: "??",
+                priority: 3,
+                subtype: getFilename(subFullpathFiles[0]) ?? ''
+              }
+              state.setSubs([...state.subs, newSub])
+              state.setSetting({...state.setting, caller: "onDropFullPathHandler", subType: newSub.subtype})
+            }
+          }
+        } else if(videoFullpathFiles.length > 1) {
+          onDropPlayList(videoFullpathFiles);
         }
       } else if (dropRef?.classList.contains('drop-list')) {
         console.log('drop-list');
-        onDropPlayList(fullpathFiles);
+        if (videoFullpathFiles.length > 0) {
+          onDropPlayList(videoFullpathFiles);
+        }
       }
+
     }
     dropRef?.addEventListener("drop-files", onDropFullPathHandler as EventListener)
     return () => {
@@ -507,7 +525,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   useEffect(() => {
     if (!initialized) {
       setInitialized(true);
-      containerRef.current?.focus();
+      containerRef?.focus();
       onMount().then(() => {
         setReady(true);
       });
@@ -520,7 +538,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   if (setting === null) return null;
   return (
     <div className={`widget movie-player`}
-         ref={containerRef}
+         ref={setContainerRef}
          onKeyDown={onKeyDownHandler} tabIndex={0}
     >
       <SplitPane
@@ -533,9 +551,10 @@ export default function MoviePlayerView({winKey: _}: Prop) {
       >
         <AutoSizer>
           {({ height, width }) => (
-            <div className="video-player"
+            <div className="video-player drop-video"
                  style={{width, height}}
                  onClick={clickVideo}
+                 onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
             >
               <VideoView  />
             </div>
@@ -570,11 +589,22 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                   <Icon icon={faTrashCan} className={selectedPlayList.length > 0 ? '': 'inactive'}/>
                   {selectedPlayList.length > 0 && <div className="badge">{selectedPlayList.length}</div>}
                 </div>
-                <div className="sub" title="Subtitles">
-                  <Menu menuButton={<MenuButton className="menu-select">{setting?.subType ?? '-'}</MenuButton>} transition>
+                <div className="sub" >
+                  <Menu menuButton={
+                    <MenuButton className="menu-select" title={getFilename(subs.find((v) => v.subtype === setting.subType)?.fullpath!) ?? setting.subType}>
+                      {setting.subType?.slice(0, 6) ?? '-'}
+                    </MenuButton>
+                  } transition>
                     <MenuItem className={`menu-item ${setting?.subType == null ? 'selected': ''}`} value="" onClick={(e: any) => clickSubType(e, e.value)}>-</MenuItem>
                     { subs && subs.map((sub, _index) => (
-                      <MenuItem key={sub.fullpath} className={`menu-item ${setting?.subType == sub.subtype ? 'selected': ''}`} value={sub.subtype} onClick={(e: any) => clickSubType(e, e.value)}>{sub.subtype}</MenuItem>
+                      <MenuItem key={sub.fullpath}
+                                className={`menu-item ${setting?.subType == sub.subtype ? 'selected': ''}`}
+                                title={getFilename(sub.fullpath)}
+                                value={sub.subtype}
+                                onClick={(e: any) => clickSubType(e, e.value)}
+                      >
+                        {sub.subtype}
+                      </MenuItem>
                     ))}
                   </Menu>
                 </div>

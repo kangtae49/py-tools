@@ -250,11 +250,13 @@ input[type=checkbox]:focus {
 }
 
 .menu-select {
-    width: 45px;
-    padding: 5px;
+    width: 54px;
+    padding: 5px 1px 5px 1px;
     border: 1px solid #d9d9d9;
     font-weight: normal;
     border-radius: 5px;
+    white-space: nowrap;
+    font-size: 0.8em;
 }
 .menu-item.selected {
     background-color: #d9d9d9;

@@ -20,7 +20,7 @@ export interface PlayerSetting {
 
 interface MediaStore<T extends HTMLMediaElement> {
   mediaRef: T | null
-  setMediaRef: (mediaRef: T | null) => void
+  containerRef: HTMLDivElement | null
   ended: boolean
   setting: PlayerSetting | null
   filter: string[]
@@ -28,6 +28,8 @@ interface MediaStore<T extends HTMLMediaElement> {
   ready: boolean
   subs: Sub[]
 
+  setMediaRef: (mediaRef: T | null) => void
+  setContainerRef: (containerRef: HTMLDivElement | null) => void
   setEnded: (ended: boolean) => void;
   setSetting: (setting: PlayerSetting | null) => void;
   setFilter: (filter: string[]) => void;
@@ -93,6 +95,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
 
   return create<MediaStore<T>>((set, get) => ({
     mediaRef: null,
+    containerRef: null,
     ended: false,
     filter: mediaDefault.filter ?? [],
     setting: mediaDefault.setting ?? null,
@@ -103,6 +106,9 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     setMediaRef: (mediaRef) => {
       // if(mediaRef === null) return;
       set({mediaRef})
+    },
+    setContainerRef: (containerRef) => {
+      set({containerRef})
     },
     setEnded: (ended) => set({ended}),
     setSetting: (setting) => set({setting}),

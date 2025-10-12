@@ -60,6 +60,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     getPrevPlayPath, getNextPlayPath,
     changePlaybackRate,
     ready, setReady,
+    subs,
   } = useVideoStore();
   const {
     setDropRef,
@@ -168,9 +169,17 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const clickSpeed = (_e: any, speed: string) => {
+    const setting = useVideoStore.getState().setting;
     const v = Number(speed);
-    setSetting({...setting, caller: "mute click", playbackRate: v})
+    setSetting({...setting, caller: "clickSpeed", playbackRate: v})
     changePlaybackRate(v);
+  }
+
+  const clickSubType = (_e: any, subType: string) => {
+    const setting = useVideoStore.getState().setting;
+    let newSubType = undefined;
+    if (subType !== '') newSubType = subType;
+    setSetting({...setting, caller: "clickSubType", subType: newSubType})
   }
 
   const playPrev = () => {
@@ -421,14 +430,29 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     console.log('fetch HEAD');
     fetch(srcLocal(setting.playPath), {method: "HEAD"})
       .then( (res) => {
-        if(!res.ok) {
+        if (res.ok) {
+          commands.getSubs(setting.playPath!).then((result) => {
+            const state = useVideoStore.getState();
+            if (result.status === 'ok') {
+              const subs = result.data;
+              state.setSubs(subs)
+            } else {
+              state.setSubs([])
+              // state.setSetting({...state.setting, caller: "fetch", subType: undefined})
+            }
+          })
+        } else {
+          const state = useVideoStore.getState();
+          state.setSubs([])
+          // state.setSetting({...state.setting, caller: "fetch", subType: undefined})
           toast.error( `Fail ${setting.playPath}`);
           console.log('fetch error', res.status);
           const newPlayPath = getNextPlayPath(setting?.playPath ?? null)
           if (newPlayPath == null) return
           console.log('setSetting fetch')
-          setSetting({...setting, caller: "fetch", currentTime: 0, playPath: newPlayPath})
-          scrollPlayPath(setting?.playList ?? [], newPlayPath)
+          state.setSetting({...state.setting, caller: "fetch", currentTime: 0, playPath: newPlayPath})
+          scrollPlayPath(state.setting!.playList!, newPlayPath)
+          return;
         }
       })
     ;
@@ -518,6 +542,14 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                 <div className="icon badge-wrap" onClick={clickRemovePlayList} title="Delete Selection Files">
                   <Icon icon={faTrashCan} className={selectedPlayList.length > 0 ? '': 'inactive'}/>
                   {selectedPlayList.length > 0 && <div className="badge">{selectedPlayList.length}</div>}
+                </div>
+                <div className="sub" title="Subtitles">
+                  <Menu menuButton={<MenuButton className="menu-select">{setting?.subType ?? '-'}</MenuButton>} transition>
+                    <MenuItem className={`menu-item ${setting?.subType == null ? 'selected': ''}`} value="" onClick={(e: any) => clickSubType(e, e.value)}>-</MenuItem>
+                    { subs && subs.map((sub, _index) => (
+                      <MenuItem key={sub.fullpath} className={`menu-item ${setting?.subType == sub.subtype ? 'selected': ''}`} value={sub.subtype} onClick={(e: any) => clickSubType(e, e.value)}>{sub.subtype}</MenuItem>
+                    ))}
+                  </Menu>
                 </div>
                 <div className="center">
                   <div className="icon" onClick={() => toggleShuffle()}>

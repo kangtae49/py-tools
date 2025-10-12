@@ -102,7 +102,7 @@ export function MosaicLayoutView() {
       commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
         console.log(result.status, 'appWrite', MOSAIC_LAYOUT_SETTING);
       })
-      commands.appWriteFile(MOSAIC_LAYOUT_SETTING, "{}").then((result) => {
+      commands.appWriteFile(MOSAIC_LAYOUT_SETTING, "").then((result) => {
         console.log(result.status, 'appWriteFile', MOSAIC_LAYOUT_SETTING);
       })
     }
@@ -113,7 +113,7 @@ export function MosaicLayoutView() {
     console.log('onUnMount')
     const state = useMosaicStore.getState();
     if (state.ready) {
-      commands.appWriteFile(MOSAIC_LAYOUT_SETTING, "{}").then((result) => {
+      commands.appWriteFile(MOSAIC_LAYOUT_SETTING, "").then((result) => {
         console.log(result.status, 'appWriteFile', MOSAIC_LAYOUT_SETTING);
       })
     }
@@ -122,7 +122,7 @@ export function MosaicLayoutView() {
   useEffect(() => {
     // const state = useMosaicStore.getState();
     // if(!state.ready) return;
-    if(mosaicValue === null) return;
+    // if(mosaicValue === null) return;
     console.log('mosaicValue', mosaicValue);
     commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(mosaicValue, null, 2)).then((result) => {
       console.log(result.status, 'appWrite', MOSAIC_LAYOUT_SETTING);
@@ -141,8 +141,6 @@ export function MosaicLayoutView() {
       onUnMount().then();
     }
   }, [])
-
-  if (mosaicValue === null) return null;
 
   return (
     <Mosaic<WinKey>

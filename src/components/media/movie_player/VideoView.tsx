@@ -2,11 +2,13 @@ import {useEffect, useState} from "react";
 import {useVideoStore} from "../mediaStore.ts";
 import {srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts";
+import type {Sub} from "@/types/models";
 
 
 function VideoView() {
   const [initialized, setInitialized] = useState(false);
   const [ready, setReady] = useState(false);
+  const [subObjSrcMap, setSubObjSrcMap] = useState<Record<string, string>>({});
 
   const {
     mediaRef, setMediaRef,
@@ -17,6 +19,7 @@ function VideoView() {
     changePlaybackRate,
     setting, setSetting,
     setFullscreen,
+    subs,
   } = useVideoStore();
 
 
@@ -63,6 +66,8 @@ function VideoView() {
   }
 
   const loadSrc = () => {
+    clearTracks();
+
     const state = useVideoStore.getState();
     if(state.setting?.playPath == null) return;
     if (state.mediaRef === null) return;
@@ -212,6 +217,62 @@ function VideoView() {
     }
   }, []);
 
+  const isDefaultSub = (sub: Sub) => {
+    if (subs.length == 0) return false;
+    const state = useVideoStore.getState();
+    return state.setting?.subType == sub.subtype;
+  }
+
+  const getSrcSub = async (sub: Sub) => {
+    const result = await commands.readSub(sub.fullpath);
+    let vttText = '';
+    if (result.status === 'ok') {
+      vttText = result.data;
+    }
+    const blob = new Blob([vttText], { type: "text/vtt" });
+    return URL.createObjectURL(blob);
+  }
+
+  const clearTracks = () => {
+    const mediaRef = useVideoStore.getState().mediaRef;
+    if (mediaRef == null) return;
+
+    for (let i = 0; i < mediaRef.textTracks.length; i++) {
+      const track = mediaRef.textTracks[i];
+      track.mode = "hidden";
+    }
+  }
+  const loadVtt = async () => {
+
+    const newMap: Record<string, string> = {};
+    for (const sub of subs) {
+      try{
+        newMap[sub.fullpath] = await getSrcSub(sub);
+      } catch (e) {
+        console.error('loadVtt', e);
+      }
+    }
+    setSubObjSrcMap({...newMap});
+  }
+  useEffect(() => {
+    loadVtt().then()
+  }, [subs])
+
+  useEffect(() => {
+    if (subs.length === 0) return;
+    if (setting?.subType == null) return;
+    if (mediaRef == null) return;
+    const tracks = mediaRef?.textTracks;
+
+    for (const track of tracks) {
+      if (track.label === setting?.subType) {
+        track.mode = 'showing';
+      } else {
+        track.mode = 'hidden';
+      }
+    }
+  }, [setting?.subType])
+
   return (
 
       <video
@@ -221,8 +282,15 @@ function VideoView() {
         autoPlay={false}
       >
         <source />
-        <track label="English" kind="subtitles" srcLang="en" src="en.vtt" default/>
-        <track label="Korean" kind="subtitles" srcLang="ko" src="ko.vtt"/>
+        { subs && subs.length === Object.keys(subObjSrcMap).length && subs.map((sub, _index) => (
+            <track key={sub.fullpath}
+                   label={sub.subtype}
+                   kind="subtitles"
+                   srcLang={sub.lang}
+                   src={subObjSrcMap[sub.fullpath]}
+                   default={isDefaultSub(sub)}
+            />
+        ))}
       </video>
   )
 }

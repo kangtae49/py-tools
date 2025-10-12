@@ -107,7 +107,7 @@ export const commands = {
       }
     }
   },
-  async get_subs(fullpath: string): Promise<Result<Sub[], Error>> {
+  async getSubs(fullpath: string): Promise<Result<Sub[], Error>> {
     try {
       return { status: "ok", data: await window.pywebview.api.get_subs(fullpath) };
     } catch (e: Error | any) {
@@ -118,7 +118,7 @@ export const commands = {
       }
     }
   },
-  async read_sub(fullpath: string): Promise<Result<string, Error>> {
+  async readSub(fullpath: string): Promise<Result<string, Error>> {
     try {
       return { status: "ok", data: await window.pywebview.api.read_sub(fullpath) };
     } catch (e: Error | any) {

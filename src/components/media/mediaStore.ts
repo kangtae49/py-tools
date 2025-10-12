@@ -1,5 +1,6 @@
 import {create} from 'zustand';
 import natsort from "natsort";
+import type {Sub} from "@/types/models";
 
 export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
 
@@ -14,6 +15,7 @@ export interface PlayerSetting {
   shuffle?: boolean
   repeat?: RepeatType
   playList?: string[]
+  subType?: string
 }
 
 interface MediaStore<T extends HTMLMediaElement> {
@@ -24,12 +26,14 @@ interface MediaStore<T extends HTMLMediaElement> {
   filter: string[]
   fullscreen: boolean
   ready: boolean
+  subs: Sub[]
 
   setEnded: (ended: boolean) => void;
   setSetting: (setting: PlayerSetting | null) => void;
   setFilter: (filter: string[]) => void;
   setFullscreen: (fullscreen: boolean) => void;
   setReady: (ready: boolean) => void;
+  setSubs: (subs: Sub[]) => void;
 
   changeVolume: (volume: number | null | undefined) => void;
   changeCurrentTime: (currentTime: number | null | undefined) => void;
@@ -93,6 +97,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     setting: mediaDefault.setting ?? null,
     fullscreen: false,
     ready: false,
+    subs: [],
 
     setMediaRef: (mediaRef) => {
       // if(mediaRef === null) return;
@@ -103,6 +108,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     setFilter: (filter) => set({filter}),
     setFullscreen: (fullscreen) => set({fullscreen}),
     setReady: (ready) => set({ready}),
+    setSubs: (subs) => set({subs}),
 
     changeVolume: (volume) => {
       const audio = get().mediaRef;

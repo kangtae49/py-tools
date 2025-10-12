@@ -28,9 +28,9 @@ class ApiError(Exception):
 class JsApi:
     def __init__(self):
         self.setting = {
+            MOSAIC_LAYOUT_SETTING: "",
             MUSIC_PLAYER_SETTING: "{}",
             MOVIE_PLAYER_SETTING: "{}",
-            MOSAIC_LAYOUT_SETTING: "{}",
         }
 
     def dialog_open(self, options: Optional[dict] = None) -> List[str] | None:
@@ -145,12 +145,13 @@ class JsApi:
         base_dir = p.parent
         stem = p.stem
         subs = []
+        fullpath_stem = str(p.with_suffix("").absolute())
         for f in base_dir.glob(f"{glob.escape(stem)}.*"):
             for ext in sub_exts:
                 ret = fnmatch.fnmatchcase(f.name, f"*.{ext}")
                 if ret:
-                    fullpath = str(f.absolute())
-                    sp_sub = fullpath.rsplit('.', 2)[1:]
+                    sub_fullpath = str(f.absolute())
+                    sp_sub = sub_fullpath[len(fullpath_stem):].rsplit('.', 2)[1:]
                     subtype = '.'.join(sp_sub)
                     if len(sp_sub) == 1:
                         lang = ''
@@ -159,7 +160,7 @@ class JsApi:
                         lang = sp_sub[0]
                         priority = 1
                     else:
-                        lang = sp_sub[1]
+                        lang = sp_sub[0]
                         priority = 2
 
                     sub = Sub(fullpath = str(f.absolute()), subtype=subtype, lang=lang, priority=priority)
@@ -167,7 +168,7 @@ class JsApi:
                     break
         sorted_subs = sorted(subs, key=lambda x: x.priority)
         print(f"sorted_subs: {sorted_subs}")
-        return sorted_subs
+        return [s.model_dump() for s in sorted_subs]
 
     def read_sub(self, fullpath: str):
         p = Path(fullpath)

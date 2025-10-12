@@ -147,11 +147,12 @@ function VideoView() {
 
     if (!fullscreen) {
       if (state.mediaRef!.paused !== state.setting!.paused) {
-        if(state.setting!.paused) {
-          state.mediaRef!.pause()
-        } else {
-          state.mediaRef?.play().then()
-        }
+        state.setSetting({...state.setting, caller: "onPause", paused: state.mediaRef!.paused})
+        // if(state.setting!.paused) {
+        //   state.mediaRef!.pause()
+        // } else {
+        //   state.mediaRef?.play().then()
+        // }
       }
     }
   }

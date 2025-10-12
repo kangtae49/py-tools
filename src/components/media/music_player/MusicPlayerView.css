@@ -11,6 +11,7 @@
     --icon-color: #f4a261;
     --icon-color-inactive: #d9d9d9;
     --icon-color-warning: #dd4e79;
+    --row-hover-color: #9fc6e1;
     --icon-hover-scale: scale(1.2);
     width: 100%;
     height: 100%;
@@ -88,30 +89,30 @@
     justify-content: center; align-items: center;
 }
 .music-player .top .row.second .title {
-    flex: 1;
+    flex: 1 1 auto;
     text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     cursor: pointer;
 }
-.music-player .top .row.third {
+.music-player .top .row.time-line {
     display: flex;
     padding: 0 5px;
     justify-content: center; align-items: center;
 }
-.music-player .top .row.third .tm {
+.music-player .top .row.time-line .tm {
     flex: 0 0 50px;
     text-align: center; white-space: nowrap;
 }
 
-.music-player .top .row.third .slider {
+.music-player .top .row.time-line .slider {
     height: var(--icon-size);
     display: flex; justify-content: center; align-items: center;
     flex: 1;
 }
-.music-player .top .row.third .slider input {
+.music-player .top .row.time-line .slider input {
     width: 100%;
     cursor: pointer;
 }
-.music-player .top .row.third .slider input:focus {
+.music-player .top .row.time-line .slider input:focus {
     outline: none;
     border: none;
     box-shadow: none;
@@ -158,9 +159,13 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 .music-player .play-list .row .title {
+    text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     display: flex;
     inset: 0;
     transition: background 0.5s ease;
+}
+.music-player .play-list .row .title:hover {
+    background-color: var(--row-hover-color);
 }
 .music-player .play-list .row .no {
     flex: 0 0 40px;
@@ -179,12 +184,12 @@ input[type=range]::-webkit-slider-thumb {
 .audio-player {
     display: none;
 }
-.second,.third {
+.second,.time-line {
     inset: 0;
     background: white;
     transition: background 0.5s ease;
 }
-.second.playing,.third.playing {
+.second.playing,.time-line.playing {
     background: linear-gradient(270deg, #ff6ec4, #7873f5, #4ade80, #facc15);
     background-size: 400% 400%;
     animation: gradientShift 10s ease infinite;

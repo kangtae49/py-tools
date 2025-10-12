@@ -478,6 +478,21 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       <div className="top drop-top"
            onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
       >
+        <div className={`row time-line ${(!mediaRef?.paused && setting.playPath) ? 'playing' : ''}`}>
+          <div className="tm">{formatSeconds(setting.currentTime ?? 0)}</div>
+          <div className="slider">
+            <input type="range" min={0} max={mediaRef?.duration || 0} step={1}
+                   value={setting.currentTime ?? 0}
+                   onChange={(e) => {
+                     const tm = Number(e.target.value);
+                     console.log('change currentTime', tm);
+                     setSetting({...setting, caller: "input range", currentTime: tm});
+                     changeCurrentTime(tm);
+                   }}/>
+          </div>
+          <div className="tm">{formatSeconds(mediaRef?.duration ?? 0)}</div>
+        </div>
+
         <div className="row first">
           <div className="icon" onClick={openDialogPlayList} title="Open Audio Files"><Icon icon={faFolderPlus}/></div>
           <div className="icon" onClick={openDialogOpenJson} title="Open Audio Book"><Icon icon={faBookMedical}/></div>
@@ -545,26 +560,12 @@ export default function MusicPlayerView({winKey: _}: Prop) {
           </div>
         </div>
         <div className={`row second`}>
+          <div><input type="checkbox" onChange={changeAllChecked}/></div>
           <Icon icon={faMusic} />
           <div className="title"
                title={setting.playPath ?? ''}
                onClick={() => {setting.playPath && scrollPlayPath(setting.playList ?? [], setting.playPath)}}
           >{getFilename(setting.playPath ?? '')}</div>
-        </div>
-        <div className={`row third ${(!mediaRef?.paused && setting.playPath) ? 'playing' : ''}`}>
-          <div><input type="checkbox" onChange={changeAllChecked}/></div>
-          <div className="tm">{formatSeconds(setting.currentTime ?? 0)}</div>
-          <div className="slider">
-            <input type="range" min={0} max={mediaRef?.duration || 0} step={1}
-                   value={setting.currentTime ?? 0}
-                   onChange={(e) => {
-                     const tm = Number(e.target.value);
-                     console.log('change currentTime', tm);
-                     setSetting({...setting, caller: "input range", currentTime: tm});
-                     changeCurrentTime(tm);
-                   }}/>
-          </div>
-          <div className="tm">{formatSeconds(mediaRef?.duration ?? 0)}</div>
         </div>
       </div>
       <div className="play-list-con drop-list"

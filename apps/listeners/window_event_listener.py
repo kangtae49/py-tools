@@ -3,7 +3,7 @@ import string
 
 from webview import Window
 from apps.listeners.drop_files_listener import DropFilesListener
-from apps.js_api import JsApi, MUSIC_PLAYER_SETTING
+from apps.js_api import JsApi
 
 
 class WindowEventListener:

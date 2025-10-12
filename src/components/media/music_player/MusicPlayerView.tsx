@@ -341,7 +341,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
 
     if(result.status === 'ok') {
       newSetting = JSON.parse(result.data);
-      if (result.data === "{}") {
+      if (result.data === "null") {
         newSetting = audioDefault.setting ?? null;
       }
       commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
@@ -352,7 +352,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
         console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
       })
-      commands.appWriteFile(MUSIC_PLAYER_SETTING, "{}").then((result) => {
+      commands.appWriteFile(MUSIC_PLAYER_SETTING, "null").then((result) => {
         console.log(result.status, 'appWriteFile', MUSIC_PLAYER_SETTING);
       })
     }

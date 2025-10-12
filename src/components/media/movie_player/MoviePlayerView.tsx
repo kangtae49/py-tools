@@ -168,6 +168,15 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     setSetting({...setting, caller: "clickTogglePlay", paused: !setting.paused})
   }
 
+  const clickVideo = (e: React.MouseEvent) => {
+    const state = useVideoStore.getState();
+    if (state.setting === null) return;
+    if (!state.fullscreen) {
+      setSetting({...setting, caller: "clickVideo", paused: !state.setting.paused})
+    }
+    console.log('clickVideo', e);
+  }
+
   const clickSpeed = (_e: any, speed: string) => {
     const setting = useVideoStore.getState().setting;
     const v = Number(speed);
@@ -526,6 +535,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
           {({ height, width }) => (
             <div className="video-player"
                  style={{width, height}}
+                 onClick={clickVideo}
             >
               <VideoView  />
             </div>

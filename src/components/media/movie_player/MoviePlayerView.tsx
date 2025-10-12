@@ -535,6 +535,18 @@ export default function MoviePlayerView({winKey: _}: Prop) {
       onUnMount().then()
     }
   }, [])
+
+  const getSubTypeTitle = () => {
+    const subs = useVideoStore.getState().subs;
+    const setting = useVideoStore.getState().setting;
+    const sub = subs.find((v) => v.subtype === setting?.subType);
+    if (sub) {
+      return getFilename(sub.fullpath)
+    } else {
+      return setting?.subType
+    }
+  }
+
   if (setting === null) return null;
   return (
     <div className={`widget movie-player`}
@@ -591,7 +603,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                 </div>
                 <div className="sub" >
                   <Menu menuButton={
-                    <MenuButton className="menu-select" title={getFilename(subs.find((v) => v.subtype === setting.subType)?.fullpath!) ?? setting.subType}>
+                    <MenuButton className="menu-select" title={getSubTypeTitle()}>
                       {setting.subType?.slice(0, 6) ?? '-'}
                     </MenuButton>
                   } transition>

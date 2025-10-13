@@ -1,6 +1,7 @@
 import {create} from 'zustand';
 import natsort from "natsort";
 import type {Sub} from "@/types/models";
+import type {ListImperativeAPI} from "react-window";
 
 export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
 
@@ -30,6 +31,11 @@ interface MediaStore<T extends HTMLMediaElement> {
   ready: boolean
   subs: Sub[]
 
+  playListRef: ListImperativeAPI | null;
+  setPlayListRef: (value: ListImperativeAPI | null) => void;
+  scrollPlayPath: (curPlayList: string[], value: string | undefined) => void;
+
+
   setMediaRef: (mediaRef: T | null) => void
   setContainerRef: (containerRef: HTMLDivElement | null) => void
   setEnded: (ended: boolean) => void;
@@ -56,6 +62,16 @@ interface MediaStore<T extends HTMLMediaElement> {
   natsortPlayList: (curList: string[]) => string [];
   getPrevPlayPath: (value: string | undefined) => string | undefined;
   getNextPlayPath: (value: string | undefined) => string | undefined;
+
+
+  selectedPlayList: string[];
+  selectionBegin: string | undefined;
+  setSelectedPlayList: (value: string[]) => void;
+  setSelectionBegin: (value: string | undefined) => void;
+
+  appendSelectedPlayList: (value: string[]) => void;
+  removeSelectedPlayList: (value: string[]) => void;
+
 }
 interface MediaDefault {
   shuffle?: boolean
@@ -104,6 +120,12 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     fullscreen: false,
     ready: false,
     subs: [],
+
+    playListRef: null,
+
+    selectedPlayList: [],
+    selectionBegin: undefined,
+
 
     setMediaRef: (mediaRef) => {
       // if(mediaRef === null) return;
@@ -244,6 +266,33 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
       next = curPlayList[idx]
       return next;
     },
+
+
+    setPlayListRef: (value) => {
+      if (value === null) return;
+      set({playListRef: value})
+    },
+    scrollPlayPath: (curPlayList, value) => {
+      if(value === undefined) return;
+      const listRef = get().playListRef;
+      const idx = curPlayList.indexOf(value);
+      if (idx >= 0) {
+        listRef?.scrollToRow({align:"auto", behavior: "auto", index: idx});
+      }
+    },
+
+    setSelectedPlayList: (value) => set({ selectedPlayList: value }),
+    setSelectionBegin: (value) => set({ selectionBegin: value }),
+
+    appendSelectedPlayList: (value) => {
+      const newSelectedPlayList = [...new Set([...get().selectedPlayList, ...value])];
+      set({ selectedPlayList: newSelectedPlayList})
+    },
+    removeSelectedPlayList: (value) => {
+      const newSelectedPlayList = get().selectedPlayList.filter(v => !value.includes(v));
+      set({ selectedPlayList: newSelectedPlayList})
+    }
+
 
   }))
 }

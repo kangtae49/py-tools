@@ -13,8 +13,6 @@ import {
 import {List} from 'react-window'
 import MoviePlayListRowView from "./MoviePlayListRowView.tsx";
 import VideoView from "./VideoView.tsx";
-import {useMoviePlayListStore} from "./moviePlayListStore.ts";
-import {useSelectedMoviePlayListStore} from "./selectedMoviePlayListStore.ts";
 import {videoDefault, type PlayerSetting, useVideoStore} from "../mediaStore.ts";
 import {formatSeconds, getFilename, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
@@ -37,14 +35,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   const [initialized, setInitialized] = useState(false);
 
   const {
-    setPlayListRef,
-    scrollPlayPath,
-  } = useMoviePlayListStore();
-  const {
-    selectedPlayList, setSelectedPlayList, removeSelectedPlayList, appendSelectedPlayList,
-    selectionBegin, setSelectionBegin,
-  } = useSelectedMoviePlayListStore();
-  const {
     mediaRef,
     containerRef, setContainerRef,
     changeVolume,
@@ -60,6 +50,10 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     changePlaybackRate,
     ready, setReady,
     subs, setSubs, changeAllTrackMode,
+    setPlayListRef,
+    scrollPlayPath,
+    selectedPlayList, setSelectedPlayList, removeSelectedPlayList, appendSelectedPlayList,
+    selectionBegin, setSelectionBegin,
   } = useVideoStore();
   const {
     setDropRef,
@@ -139,7 +133,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   const clickRemovePlayList = () => {
     const setting = useVideoStore.getState().setting;
-    const selectedPlayList = useSelectedMoviePlayListStore.getState().selectedPlayList;
+    const selectedPlayList = useVideoStore.getState().selectedPlayList;
     const playList = setting.playList ?? [];
 
     const beginPos = playList.indexOf(selectionBegin ||'');
@@ -200,7 +194,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const setting = useVideoStore.getState().setting;
-    const selectionBegin = useSelectedMoviePlayListStore.getState().selectionBegin;
+    const selectionBegin = useVideoStore.getState().selectionBegin;
 
     if (setting?.playList == null) return;
     e.preventDefault()

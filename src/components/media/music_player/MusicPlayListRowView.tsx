@@ -6,7 +6,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { type RowComponentProps } from "react-window";
 import {getFilename} from "@/components/utils.ts";
-import {useSelectedMusicPlayListStore} from "./selectedMusicPlayListStore.ts";
 import {useAudioStore} from "../mediaStore.ts";
 function MusicPlayListRowView({
                            index,
@@ -19,12 +18,10 @@ function MusicPlayListRowView({
     mediaRef,
     setting, setSetting,
     removePlayList,
-  } = useAudioStore();
-  const {
     selectionBegin,
     selectedPlayList,
     appendSelectedPlayList, removeSelectedPlayList,
-  } = useSelectedMusicPlayListStore();
+  } = useAudioStore();
 
 
 

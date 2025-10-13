@@ -13,8 +13,6 @@ import {
 import {List} from 'react-window'
 import MusicPlayListRowView from "./MusicPlayListRowView.tsx";
 import AudioView from "./AudioView.tsx";
-import {useMusicPlayListStore} from "./musicPlayListStore.ts";
-import {useSelectedMusicPlayListStore} from "./selectedMusicPlayListStore.ts";
 import {audioDefault, type PlayerSetting, useAudioStore} from "../mediaStore.ts";
 import {formatSeconds, getFilename, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
@@ -34,14 +32,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   const [initialized, setInitialized] = useState(false);
 
   const {
-    setPlayListRef,
-    scrollPlayPath,
-  } = useMusicPlayListStore();
-  const {
-    selectedPlayList, setSelectedPlayList, removeSelectedPlayList, appendSelectedPlayList,
-    selectionBegin, setSelectionBegin,
-  } = useSelectedMusicPlayListStore();
-  const {
     mediaRef,
     containerRef, setContainerRef,
     changeVolume,
@@ -56,6 +46,10 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     getPrevPlayPath, getNextPlayPath,
     changePlaybackRate,
     ready, setReady,
+    setPlayListRef,
+    scrollPlayPath,
+    selectedPlayList, setSelectedPlayList, removeSelectedPlayList, appendSelectedPlayList,
+    selectionBegin, setSelectionBegin,
   } = useAudioStore();
   const {
     setDropRef,
@@ -183,7 +177,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
 
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const setting = useAudioStore.getState().setting;
-    const selectionBegin = useSelectedMusicPlayListStore.getState().selectionBegin;
+    const selectionBegin = useAudioStore.getState().selectionBegin;
 
     if (setting?.playList == null) return;
     e.preventDefault()

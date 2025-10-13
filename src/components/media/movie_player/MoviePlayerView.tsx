@@ -25,6 +25,7 @@ import {type WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 import {SplitPane} from "@rexxars/react-split-pane";
 import AutoSizer from "react-virtualized-auto-sizer";
 import {Menu, MenuButton, MenuItem} from "@szhsin/react-menu";
+import {getSubs} from "@/components/media/media.ts";
 
 export const MOVIE_PLAYER_SETTING = 'movie-player.setting.json'
 
@@ -446,10 +447,11 @@ export default function MoviePlayerView({winKey: _}: Prop) {
             const state = useVideoStore.getState();
             if (result.status === 'ok') {
               const subs = result.data;
-              state.setSubs(subs)
+              getSubs(subs).then((subs) => {
+                useVideoStore.getState().setSubs(subs);
+              })
             } else {
               state.setSubs([])
-              // state.setSetting({...state.setting, caller: "fetch", subType: undefined})
             }
           })
         } else {
@@ -498,10 +500,16 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                 fullpath: subFullpathFiles[0],
                 lang: "??",
                 priority: 3,
-                subtype: getFilename(subFullpathFiles[0]) ?? ''
+                subtype: getFilename(subFullpathFiles[0]) ?? '',
+                src: ''
               }
-              state.setSubs([...state.subs, newSub])
-              state.setSetting({...state.setting, caller: "onDropFullPathHandler", subType: newSub.subtype})
+              getSubs([newSub]).then((addSubs) => {
+                const state = useVideoStore.getState();
+                if (addSubs.length > 0) {
+                  state.setSubs([...state.subs, addSubs[0]])
+                  state.setSetting({...state.setting, caller: "onDropFullPathHandler", subType: addSubs[0].subtype})
+                }
+              });
             }
           }
         } else if(videoFullpathFiles.length > 1) {
@@ -536,15 +544,20 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     }
   }, [])
 
-  const getSubTypeTitle = () => {
+  const titleSubType = () => {
     const subs = useVideoStore.getState().subs;
     const setting = useVideoStore.getState().setting;
     const sub = subs.find((v) => v.subtype === setting?.subType);
     if (sub) {
       return getFilename(sub.fullpath)
     } else {
-      return setting?.subType
+      return '-'
     }
+  }
+
+  const labelSubType = () => {
+    const setting = useVideoStore.getState().setting;
+    return titleSubType() === '-' ? '-' : setting?.subType?.slice(0, 6) ?? '-'
   }
 
   if (setting === null) return null;
@@ -601,10 +614,11 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                   <Icon icon={faTrashCan} className={selectedPlayList.length > 0 ? '': 'inactive'}/>
                   {selectedPlayList.length > 0 && <div className="badge">{selectedPlayList.length}</div>}
                 </div>
-                <div className="sub" >
+                <div className="sub badge-wrap" >
+                  {subs.length > 0 && <div className="badge">{subs.length}</div>}
                   <Menu menuButton={
-                    <MenuButton className="menu-select" title={getSubTypeTitle()}>
-                      {setting.subType?.slice(0, 6) ?? '-'}
+                    <MenuButton className="menu-select" title={titleSubType()}>
+                      {labelSubType()}
                     </MenuButton>
                   } transition>
                     <MenuItem className={`menu-item ${setting?.subType == null ? 'selected': ''}`} value="" onClick={(e: any) => clickSubType(e, e.value)}>-</MenuItem>
@@ -618,6 +632,18 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                         {sub.subtype}
                       </MenuItem>
                     ))}
+
+                    {/*{ mediaRef && [...mediaRef.textTracks].map((sub, _index) => (*/}
+                    {/*  <MenuItem key={sub.fullpath}*/}
+                    {/*            className={`menu-item ${setting?.subType == sub.subtype ? 'selected': ''}`}*/}
+                    {/*            title={getFilename(sub.fullpath)}*/}
+                    {/*            value={sub.subtype}*/}
+                    {/*            onClick={(e: any) => clickSubType(e, e.value)}*/}
+                    {/*  >*/}
+                    {/*    {sub.subtype}*/}
+                    {/*  </MenuItem>*/}
+                    {/*))}*/}
+
                   </Menu>
                 </div>
                 <div className="center">

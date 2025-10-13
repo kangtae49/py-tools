@@ -170,7 +170,7 @@ class JsApi:
                         lang = sp_sub[0]
                         priority = 2
 
-                    sub = Sub(fullpath = str(f.absolute()), subtype=subtype, lang=lang, priority=priority)
+                    sub = Sub(fullpath = str(f.absolute()), subtype=subtype, lang=lang, priority=priority, src='')
                     subs.append(sub)
                     break
         sorted_subs = sorted(subs, key=lambda x: x.priority)
@@ -188,5 +188,7 @@ class JsApi:
             best_guess = results.best()
             encoding = best_guess.encoding if best_guess else "utf-8"
             subs = pysubs2.load(str(p), encoding=encoding)
+        except pysubs2.exceptions.FormatAutodetectionError as e:
+            raise ApiException(f"not format: {p}")
         return subs.to_string(encoding='utf-8', format_="vtt")
 

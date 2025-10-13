@@ -30,4 +30,5 @@ export interface Sub {
   subtype: string;
   lang: string;
   priority: number;
+  src: string;
 }

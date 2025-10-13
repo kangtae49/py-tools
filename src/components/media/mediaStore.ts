@@ -18,6 +18,8 @@ export interface PlayerSetting {
   subType?: string
 }
 
+
+
 interface MediaStore<T extends HTMLMediaElement> {
   mediaRef: T | null
   containerRef: HTMLDivElement | null
@@ -150,7 +152,6 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
         }
       }
     },
-
     togglePlay: async () => {
       const setting = get().setting;
       if (setting == null) return;

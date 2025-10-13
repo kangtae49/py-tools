@@ -8,7 +8,6 @@ import type {Sub} from "@/types/models";
 function VideoView() {
   const [initialized, setInitialized] = useState(false);
   const [ready, setReady] = useState(false);
-  const [subObjSrcMap, setSubObjSrcMap] = useState<Record<string, string>>({});
 
   const {
     mediaRef, setMediaRef,
@@ -222,31 +221,32 @@ function VideoView() {
     return state.setting?.subType == sub.subtype;
   }
 
-  const getSrcSub = async (sub: Sub) => {
-    const result = await commands.readSub(sub.fullpath);
-    let vttText = '';
-    if (result.status === 'ok') {
-      vttText = result.data;
-    }
-    const blob = new Blob([vttText], { type: "text/vtt" });
-    return URL.createObjectURL(blob);
-  }
+  // const getSrcSub = async (sub: Sub) => {
+  //   const result = await commands.readSub(sub.fullpath);
+  //   let vttText = '';
+  //   if (result.status === 'ok') {
+  //     vttText = result.data;
+  //   }
+  //   const blob = new Blob([vttText], { type: "text/vtt" });
+  //   return URL.createObjectURL(blob);
+  // }
 
-  const loadVtt = async () => {
+  // const loadVtt = async () => {
+  //
+  //   const newMap: Record<string, string> = {};
+  //   for (const sub of subs) {
+  //     try{
+  //       newMap[sub.fullpath] = await getSrcSub(sub);
+  //     } catch (e) {
+  //       console.error('loadVtt', e);
+  //     }
+  //   }
+  //   setSubObjSrcMap({...newMap});
+  // }
 
-    const newMap: Record<string, string> = {};
-    for (const sub of subs) {
-      try{
-        newMap[sub.fullpath] = await getSrcSub(sub);
-      } catch (e) {
-        console.error('loadVtt', e);
-      }
-    }
-    setSubObjSrcMap({...newMap});
-  }
-  useEffect(() => {
-    loadVtt().then()
-  }, [subs])
+  // useEffect(() => {
+  //   loadVtt().then()
+  // }, [subs])
 
   useEffect(() => {
     if (subs.length === 0) return;
@@ -272,12 +272,12 @@ function VideoView() {
         autoPlay={false}
       >
         <source />
-        { subs && subs.length === Object.keys(subObjSrcMap).length && subs.map((sub, _index) => (
+        { subs && subs.map((sub, _index) => (
             <track key={sub.fullpath}
                    label={sub.subtype}
                    kind="subtitles"
                    srcLang={sub.lang}
-                   src={subObjSrcMap[sub.fullpath]}
+                   src={sub.src}
                    default={isDefaultSub(sub)}
             />
         ))}

@@ -30,4 +30,5 @@ class Sub(BaseModel):
     subtype: str
     lang: str
     priority: int
+    src: str
 

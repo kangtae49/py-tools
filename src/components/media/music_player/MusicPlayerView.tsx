@@ -13,7 +13,7 @@ import {
 import {List} from 'react-window'
 import MusicPlayListRowView from "./MusicPlayListRowView.tsx";
 import AudioView from "./AudioView.tsx";
-import {audioDefault, type PlayerSetting, useAudioStore} from "../mediaStore.ts";
+import {audioDefault as mediaDefault, type PlayerSetting, useAudioStore as useMediaStore} from "../mediaStore.ts";
 import {formatSeconds, getFilename, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
@@ -50,7 +50,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     scrollPlayPath,
     selectedPlayList, setSelectedPlayList, removeSelectedPlayList, appendSelectedPlayList,
     selectionBegin, setSelectionBegin,
-  } = useAudioStore();
+  } = useMediaStore();
   const {
     setDropRef,
     dropRef,
@@ -92,7 +92,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
 
   const readFiles = (files: string[]) => {
     console.log('setSetting readFiles')
-    const setting = useAudioStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     const newPlayList = appendPlayList(setting.playList ?? [], files);
     const shuffledPlayList = setting.shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
     let newPlayPath = setting.playPath;
@@ -105,7 +105,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
 
 
   const openDialogSaveAsJson = async () => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     if (setting?.playList == null) return;
     commands.dialogOpen({
       dialog_type: "SAVE",
@@ -128,8 +128,8 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   const clickRemovePlayList = () => {
-    const setting = useAudioStore.getState().setting;
-    if (selectedPlayList.length == 0) return;
+    const setting = useMediaStore.getState().setting;
+    const selectedPlayList = useMediaStore.getState().selectedPlayList;
     const playList = setting.playList ?? [];
 
     const beginPos = playList.indexOf(selectionBegin ||'');
@@ -162,22 +162,22 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   const playPrev = () => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     const newPlayPath = getPrevPlayPath(setting.playPath);
     console.log('setSetting playPrev')
     setSetting((setting) => ({...setting, caller: "playPrev", currentTime: 0, playPath: newPlayPath}))
   }
 
   const playNext = () => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     const newPlayPath = getNextPlayPath(setting.playPath);
     console.log('setSetting playNext')
     setSetting((setting) => ({...setting, caller: "playNext", currentTime: 0, playPath: newPlayPath}))
   }
 
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const setting = useAudioStore.getState().setting;
-    const selectionBegin = useAudioStore.getState().selectionBegin;
+    const setting = useMediaStore.getState().setting;
+    const selectionBegin = useMediaStore.getState().selectionBegin;
 
     if (setting?.playList == null) return;
     e.preventDefault()
@@ -247,7 +247,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   const changeAllChecked = (e: ChangeEvent<HTMLInputElement>) => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     if (setting?.playList == null) return;
     let newPlayList: string[] = []
     if (e.target.checked) {
@@ -257,7 +257,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   const toggleFullscreen = async () => {
-    const fullscreen = useAudioStore.getState().fullscreen;
+    const fullscreen = useMediaStore.getState().fullscreen;
     if (fullscreen) {
       await document.exitFullscreen();
     } else {
@@ -266,7 +266,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   useEffect(() => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     if(setting.playList === undefined) return;
     if(!ready) return;
     const shuffledPlayList = setting.shuffle ? shufflePlayList(setting.playList) : natsortPlayList(setting.playList);
@@ -275,7 +275,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }, [setting.shuffle])
 
   useEffect(() => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     if (setting.playList === undefined) return;
     if (mediaRef === null) return;
     if (ended) {
@@ -313,8 +313,8 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }, [ended])
 
   useEffect(() => {
-    const state = useAudioStore.getState();
-    const setting = useAudioStore.getState().setting;
+    const state = useMediaStore.getState();
+    const setting = useMediaStore.getState().setting;
     if(setting === null) return;
     if(!state.ready) return;
     console.log('setting', setting);
@@ -335,13 +335,13 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     if(result.status === 'ok') {
       newSetting = JSON.parse(result.data);
       if (result.data === "null") {
-        newSetting = audioDefault.setting ?? null;
+        newSetting = mediaDefault.setting ?? null;
       }
       commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
         console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
       })
     } else {
-      newSetting = audioDefault.setting ?? null;
+      newSetting = mediaDefault.setting ?? null;
       commands.appWrite(MUSIC_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
         console.log(result.status, 'appWrite', MUSIC_PLAYER_SETTING);
       })
@@ -368,8 +368,8 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   const onDropPlayPath = (file: string) => {
-    const setting = useAudioStore.getState().setting;
-    if (setting.playList == undefined) return;
+    const setting = useMediaStore.getState().setting;
+    if (setting.playList === undefined) return;
     console.log('setSetting onDropPlayPath')
     if(setting.playList.indexOf(file) < 0) {
       appendSelectedPlayList([file]);
@@ -379,7 +379,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   };
 
   const onDropPlayList = (files: string[]) => {
-    const setting = useAudioStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     const playList = setting.playList ?? [];
     const addPlayList = files.filter((file) => playList.indexOf(file) < 0);
     const newPlayList = appendPlayList(playList, addPlayList);

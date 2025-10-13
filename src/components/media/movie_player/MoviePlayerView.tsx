@@ -13,7 +13,7 @@ import {
 import {List} from 'react-window'
 import MoviePlayListRowView from "./MoviePlayListRowView.tsx";
 import VideoView from "./VideoView.tsx";
-import {videoDefault, type PlayerSetting, useVideoStore} from "../mediaStore.ts";
+import {videoDefault as mediaDefault, type PlayerSetting, useVideoStore as useMediaStore} from "../mediaStore.ts";
 import {formatSeconds, getFilename, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
@@ -49,12 +49,12 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     getPrevPlayPath, getNextPlayPath,
     changePlaybackRate,
     ready, setReady,
-    subs, setSubs, changeAllTrackMode,
     setPlayListRef,
     scrollPlayPath,
     selectedPlayList, setSelectedPlayList, removeSelectedPlayList, appendSelectedPlayList,
     selectionBegin, setSelectionBegin,
-  } = useVideoStore();
+    subs, setSubs, changeAllTrackMode,
+  } = useMediaStore();
   const {
     setDropRef,
     dropRef,
@@ -96,7 +96,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   const readFiles = (files: string[]) => {
     console.log('setSetting readFiles')
-    const setting = useVideoStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     const newPlayList = appendPlayList(setting.playList ?? [], files);
     const shuffledPlayList = setting.shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
     let newPlayPath = setting.playPath;
@@ -109,7 +109,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
 
   const openDialogSaveAsJson = async () => {
-    const setting = useVideoStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     if (setting?.playList == null) return;
     commands.dialogOpen({
       dialog_type: "SAVE",
@@ -132,8 +132,8 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const clickRemovePlayList = () => {
-    const setting = useVideoStore.getState().setting;
-    const selectedPlayList = useVideoStore.getState().selectedPlayList;
+    const setting = useMediaStore.getState().setting;
+    const selectedPlayList = useMediaStore.getState().selectedPlayList;
     const playList = setting.playList ?? [];
 
     const beginPos = playList.indexOf(selectionBegin ||'');
@@ -158,7 +158,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const clickVideo = (e: React.MouseEvent) => {
-    const state = useVideoStore.getState();
+    const state = useMediaStore.getState();
     if (!state.fullscreen) {
       setSetting((setting) => ({...setting, caller: "clickVideo", paused: !setting.paused}))
     }
@@ -179,22 +179,22 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const playPrev = () => {
-    const setting = useVideoStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     const newPlayPath = getPrevPlayPath(setting.playPath);
     console.log('setSetting playPrev')
     setSetting((setting) => ({...setting, caller: "playPrev", currentTime: 0, playPath: newPlayPath}))
   }
 
   const playNext = () => {
-    const setting = useVideoStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     const newPlayPath = getNextPlayPath(setting.playPath);
     console.log('setSetting playNext')
     setSetting((setting) => ({...setting, caller: "playNext", currentTime: 0, playPath: newPlayPath}))
   }
 
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const setting = useVideoStore.getState().setting;
-    const selectionBegin = useVideoStore.getState().selectionBegin;
+    const setting = useMediaStore.getState().setting;
+    const selectionBegin = useMediaStore.getState().selectionBegin;
 
     if (setting?.playList == null) return;
     e.preventDefault()
@@ -264,7 +264,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const changeAllChecked = (e: ChangeEvent<HTMLInputElement>) => {
-    const setting = useVideoStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     if (setting?.playList == null) return;
     let newPlayList: string[] = []
     if (e.target.checked) {
@@ -274,7 +274,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const toggleFullscreen = async () => {
-    const fullscreen = useVideoStore.getState().fullscreen;
+    const fullscreen = useMediaStore.getState().fullscreen;
     if (fullscreen) {
       await document.exitFullscreen();
     } else {
@@ -283,7 +283,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   useEffect(() => {
-    const setting = useVideoStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     if(setting.playList === undefined) return;
     if(!ready) return;
     const shuffledPlayList = setting.shuffle ? shufflePlayList(setting.playList) : natsortPlayList(setting.playList);
@@ -292,7 +292,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }, [setting.shuffle])
 
   useEffect(() => {
-    const setting = useVideoStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     if (setting.playList === undefined) return;
     if (mediaRef === null) return;
     if (ended) {
@@ -330,8 +330,8 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }, [ended])
 
   useEffect(() => {
-    const state = useVideoStore.getState();
-    const setting = useVideoStore.getState().setting;
+    const state = useMediaStore.getState();
+    const setting = useMediaStore.getState().setting;
     if(setting === null) return;
     if(!state.ready) return;
     console.log('setting', setting);
@@ -352,13 +352,13 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     if(result.status === 'ok') {
       newSetting = JSON.parse(result.data);
       if (result.data === "null") {
-        newSetting = videoDefault.setting ?? null;
+        newSetting = mediaDefault.setting ?? null;
       }
       commands.appWrite(MOVIE_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
         console.log(result.status, 'appWrite', MOVIE_PLAYER_SETTING);
       })
     } else {
-      newSetting = videoDefault.setting ?? null;
+      newSetting = mediaDefault.setting ?? null;
       commands.appWrite(MOVIE_PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
         console.log(result.status, 'appWrite', MOVIE_PLAYER_SETTING);
       })
@@ -385,7 +385,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const onDropPlayPath = (file: string) => {
-    const setting = useVideoStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     if (setting.playList === undefined) return;
     console.log('setSetting onDropPlayPath')
     if(setting.playList.indexOf(file) < 0) {
@@ -396,7 +396,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   };
 
   const onDropPlayList = (files: string[]) => {
-    const setting = useVideoStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     const playList = setting.playList ?? [];
     const addPlayList = files.filter((file) => playList.indexOf(file) < 0);
     const newPlayList = appendPlayList(playList, addPlayList);
@@ -445,8 +445,8 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     const onDropFullPathHandler = (e: CustomEvent) => {
       setDropRef(null);
       console.log('onDropFullPathHandler', dropRef);
-      const filter_video = useVideoStore.getState().filter;
-      const state = useVideoStore.getState();
+      const filter_video = useMediaStore.getState().filter;
+      const state = useMediaStore.getState();
       const filter_sub = [
         "ass", "mpl", "json", "smi", "sami", "srt", "ssa", "sub", "tmp", "ttml", "vtt",];
 
@@ -513,8 +513,8 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }, [])
 
   const titleSubType = () => {
-    const subs = useVideoStore.getState().subs;
-    const setting = useVideoStore.getState().setting;
+    const subs = useMediaStore.getState().subs;
+    const setting = useMediaStore.getState().setting;
     const sub = subs.find((v) => v.subtype === setting?.subType);
     if (sub) {
       return getFilename(sub.fullpath)
@@ -524,7 +524,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const labelSubType = () => {
-    const setting = useVideoStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     return titleSubType() === '-' ? '-' : setting?.subType?.slice(0, 6) ?? '-'
   }
 

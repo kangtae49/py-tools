@@ -6,7 +6,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { type RowComponentProps } from "react-window";
 import {getFilename} from "@/components/utils.ts";
-import {useAudioStore} from "../mediaStore.ts";
+import {useAudioStore as useMediaStore} from "../mediaStore.ts";
 function MusicPlayListRowView({
                            index,
                            playList,
@@ -21,21 +21,19 @@ function MusicPlayListRowView({
     selectionBegin,
     selectedPlayList,
     appendSelectedPlayList, removeSelectedPlayList,
-  } = useAudioStore();
-
-
+  } = useMediaStore();
 
   const clickPlayPath = (path: string) => {
     if (setting === null) return;
     console.log('clickPlayPath', path)
     console.log('setSetting clickPlayPath')
-    setSetting({...setting, caller: "clickPlayPath", currentTime: 0, playPath: path})
+    setSetting((setting) => ({...setting, caller: "clickPlayPath", currentTime: 0, playPath: path}))
   }
   const clickRemovePlayPath = (path: string) => {
     if (setting === null) return;
     const newPlayList = removePlayList(playList, [path]);
     removeSelectedPlayList([path]);
-    setSetting({...setting, caller: "clickRemovePlayPath", playList: newPlayList})
+    setSetting((setting) => ({...setting, caller: "clickRemovePlayPath", playList: newPlayList}))
   }
 
   const onChangeChecked = (e: ChangeEvent<HTMLInputElement>, path: string) => {

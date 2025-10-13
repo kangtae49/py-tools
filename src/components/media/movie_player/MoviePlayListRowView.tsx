@@ -6,7 +6,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { type RowComponentProps } from "react-window";
 import {getFilename} from "@/components/utils.ts";
-import {useVideoStore} from "../mediaStore.ts";
+import {useVideoStore as useMediaStore} from "../mediaStore.ts";
 function MoviePlayListRowView({
                            index,
                            playList,
@@ -21,7 +21,7 @@ function MoviePlayListRowView({
     selectionBegin,
     selectedPlayList,
     appendSelectedPlayList, removeSelectedPlayList,
-  } = useVideoStore();
+  } = useMediaStore();
 
   const clickPlayPath = (path: string) => {
     if (setting === null) return;
@@ -50,7 +50,7 @@ function MoviePlayListRowView({
   const isChecked = selectedPlayList.includes(playList[index]);
   const isSelected = playList[index] == selectionBegin;
   return (
-    <div className={`row ${isSelected ? 'selected': ''}  ${isPlayPath ? 'playing' : ''}`} style={style}>
+    <div className={`row ${isSelected ? 'selected': ''} ${isPlayPath ? 'playing' : ''}`} style={style}>
       <div className={`title  ${(!mediaRef?.paused && isPlayPath) ? 'playing' : ''}`}
            title={playList[index]}
       >

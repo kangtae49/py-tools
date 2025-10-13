@@ -542,7 +542,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     >
       <SplitPane
         split="horizontal"
-        minSize={50}
+        minSize={80}
         primary="second"
         defaultSize={200}
         onDragStarted={() => setIsResizing(true)}
@@ -550,7 +550,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
       >
         <AutoSizer>
           {({ height, width }) => (
-            <div className="video-player drop-video"
+            <div className="video-viewer drop-video"
                  style={{width, height}}
                  onClick={clickVideo}
                  onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}

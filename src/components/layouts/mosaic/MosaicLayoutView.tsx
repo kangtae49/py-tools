@@ -15,6 +15,7 @@ import {
 import MoviePlayerView from "@/components/media/movie_player/MoviePlayerView.tsx";
 import {commands} from "@/bindings.ts";
 import {videoDefault} from "@/components/media/mediaStore.ts";
+import PicturePlayerView from "@/components/media/picture_player/PicturePlayerView.tsx";
 
 export const MOSAIC_LAYOUT_SETTING = 'mosaic-layout.setting.json'
 
@@ -36,14 +37,19 @@ const ELEMENT_MAP: Record<WinType, TitleInfo> = {
     view: (winKey: WinKey) => (<HelpView winKey={winKey} />)
   },
   "music-player": {
-    title: "Music Player",
+    title: "Music",
     icon: <div><Icon icon={faMusic} /></div>,
     view: (winKey: WinKey) => (<MusicPlayerView winKey={winKey} />)
   },
   "movie-player": {
-    title: "Movie Player",
+    title: "Movie",
     icon: <div><Icon icon={faFilm} /></div>,
     view: (winKey: WinKey) => (<MoviePlayerView winKey={winKey} />)
+  },
+  "picture-player": {
+    title: "Picture",
+    icon: <div><Icon icon={faFilm} /></div>,
+    view: (winKey: WinKey) => (<PicturePlayerView winKey={winKey} />)
   },
   "monaco": {
     title: "Monaco Editor",

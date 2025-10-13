@@ -6,6 +6,7 @@ export type AboutKey = 'about'
 export type HelpKey = 'help'
 export type MusicPlayerKey = 'music-player'
 export type MoviePlayerKey = 'movie-player'
+export type PicturePlayerKey = 'picture-player'
 export type MonacoKey = 'monaco'
 export type MdKey = 'md'
 export type MonacoPathKey = `${MonacoKey}-${string}`
@@ -22,6 +23,7 @@ export type WinKey =
   | HelpKey
   | MusicPlayerKey
   | MoviePlayerKey
+  | PicturePlayerKey
   | MonacoPathKey
   | MdPathKey
 
@@ -30,6 +32,7 @@ export type WinType =
   | HelpKey
   | MusicPlayerKey
   | MoviePlayerKey
+  | PicturePlayerKey
   | MonacoKey
   | MdKey
 

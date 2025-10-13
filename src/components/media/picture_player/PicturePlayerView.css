@@ -1,5 +1,5 @@
 
-.movie-player {
+.picture-player {
     display: flex;
     flex-direction: column;
     --top-height: 105px;
@@ -29,12 +29,12 @@
     box-sizing: border-box;
 }
 
-.video-viewer {
+.image-viewer {
     display: flex;
     width: 100%;
     height: 100%;
 }
-.video-viewer video {
+.image-viewer img {
     flex: 1 1 auto;
     max-width: 100%;
     max-height: 100%;

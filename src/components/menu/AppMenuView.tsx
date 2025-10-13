@@ -5,7 +5,7 @@ import '@szhsin/react-menu/dist/transitions/zoom.css';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faMusic,
-  faFilm,
+  faFilm, faImage,
 } from '@fortawesome/free-solid-svg-icons'
 import {useMosaicStore, type WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 
@@ -26,12 +26,17 @@ function AppMenuView() {
         <MenuItem className="menu-item"
                   value="movie-player"
                   onClick={(e: any) => clickMenu(e, e.value)}>
-          <Icon icon={faFilm}/>Movie Player
+          <Icon icon={faFilm}/>Movie
         </MenuItem>
         <MenuItem className="menu-item"
                   value="music-player"
                   onClick={(e: any) => clickMenu(e, e.value)}>
-          <Icon icon={faMusic}/>Music Player
+          <Icon icon={faMusic}/>Music
+        </MenuItem>
+        <MenuItem className="menu-item"
+                  value="picture-player"
+                  onClick={(e: any) => clickMenu(e, e.value)}>
+          <Icon icon={faImage}/>Picture
         </MenuItem>
       </Menu>
       <Menu menuButton={<MenuButton>Help</MenuButton>} transition>

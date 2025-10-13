@@ -14,3 +14,5 @@
 .fa-music:hover { transform: var(--icon-hover-scale);}
 .fa-film { color: var(--icon-color); font-size: var(--icon-font-size);}
 .fa-film:hover { transform: var(--icon-hover-scale);}
+.fa-image { color: var(--icon-color); font-size: var(--icon-font-size);}
+.fa-image:hover { transform: var(--icon-hover-scale);}

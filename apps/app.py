@@ -48,7 +48,7 @@ def run():
         js_api=api,
         text_select=True,
         draggable=True,
-        zoomable=True,
+        zoomable=False,
         confirm_close=False,
     )
 

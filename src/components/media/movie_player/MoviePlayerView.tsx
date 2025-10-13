@@ -35,7 +35,6 @@ interface Prop {
 
 export default function MoviePlayerView({winKey: _}: Prop) {
   const [initialized, setInitialized] = useState(false);
-  const [_isResizing, setIsResizing] = useState(false);
 
   const {
     setPlayListRef,
@@ -545,12 +544,10 @@ export default function MoviePlayerView({winKey: _}: Prop) {
         minSize={80}
         primary="second"
         defaultSize={200}
-        onDragStarted={() => setIsResizing(true)}
-        onDragFinished={() => setIsResizing(false)}
       >
         <AutoSizer>
           {({ height, width }) => (
-            <div className="video-viewer drop-video"
+            <div className="video-view drop-video"
                  style={{width, height}}
                  onClick={clickVideo}
                  onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
@@ -606,18 +603,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                         {sub.subtype}
                       </MenuItem>
                     ))}
-
-                    {/*{ mediaRef && [...mediaRef.textTracks].map((sub, _index) => (*/}
-                    {/*  <MenuItem key={sub.fullpath}*/}
-                    {/*            className={`menu-item ${setting?.subType == sub.subtype ? 'selected': ''}`}*/}
-                    {/*            title={getFilename(sub.fullpath)}*/}
-                    {/*            value={sub.subtype}*/}
-                    {/*            onClick={(e: any) => clickSubType(e, e.value)}*/}
-                    {/*  >*/}
-                    {/*    {sub.subtype}*/}
-                    {/*  </MenuItem>*/}
-                    {/*))}*/}
-
                   </Menu>
                 </div>
                 <div className="center">

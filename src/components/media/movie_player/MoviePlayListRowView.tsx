@@ -32,14 +32,13 @@ function MoviePlayListRowView({
     if (setting === null) return;
     console.log('clickPlayPath', path)
     console.log('setSetting clickPlayPath')
-    // mediaRef?.load();
-    setSetting({...setting, caller: "clickPlayPath", currentTime: 0, playPath: path})
+    setSetting((setting) => ({...setting, caller: "clickPlayPath", currentTime: 0, playPath: path}))
   }
   const clickRemovePlayPath = (path: string) => {
     if (setting === null) return;
     const newPlayList = removePlayList(playList, [path]);
     removeSelectedPlayList([path]);
-    setSetting({...setting, caller: "clickRemovePlayPath", playList: newPlayList})
+    setSetting((setting) => ({...setting, caller: "clickRemovePlayPath", playList: newPlayList}))
   }
 
   const onChangeChecked = (e: ChangeEvent<HTMLInputElement>, path: string) => {
@@ -56,7 +55,7 @@ function MoviePlayListRowView({
   const isChecked = selectedPlayList.includes(playList[index]);
   const isSelected = playList[index] == selectionBegin;
   return (
-    <div className={`row ${isSelected ? 'selected': ''}`} style={style}>
+    <div className={`row ${isSelected ? 'selected': ''}  ${isPlayPath ? 'playing' : ''}`} style={style}>
       <div className={`title  ${(!mediaRef?.paused && isPlayPath) ? 'playing' : ''}`}
            title={playList[index]}
       >

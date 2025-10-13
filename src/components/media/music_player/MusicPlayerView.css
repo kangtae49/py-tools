@@ -12,6 +12,7 @@
     --icon-color-inactive: #d9d9d9;
     --icon-color-warning: #dd4e79;
     --row-hover-color: #9fc6e1;
+    --row-playing-color: #9fc6e1;
     --icon-hover-scale: scale(1.2);
     width: 100%;
     height: 100%;
@@ -156,6 +157,9 @@ input[type=range]::-webkit-slider-thumb {
 
 .music-player .play-list .row.selected {
     background-color: #d9d9d9;
+}
+.music-player .play-list .row.playing {
+    background-color: var(--row-playing-color);
 }
 
 .music-player .play-list .row .title {

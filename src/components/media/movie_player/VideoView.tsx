@@ -11,6 +11,7 @@ function VideoView() {
 
   const {
     mediaRef, setMediaRef,
+    containerRef,
     changeCurrentTime,
     changeVolume,
     changeMuted,
@@ -30,7 +31,7 @@ function VideoView() {
   useEffect(() => {
     if (!ready) return;
     if(mediaRef === null) return;
-    if(setting?.playPath == null) return;
+    if(setting.playPath == undefined) return;
 
     console.log('ready state', mediaRef?.readyState)
 
@@ -41,14 +42,13 @@ function VideoView() {
         mediaRef.play().then();
       }
     }
-  }, [ready, setting?.paused]);
+  }, [ready, setting.paused]);
 
 
   const isNullPlaying = () => {
     const state = useVideoStore.getState();
     if (state.mediaRef === null) return true;
-    if (state.setting === null) return true;
-    if (state.setting.playPath == null) return true;
+    if (state.setting.playPath == undefined) return true;
     if (!state.mediaRef) return true;
     return state.mediaRef.currentSrc === '';
   }
@@ -68,7 +68,7 @@ function VideoView() {
 
     const state = useVideoStore.getState();
     state.changeAllTrackMode('disabled');
-    if(state.setting?.playPath == null) return;
+    if(state.setting.playPath == undefined) return;
     if (state.mediaRef === null) return;
     console.log('playPath', state.setting.playPath);
     state.mediaRef.src = srcLocal(state.setting.playPath);
@@ -101,11 +101,10 @@ function VideoView() {
   const onTimeUpdate = () => {
     if (isNullPlaying()) return;
 
-    const state = useVideoStore.getState();
     if (isValidSrc()) {
-      state.setSetting({...state.setting, caller: "onTimeUpdate", currentTime: state.mediaRef!.currentTime})
+      setSetting((setting) => ({...setting, caller: "onTimeUpdate", currentTime: mediaRef!.currentTime}))
     } else {
-      state.setSetting({...state.setting, caller: "onTimeUpdate", currentTime: 0})
+      setSetting((setting) => ({...setting, caller: "onTimeUpdate", currentTime: 0}))
     }
   }
 
@@ -121,15 +120,12 @@ function VideoView() {
     if (isNullPlaying()) return;
     if (!isValidSrc()) return;
 
-    const state = useVideoStore.getState();
-
-    setSetting({...state.setting, caller: "onVolumeChange", volume: state.mediaRef!.volume, muted: state.mediaRef!.muted})
+    setSetting((setting) => ({...setting, caller: "onVolumeChange", volume: mediaRef!.volume, muted: mediaRef!.muted}))
   }
   const onRateChange = () => {
     if (isNullPlaying()) return;
     if (!isValidSrc()) return;
-    const state = useVideoStore.getState();
-    setSetting({...state.setting, caller: "onRateChange", playbackRate: state.mediaRef!.playbackRate})
+    setSetting((setting) => ({...setting, caller: "onRateChange", playbackRate: mediaRef!.playbackRate}))
   }
   const onPlay = () => {}
   const onPause = () => {}
@@ -138,19 +134,19 @@ function VideoView() {
     if (isNullPlaying()) return;
     if (!isValidSrc()) return;
 
-    const state = useVideoStore.getState();
-    const fullscreen = document.fullscreenElement === state.mediaRef;
+    const setting = useVideoStore.getState().setting;
+    const fullscreen = document.fullscreenElement === mediaRef;
     console.log('fullscreenchange', fullscreen);
     await commands.toggleFullscreen();
     setFullscreen(fullscreen)
 
     if (fullscreen) {
-      mediaRef?.focus();
+      mediaRef!.focus();
     } else {
-      if (state.mediaRef!.paused !== state.setting!.paused) {
-        state.setSetting({...state.setting, caller: "onPause", paused: state.mediaRef!.paused})
+      if (mediaRef!.paused !== setting!.paused) {
+        setSetting((setting) => ({...setting, caller: "onPause", paused: mediaRef!.paused}))
       }
-      state.containerRef?.focus();
+      containerRef?.focus();
     }
   }
 
@@ -221,37 +217,10 @@ function VideoView() {
     return state.setting?.subType == sub.subtype;
   }
 
-  // const getSrcSub = async (sub: Sub) => {
-  //   const result = await commands.readSub(sub.fullpath);
-  //   let vttText = '';
-  //   if (result.status === 'ok') {
-  //     vttText = result.data;
-  //   }
-  //   const blob = new Blob([vttText], { type: "text/vtt" });
-  //   return URL.createObjectURL(blob);
-  // }
-
-  // const loadVtt = async () => {
-  //
-  //   const newMap: Record<string, string> = {};
-  //   for (const sub of subs) {
-  //     try{
-  //       newMap[sub.fullpath] = await getSrcSub(sub);
-  //     } catch (e) {
-  //       console.error('loadVtt', e);
-  //     }
-  //   }
-  //   setSubObjSrcMap({...newMap});
-  // }
-
-  // useEffect(() => {
-  //   loadVtt().then()
-  // }, [subs])
-
   useEffect(() => {
     if (subs.length === 0) return;
-    if (setting?.subType == null) return;
-    if (mediaRef == null) return;
+    if (setting.subType == undefined) return;
+    if (mediaRef === null) return;
     const tracks = mediaRef?.textTracks;
 
     for (const track of tracks) {
@@ -261,7 +230,7 @@ function VideoView() {
         track.mode = 'hidden';
       }
     }
-  }, [setting?.subType])
+  }, [setting.subType])
 
   return (
 

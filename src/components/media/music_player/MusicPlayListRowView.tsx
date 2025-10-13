@@ -32,7 +32,6 @@ function MusicPlayListRowView({
     if (setting === null) return;
     console.log('clickPlayPath', path)
     console.log('setSetting clickPlayPath')
-    // mediaRef?.load();
     setSetting({...setting, caller: "clickPlayPath", currentTime: 0, playPath: path})
   }
   const clickRemovePlayPath = (path: string) => {
@@ -56,7 +55,7 @@ function MusicPlayListRowView({
   const isChecked = selectedPlayList.includes(playList[index]);
   const isSelected = playList[index] == selectionBegin;
   return (
-    <div className={`row ${isSelected ? 'selected': ''}`} style={style}>
+    <div className={`row ${isSelected ? 'selected': ''} ${isPlayPath ? 'playing' : ''}`} style={style}>
       <div className={`title  ${(!mediaRef?.paused && isPlayPath) ? 'playing' : ''}`}
            title={playList[index]}
       >

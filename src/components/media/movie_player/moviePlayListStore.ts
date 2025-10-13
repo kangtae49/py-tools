@@ -6,7 +6,7 @@ import {type ListImperativeAPI} from 'react-window';
 interface MoviePlayListStore {
   playListRef: ListImperativeAPI | null;
   setPlayListRef: (value: ListImperativeAPI | null) => void;
-  scrollPlayPath: (curPlayList: string[], value: string) => void;
+  scrollPlayPath: (curPlayList: string[], value: string | undefined) => void;
 }
 
 export const useMoviePlayListStore = create<MoviePlayListStore>((set, get) => ({
@@ -16,8 +16,8 @@ export const useMoviePlayListStore = create<MoviePlayListStore>((set, get) => ({
     if (value === null) return;
     set({playListRef: value})
   },
-  scrollPlayPath: (curPlayList: string[], value: string) => {
-    // const curPlayList = get().setting.playList;
+  scrollPlayPath: (curPlayList, value) => {
+    if(value === undefined) return;
     const listRef = get().playListRef;
     const idx = curPlayList.indexOf(value);
     if (idx >= 0) {

@@ -24,7 +24,7 @@ interface MediaStore<T extends HTMLMediaElement> {
   mediaRef: T | null
   containerRef: HTMLDivElement | null
   ended: boolean
-  setting: PlayerSetting | null
+  setting: PlayerSetting
   filter: string[]
   fullscreen: boolean
   ready: boolean
@@ -33,7 +33,7 @@ interface MediaStore<T extends HTMLMediaElement> {
   setMediaRef: (mediaRef: T | null) => void
   setContainerRef: (containerRef: HTMLDivElement | null) => void
   setEnded: (ended: boolean) => void;
-  setSetting: (setting: PlayerSetting | null) => void;
+  setSetting: (setting: PlayerSetting | ((prev: PlayerSetting) => PlayerSetting)) => void;
   setFilter: (filter: string[]) => void;
   setFullscreen: (fullscreen: boolean) => void;
   setReady: (ready: boolean) => void;
@@ -54,13 +54,13 @@ interface MediaStore<T extends HTMLMediaElement> {
   removePlayList: (curList: string[], delList: string[]) => string [];
   shufflePlayList: (curList: string[]) => string [];
   natsortPlayList: (curList: string[]) => string [];
-  getPrevPlayPath: (value: string | null) => string | null;
-  getNextPlayPath: (value: string | null) => string | null;
+  getPrevPlayPath: (value: string | undefined) => string | undefined;
+  getNextPlayPath: (value: string | undefined) => string | undefined;
 }
 interface MediaDefault {
   shuffle?: boolean
   filter?: string[]
-  setting?: PlayerSetting
+  setting: PlayerSetting
 }
 
 export const audioDefault: MediaDefault = {
@@ -93,14 +93,14 @@ export const videoDefault: MediaDefault = {
   }
 }
 
-function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault = {}) {
+function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault) {
 
   return create<MediaStore<T>>((set, get) => ({
     mediaRef: null,
     containerRef: null,
     ended: false,
     filter: mediaDefault.filter ?? [],
-    setting: mediaDefault.setting ?? null,
+    setting: mediaDefault.setting,
     fullscreen: false,
     ready: false,
     subs: [],
@@ -113,7 +113,12 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
       set({containerRef})
     },
     setEnded: (ended) => set({ended}),
-    setSetting: (setting) => set({setting}),
+    setSetting: (updater) => {
+      set((state) => ({
+        setting:
+          typeof updater === "function" ? updater(state.setting) : updater,
+      }))
+    },
     setFilter: (filter) => set({filter}),
     setFullscreen: (fullscreen) => set({fullscreen}),
     setReady: (ready) => set({ready}),
@@ -158,23 +163,30 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
       return setting.paused ? get().mediaRef?.pause(): await get().mediaRef?.play();
     },
     toggleRepeat: () => {
-      const setting = get().setting;
-      if (setting === null) return;
-      const repeat = get().setting?.repeat;
-      const setSetting = get().setSetting;
-      if (repeat === 'repeat_all') {
-        setSetting({...setting, caller: "toggleRepeat", repeat: 'repeat_one'})
-      } else if (repeat === 'repeat_one') {
-        setSetting({...setting, caller: "toggleRepeat", repeat: 'repeat_none'})
-      } else if (repeat === 'repeat_none') {
-        setSetting({...setting, caller: "toggleRepeat", repeat: 'repeat_all'})
-      }
+      set((state) => {
+        const repeat = state.setting.repeat;
+        let newRepeat: RepeatType;
+        if (repeat === 'repeat_all') {
+          newRepeat = 'repeat_one'
+        } else if (repeat === 'repeat_one') {
+          newRepeat = 'repeat_none'
+        } else if (repeat === 'repeat_none') {
+          newRepeat = 'repeat_all'
+        } else {
+          newRepeat = 'repeat_all'
+        }
+        return {
+          setting: {...state.setting, repeat: newRepeat}
+        }
+      });
     },
     toggleShuffle: () => {
-      const setting = get().setting;
-      if (setting === null) return;
-      const setSetting = get().setSetting;
-      setSetting({...setting, caller: "toggleShuffle", shuffle: !setting.shuffle})
+      set((state) => {
+        const newShuffle = state.setting.shuffle ?? true;
+        return {
+          setting: {...state.setting, caller: "toggleShuffle", shuffle: !newShuffle}
+        }
+      })
     },
 
     appendPlayList: (curList, addList) => {
@@ -198,12 +210,12 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     },
     getPrevPlayPath: (value) => {
       const curPlayList = get().setting?.playList;
-      if (curPlayList === undefined) return null;
+      if (curPlayList === undefined) return undefined;
       if (curPlayList.length == 0) {
-        return null;
+        return undefined;
       }
-      let prev: string | null;
-      if (value == null) {
+      let prev: string | undefined;
+      if (value === undefined) {
         prev = curPlayList[0];
         return prev
       }
@@ -216,12 +228,12 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
     },
     getNextPlayPath: (value) => {
       const curPlayList = get().setting?.playList;
-      if (curPlayList === undefined) return null;
+      if (curPlayList === undefined) return undefined;
       if (curPlayList.length == 0) {
-        return null;
+        return undefined;
       }
-      let next: string | null;
-      if (value == null) {
+      let next: string | undefined;
+      if (value == undefined) {
         next = curPlayList[0];
         return next;
       }

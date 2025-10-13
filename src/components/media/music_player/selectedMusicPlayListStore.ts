@@ -2,9 +2,9 @@ import {create} from "zustand/react";
 
 interface SelectedMusicPlayListStore {
   selectedPlayList: string[];
-  selectionBegin: string | null;
+  selectionBegin: string | undefined;
   setSelectedPlayList: (value: string[]) => void;
-  setSelectionBegin: (value: string | null) => void;
+  setSelectionBegin: (value: string | undefined) => void;
 
   appendSelectedPlayList: (value: string[]) => void;
   removeSelectedPlayList: (value: string[]) => void;
@@ -12,7 +12,7 @@ interface SelectedMusicPlayListStore {
 
 export const useSelectedMusicPlayListStore = create<SelectedMusicPlayListStore>((set, get) => ({
   selectedPlayList: [],
-  selectionBegin: null,
+  selectionBegin: undefined,
 
   setSelectedPlayList: (value) => set({ selectedPlayList: value }),
   setSelectionBegin: (value) => set({ selectionBegin: value }),

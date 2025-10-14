@@ -26,7 +26,7 @@ function AudioView() {
   useEffect(() => {
     if (!ready) return;
     if(mediaRef === null) return;
-    if(setting?.playPath == null) return;
+    if(setting.playPath == undefined) return;
 
     console.log('ready state', mediaRef?.readyState)
 
@@ -37,14 +37,13 @@ function AudioView() {
         mediaRef.play().then();
       }
     }
-  }, [ready, setting?.paused]);
+  }, [ready, setting.paused]);
 
 
   const isNullPlaying = () => {
     const state = useAudioStore.getState();
     if (state.mediaRef === null) return true;
-    if (state.setting === null) return true;
-    if (state.setting.playPath == null) return true;
+    if (state.setting.playPath == undefined) return true;
     if (!state.mediaRef) return true;
     return state.mediaRef.currentSrc === '';
   }
@@ -62,7 +61,7 @@ function AudioView() {
 
   const loadSrc = () => {
     const state = useAudioStore.getState();
-    if(state.setting?.playPath == null) return;
+    if(state.setting.playPath == undefined) return;
     if (state.mediaRef === null) return;
     console.log('playPath', state.setting.playPath);
     state.mediaRef.src = srcLocal(state.setting.playPath);
@@ -95,11 +94,10 @@ function AudioView() {
   const onTimeUpdate = () => {
     if (isNullPlaying()) return;
 
-    const state = useAudioStore.getState();
     if (isValidSrc()) {
-      state.setSetting({...state.setting, caller: "onTimeUpdate", currentTime: state.mediaRef!.currentTime})
+      setSetting((setting) => ({...setting, caller: "onTimeUpdate", currentTime: mediaRef!.currentTime}))
     } else {
-      state.setSetting({...state.setting, caller: "onTimeUpdate", currentTime: 0})
+      setSetting((setting) => ({...setting, caller: "onTimeUpdate", currentTime: 0}))
     }
   }
 
@@ -115,15 +113,12 @@ function AudioView() {
     if (isNullPlaying()) return;
     if (!isValidSrc()) return;
 
-    const state = useAudioStore.getState();
-
-    setSetting({...state.setting, caller: "onVolumeChange", volume: state.mediaRef!.volume, muted: state.mediaRef!.muted})
+    setSetting((setting) => ({...setting, caller: "onVolumeChange", volume: mediaRef!.volume, muted: mediaRef!.muted}))
   }
   const onRateChange = () => {
     if (isNullPlaying()) return;
     if (!isValidSrc()) return;
-    const state = useAudioStore.getState();
-    setSetting({...state.setting, caller: "onRateChange", playbackRate: state.mediaRef!.playbackRate})
+    setSetting((setting) => ({...setting, caller: "onRateChange", playbackRate: mediaRef!.playbackRate}))
   }
   const onPlay = () => {}
   const onPause = () => {}

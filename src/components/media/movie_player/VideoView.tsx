@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {useVideoStore} from "../mediaStore.ts";
+import {useVideoStore as useMediaStore} from "../mediaStore.ts";
 import {srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts";
 import type {Sub} from "@/types/models";
@@ -20,7 +20,7 @@ function VideoView() {
     setting, setSetting,
     setFullscreen,
     subs,
-  } = useVideoStore();
+  } = useMediaStore();
 
 
   useEffect(() => {
@@ -46,7 +46,7 @@ function VideoView() {
 
 
   const isNullPlaying = () => {
-    const state = useVideoStore.getState();
+    const state = useMediaStore.getState();
     if (state.mediaRef === null) return true;
     if (state.setting.playPath == undefined) return true;
     if (!state.mediaRef) return true;
@@ -54,7 +54,7 @@ function VideoView() {
   }
 
   const isValidSrc = () => {
-    const state = useVideoStore.getState();
+    const state = useMediaStore.getState();
     let settingSrc;
     if (import.meta.env.PROD) {
       settingSrc = new URL(srcLocal(state.setting?.playPath ?? '')).href;
@@ -65,8 +65,7 @@ function VideoView() {
   }
 
   const loadSrc = () => {
-
-    const state = useVideoStore.getState();
+    const state = useMediaStore.getState();
     state.changeAllTrackMode('disabled');
     if(state.setting.playPath == undefined) return;
     if (state.mediaRef === null) return;
@@ -78,7 +77,7 @@ function VideoView() {
   const onloadedMetaData = async () => {
     if (isNullPlaying()) return;
     if (!isValidSrc()) return;
-    const state = useVideoStore.getState();
+    const state = useMediaStore.getState();
 
     changeVolume(state.setting!.volume);
     changeCurrentTime(state.setting!.currentTime);
@@ -111,7 +110,7 @@ function VideoView() {
   const onEnded = () => {
     if (isNullPlaying()) return;
     if (!isValidSrc()) return;
-    const state = useVideoStore.getState();
+    const state = useMediaStore.getState();
 
     state.mediaRef!.loop = false;
     setEnded(true);
@@ -134,7 +133,7 @@ function VideoView() {
     if (isNullPlaying()) return;
     if (!isValidSrc()) return;
 
-    const setting = useVideoStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     const fullscreen = document.fullscreenElement === mediaRef;
     console.log('fullscreenchange', fullscreen);
     await commands.toggleFullscreen();
@@ -213,7 +212,7 @@ function VideoView() {
 
   const isDefaultSub = (sub: Sub) => {
     if (subs.length == 0) return false;
-    const state = useVideoStore.getState();
+    const state = useMediaStore.getState();
     return state.setting?.subType == sub.subtype;
   }
 
@@ -233,24 +232,23 @@ function VideoView() {
   }, [setting.subType])
 
   return (
-
-      <video
-        ref={setMediaRef}
-        controls={false}
-        preload="metadata"
-        autoPlay={false}
-      >
-        <source />
-        { subs && subs.map((sub, _index) => (
-            <track key={sub.fullpath}
-                   label={sub.subtype}
-                   kind="subtitles"
-                   srcLang={sub.lang}
-                   src={sub.src}
-                   default={isDefaultSub(sub)}
-            />
-        ))}
-      </video>
+    <video
+      ref={setMediaRef}
+      controls={false}
+      preload="metadata"
+      autoPlay={false}
+    >
+      <source />
+      { subs && subs.map((sub, _index) => (
+          <track key={sub.fullpath}
+                 label={sub.subtype}
+                 kind="subtitles"
+                 srcLang={sub.lang}
+                 src={sub.src}
+                 default={isDefaultSub(sub)}
+          />
+      ))}
+    </video>
   )
 }
 

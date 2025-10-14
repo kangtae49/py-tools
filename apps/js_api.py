@@ -113,7 +113,7 @@ class JsApi:
 
     def app_read(self, subpath: str):
         if subpath not in self.setting :
-            raise ApiException(f"not fount {subpath}")
+            raise ApiException(f"[app_read] not found key  {subpath}")
         return self.setting.get(subpath)
 
     def app_write(self, subpath: str, content: str):

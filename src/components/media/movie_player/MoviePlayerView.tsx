@@ -315,8 +315,9 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     }
     const newPlayList = newSetting?.playList ?? []
     const newPlayPath = newSetting?.playPath ?? newPlayList[0];
+    const newCurrenTime = newSetting?.currentTime ?? 0;
 
-    setSetting((_setting) => ({...newSetting, caller: "onMount", playPath: newPlayPath}))
+    setSetting((_setting) => ({...newSetting, caller: "onMount", playPath: newPlayPath, currentTime: newCurrenTime}))
     setPlayList(newPlayList)
     setPaused(newSetting?.paused ?? false)
     setSelectionBegin(newPlayPath)
@@ -341,17 +342,21 @@ export default function MoviePlayerView({winKey: _}: Prop) {
       appendSelectedPlayList([file]);
     }
     const newPlayList = appendPlayList(setting.playList, [file]);
-    setSetting((setting) => ({...setting, caller: "onDropPlayPath", playPath: file, paused: false, playList: newPlayList}))
+    setSetting((setting) => ({...setting, caller: "onDropPlayPath", playPath: file, paused: false}))
+    setPlayPath(file)
+    setPaused(false)
+    setPlayList(newPlayList)
   };
 
   const onDropPlayList = (files: string[]) => {
+    if(files.length === 0) return;
     const setting = useMediaStore.getState().setting;
     const playList = setting.playList ?? [];
     const addPlayList = files.filter((file) => playList.indexOf(file) < 0);
     const newPlayList = appendPlayList(playList, addPlayList);
     appendSelectedPlayList(addPlayList);
     console.log('setSetting onDropPlayList')
-    setSetting((setting) => ({...setting, caller: "onDropPlayList", playList: newPlayList}))
+    setPlayList(newPlayList)
   }
 
   useEffect(() => {
@@ -440,9 +445,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
         }
       } else if (dropRef?.classList.contains('drop-list')) {
         console.log('drop-list');
-        if (videoFullpathFiles.length > 0) {
-          onDropPlayList(videoFullpathFiles);
-        }
+        onDropPlayList(videoFullpathFiles);
       }
     }
     dropRef?.addEventListener("drop-files", onDropFullPathHandler as EventListener)
@@ -501,7 +504,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                  onClick={clickVideo}
                  onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
             >
-              <VideoView  />
+              <VideoView />
             </div>
             )
           }

@@ -25,7 +25,8 @@ export default function PlayListView({usePlayListStore}: Prop) {
 
 
   return (
-    <List className="play-list"
+    <List
+      // className="play-list"
           listRef={setPlayListRef}
           rowHeight={22}
           rowCount={playList?.length ?? 0}

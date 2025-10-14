@@ -136,15 +136,10 @@ input[type=range]::-webkit-slider-thumb {
     margin-top: -7px;
     margin-left: 0;
 }
-.music-player .play-list-con {
-    position: relative;
-    max-height: 100%;
-    flex-grow: 1;
-    overflow-y: auto;
-}
 .music-player .play-list {
-    flex: 1;
     height: 100%;
+    overflow-y: auto;
+    flex: 1;
 }
 
 .music-player .play-list .row {

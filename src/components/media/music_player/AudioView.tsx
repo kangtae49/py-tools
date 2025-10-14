@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {useAudioStore} from "../mediaStore.ts";
+import {useAudioStore as useMediaStore} from "../mediaStore.ts";
 import {srcLocal} from "@/components/utils.ts";
 
 
@@ -15,7 +15,7 @@ function AudioView() {
     setEnded,
     changePlaybackRate,
     setting, setSetting,
-  } = useAudioStore();
+  } = useMediaStore();
 
 
   useEffect(() => {
@@ -41,7 +41,7 @@ function AudioView() {
 
 
   const isNullPlaying = () => {
-    const state = useAudioStore.getState();
+    const state = useMediaStore.getState();
     if (state.mediaRef === null) return true;
     if (state.setting.playPath == undefined) return true;
     if (!state.mediaRef) return true;
@@ -49,7 +49,7 @@ function AudioView() {
   }
 
   const isValidSrc = () => {
-    const state = useAudioStore.getState();
+    const state = useMediaStore.getState();
     let settingSrc;
     if (import.meta.env.PROD) {
       settingSrc = new URL(srcLocal(state.setting?.playPath ?? '')).href;
@@ -60,7 +60,7 @@ function AudioView() {
   }
 
   const loadSrc = () => {
-    const state = useAudioStore.getState();
+    const state = useMediaStore.getState();
     if(state.setting.playPath == undefined) return;
     if (state.mediaRef === null) return;
     console.log('playPath', state.setting.playPath);
@@ -71,7 +71,7 @@ function AudioView() {
   const onloadedMetaData = async () => {
     if (isNullPlaying()) return;
     if (!isValidSrc()) return;
-    const state = useAudioStore.getState();
+    const state = useMediaStore.getState();
 
     changeVolume(state.setting!.volume);
     changeCurrentTime(state.setting!.currentTime);
@@ -104,7 +104,7 @@ function AudioView() {
   const onEnded = () => {
     if (isNullPlaying()) return;
     if (!isValidSrc()) return;
-    const state = useAudioStore.getState();
+    const state = useMediaStore.getState();
 
     state.mediaRef!.loop = false;
     setEnded(true);
@@ -183,16 +183,14 @@ function AudioView() {
   }, []);
 
   return (
-    <div className="audio-player">
-      <audio
-        ref={setMediaRef}
-        controls
-        preload="metadata"
-        autoPlay={false}
-      >
-        <source />
-      </audio>
-    </div>
+    <audio
+      ref={setMediaRef}
+      controls
+      preload="metadata"
+      autoPlay={false}
+    >
+      <source />
+    </audio>
   )
 }
 

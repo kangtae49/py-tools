@@ -310,14 +310,17 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   const onUnMount = async () => {
-    console.log('onUnMount')
-    commands.appRead(PLAYER_SETTING).then((result) => {
-      if (result.status === 'ok') {
-        commands.appWriteFile(PLAYER_SETTING, "{}").then((result) => {
-          console.log(result.status, 'appWriteFile', PLAYER_SETTING);
-        })
-      }
-    })
+    const ready = useMediaStore.getState().ready;
+    console.log('onUnMount', ready)
+    if (ready) {
+      commands.appRead(PLAYER_SETTING).then((result) => {
+        if (result.status === 'ok') {
+          commands.appWriteFile(PLAYER_SETTING, "{}").then((result) => {
+            console.log(result.status, 'appWriteFile', PLAYER_SETTING);
+          })
+        }
+      })
+    }
   }
 
   const onDropPlayPath = (file: string) => {

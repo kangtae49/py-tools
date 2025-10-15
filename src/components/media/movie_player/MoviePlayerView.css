@@ -162,11 +162,10 @@ input[type=range]::-webkit-slider-thumb {
     margin-top: -7px;
     margin-left: 0;
 }
-.controller .play-list-con {
-    flex: 1;
+.music-player .play-list {
     height: 100%;
-}
-.controller .play-list {
+    overflow-y: auto;
+    flex: 1;
 }
 
 .controller .play-list .row {

@@ -1,0 +1,55 @@
+.play-list {
+    height: 100%;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.play-list .row {
+    display: flex;
+    align-items: center;
+    padding: 0 5px;
+    cursor: pointer;
+    text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.play-list .row.selected {
+    background-color: #d9d9d9;
+}
+.play-list .row.playing {
+    background-color: var(--row-playing-color);
+}
+
+.play-list .row .title {
+    text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    display: flex;
+    inset: 0;
+    transition: background 0.5s ease;
+}
+.play-list .row .title:hover {
+    background-color: var(--row-hover-color);
+}
+.play-list .row .no {
+    flex: 0 0 40px;
+    display: flex;
+    justify-content: right; align-items: center;
+    inset: 0;
+    transition: background 0.5s ease;
+}
+.play-list .row .title.playing {
+    display: flex;
+    background: linear-gradient(270deg, #ff6ec4, #7873f5, #4ade80, #facc15);
+    background-size: 400% 400%;
+    animation: gradientShift 10s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%   { background-position: 0 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+}
+
+.play-list .head {
+    display: flex;
+    text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.play-list .head .title { cursor: pointer;}

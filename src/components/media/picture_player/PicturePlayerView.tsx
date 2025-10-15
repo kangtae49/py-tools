@@ -3,9 +3,12 @@ import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 import {usePictureStore} from "@/components/media/picture_player/pictureStore.ts";
 import {SplitPane} from "@rexxars/react-split-pane";
 import AutoSizer from "react-virtualized-auto-sizer";
-import {List, Grid} from "react-window";
-import PicturePlayListRowView from "./PicturePlayListRowView.tsx";
+import {Grid} from "react-window";
 import ImageListView from "./ImageListView.tsx";
+import PlayListView from "@/components/media/playlist/PlayListView.tsx";
+import {usePicturePlayListStore as usePlayListStore} from "@/components/media/playlist/playListStore.ts";
+import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
+import {faImage} from "@fortawesome/free-solid-svg-icons";
 
 interface Prop {
   winKey: WinKey
@@ -13,9 +16,9 @@ interface Prop {
 
 export default function PicturePlayerView({winKey: _}: Prop) {
   const {
-    setting,
+    // setting,
     setContainerRef,
-    setPlayListRef,
+    // setPlayListRef,
   } = usePictureStore();
 
   return (
@@ -61,17 +64,13 @@ export default function PicturePlayerView({winKey: _}: Prop) {
               <div className="top">
                 <div className="row first">
                 </div>
-                <div className="row second">
-                </div>
-                <div className="play-list-con drop-list"
-                     style={{ height: "calc(100% - 105px)", width }}
+                <div className="drop-list"
+                     style={{ minHeight: "100%", height: "calc(100% - 85px)", width }}
+                     // onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
                 >
-                  <List className="play-list"
-                        listRef={setPlayListRef}
-                        rowHeight={22}
-                        rowCount={setting.playList?.length ?? 0}
-                        rowComponent={PicturePlayListRowView}
-                        rowProps={{ playList: setting.playList ?? []}}
+                  <PlayListView
+                    usePlayListStore={usePlayListStore}
+                    icon={<Icon icon={faImage} />}
                   />
                 </div>
               </div>

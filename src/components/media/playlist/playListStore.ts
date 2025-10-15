@@ -37,6 +37,7 @@ export interface PlayListStore {
 
   appendSelectedPlayList: (value: string[]) => void;
   removeSelectedPlayList: (value: string[]) => void;
+  toggleAllChecked: (checked: boolean) => void;
 
   onKeyDownPlayList: (event: React.KeyboardEvent<HTMLDivElement>) => void;
 
@@ -164,6 +165,19 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
       // setPlayList(newPlayList);
     },
 
+    toggleAllChecked: (checked: boolean) => {
+      const {
+        playList,
+        setSelectedPlayList
+      } = get();
+      if (playList.length === 0) return;
+      let newPlayList: string[] = []
+      if (checked) {
+        newPlayList = [...playList]
+      }
+      setSelectedPlayList(newPlayList)
+    },
+
 
     onKeyDownPlayList: (e: React.KeyboardEvent<HTMLDivElement>) => {
       const {
@@ -273,6 +287,15 @@ export const useMusicPlayListStore = createPlayListStore({
   playPath: undefined,
   paused: true,
   shuffle: true,
+  playList: [],
+  selectedPlayList: [],
+  selectionBegin: undefined,
+});
+
+export const usePicturePlayListStore = createPlayListStore({
+  playPath: undefined,
+  paused: true,
+  shuffle: false,
   playList: [],
   selectedPlayList: [],
   selectionBegin: undefined,

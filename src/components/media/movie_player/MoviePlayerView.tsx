@@ -1,5 +1,5 @@
 import "./MoviePlayerView.css"
-import React, {type ChangeEvent, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {formatSeconds, getFilename, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
@@ -187,16 +187,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     const onKeyDownPlayList = usePlayListStore.getState().onKeyDownPlayList
     onKeyDownPlayList(e);
 
-  }
-
-  const changeAllChecked = (e: ChangeEvent<HTMLInputElement>) => {
-    const setting = useMediaStore.getState().setting;
-    if (setting?.playList == null) return;
-    let newPlayList: string[] = []
-    if (e.target.checked) {
-      newPlayList = [...setting.playList]
-    }
-    setSelectedPlayList(newPlayList)
   }
 
   const toggleFullscreen = async () => {
@@ -637,20 +627,15 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                 </div>
 
               </div>
-              <div className={`row second`}>
-                <div><input type="checkbox" onChange={changeAllChecked}/></div>
-                <Icon icon={faFilm} />
-                <div className="title"
-                     title={setting.playPath ?? ''}
-                     onClick={() => {setting.playPath && scrollPlayPath(setting.playList ?? [], setting.playPath)}}
-                >{getFilename(setting.playPath ?? '')}</div>
-              </div>
             </div>
-            <div className="play-list drop-list"
-                 style={{ height: "calc(100% - 105px)", width }}
+            <div className="drop-list"
+                 style={{ height: "calc(100% - 85px)", width }}
                  onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
             >
-              <PlayListView usePlayListStore={usePlayListStore} />
+              <PlayListView
+                usePlayListStore={usePlayListStore}
+                icon={<Icon icon={faFilm} />}
+              />
             </div>
           </div>
         )}

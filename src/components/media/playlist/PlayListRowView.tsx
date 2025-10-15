@@ -2,7 +2,6 @@ import React from "react";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faCircleXmark,
-  faFilm,
 } from '@fortawesome/free-solid-svg-icons'
 import { type RowComponentProps } from "react-window";
 import {getFilename} from "@/components/utils.ts";
@@ -15,12 +14,14 @@ import type {PlayListStore} from "@/components/media/playlist/playListStore.ts";
 
 interface Prop {
   usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
+  icon?: React.ReactElement,
 }
 
 function PlayListRowView({
   index,
   style,
   usePlayListStore,
+  icon,
 }: RowComponentProps<Prop>) {
   const {
     playPath, setPlayPath,
@@ -65,7 +66,7 @@ function PlayListRowView({
               />
         </div>
 
-        {isPlayPath && <div><Icon icon={faFilm}/></div>}
+        {isPlayPath && <div>{icon}</div>}
         <div title={playList[index]} onClick={() => clickPlayPath(playList[index])}>
           {getFilename(playList[index])}
         </div>

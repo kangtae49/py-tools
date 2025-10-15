@@ -136,59 +136,17 @@ input[type=range]::-webkit-slider-thumb {
     margin-top: -7px;
     margin-left: 0;
 }
-.music-player .play-list {
-    height: 100%;
-    overflow-y: auto;
-    flex: 1;
-}
-
-.music-player .play-list .row {
-    display: flex;
-    align-items: center;
-    padding: 0 5px;
-    cursor: pointer;
-    text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-
-.music-player .play-list .row.selected {
-    background-color: #d9d9d9;
-}
-.music-player .play-list .row.playing {
-    background-color: var(--row-playing-color);
-}
-
-.music-player .play-list .row .title {
-    text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    display: flex;
-    inset: 0;
-    transition: background 0.5s ease;
-}
-.music-player .play-list .row .title:hover {
-    background-color: var(--row-hover-color);
-}
-.music-player .play-list .row .no {
-    flex: 0 0 40px;
-    display: flex;
-    justify-content: right; align-items: center;
-    inset: 0;
-    transition: background 0.5s ease;
-}
-.music-player .play-list .row .title.playing {
-    display: flex;
-    background: linear-gradient(270deg, #ff6ec4, #7873f5, #4ade80, #facc15);
-    background-size: 400% 400%;
-    animation: gradientShift 10s ease infinite;
-}
 
 .audio-player {
     display: none;
 }
-.second,.time-line {
+
+.time-line {
     inset: 0;
     background: white;
     transition: background 0.5s ease;
 }
-.second.playing,.time-line.playing {
+.time-line.playing {
     background: linear-gradient(270deg, #ff6ec4, #7873f5, #4ade80, #facc15);
     background-size: 400% 400%;
     animation: gradientShift 10s ease infinite;

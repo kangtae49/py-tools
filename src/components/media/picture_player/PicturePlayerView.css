@@ -143,8 +143,6 @@
     box-shadow: none;
 }
 
-
-
 input[type=range] {
     -webkit-appearance: none;
 }
@@ -162,59 +160,13 @@ input[type=range]::-webkit-slider-thumb {
     margin-top: -7px;
     margin-left: 0;
 }
-.controller .play-list-con {
-    flex: 1;
-    height: 100%;
-}
-.controller .play-list {
-}
 
-.controller .play-list .row {
-    display: flex;
-    align-items: center;
-    padding: 0 5px;
-    cursor: pointer;
-    text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-
-.controller .play-list .row.selected {
-    background-color: #d9d9d9;
-}
-
-.controller .play-list .row.playing {
-    background-color: var(--row-playing-color);
-}
-
-.controller .play-list .row .title {
-    text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    display: flex;
-    inset: 0;
-    transition: background 0.5s ease;
-}
-.controller .play-list .row .title:hover {
-    background-color: var(--row-hover-color);
-}
-.controller .play-list .row .no {
-    flex: 0 0 40px;
-    display: flex;
-    justify-content: right; align-items: center;
-    inset: 0;
-    transition: background 0.5s ease;
-}
-.controller .play-list .row .title.playing {
-    display: flex;
-    background: linear-gradient(270deg, #ff6ec4, #7873f5, #4ade80, #facc15);
-    background-size: 400% 400%;
-    animation: gradientShift 10s ease infinite;
-}
-
-
-.second,.time-line {
+.time-line {
     inset: 0;
     background: white;
     transition: background 0.5s ease;
 }
-.second.playing,.time-line.playing {
+.time-line.playing {
     background: linear-gradient(270deg, #ff6ec4, #7873f5, #4ade80, #facc15);
     background-size: 400% 400%;
     animation: gradientShift 10s ease infinite;
@@ -325,5 +277,3 @@ svg.blink {
     0% { transform: scale(1); }
     100% { transform: scale(1.2); }
 }
-
-

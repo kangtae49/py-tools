@@ -50,53 +50,31 @@ export interface MediaStore<T extends HTMLMediaElement> {
   toggleShuffle: () => void;
 
 }
-interface MediaDefault {
-  shuffle?: boolean
-  filter?: string[]
-  setting: PlayerSetting
-}
 
-export const audioDefault: MediaDefault = {
-  filter: ["mp3", "wav", "ogg", "m4a", "opus", "webm"],
-  setting: {
-    playPath: undefined,
-    currentTime: 0,
-    volume: 0.5,
-    playbackRate: 1.0,
-    muted: false,
-    paused: true,
-    shuffle: true,
-    repeat: "repeat_all",
-    playList: []
-  }
 
-};
-export const videoDefault: MediaDefault = {
-  filter: ["mp4", "webm", "mkv", "ogg"],
-  setting: {
-    playPath: undefined,
-    currentTime: 0,
-    volume: 0.5,
-    playbackRate: 1.0,
-    muted: false,
-    paused: true,
-    shuffle: false,
-    repeat: "repeat_all",
-    playList: []
-  }
-}
 
-function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault) {
+function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefault) {
 
   return create<MediaStore<T>>((set, get) => ({
     mediaRef: null,
     containerRef: null,
     ended: false,
-    filter: mediaDefault.filter ?? [],
-    setting: mediaDefault.setting,
+    filter: [],
+    setting: {
+      playPath: undefined,
+      currentTime: 0,
+      volume: 0.5,
+      playbackRate: 1.0,
+      muted: false,
+      paused: true,
+      shuffle: true,
+      repeat: "repeat_all",
+      playList: []
+    },
     fullscreen: false,
     ready: false,
     subs: [],
+    ...mediaDefault,
 
     setMediaRef: (mediaRef) => {
       set({mediaRef})
@@ -185,7 +163,42 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault: MediaDefault
   }))
 }
 
+interface MediaDefault {
+  shuffle?: boolean
+  filter?: string[]
+  setting: PlayerSetting
+}
 
+export const audioDefault: MediaDefault = {
+  filter: ["mp3", "wav", "ogg", "m4a", "opus", "webm"],
+  setting: {
+    playPath: undefined,
+    currentTime: 0,
+    volume: 0.5,
+    playbackRate: 1.0,
+    muted: false,
+    paused: true,
+    shuffle: true,
+    repeat: "repeat_all",
+    playList: []
+  }
+
+};
+
+export const videoDefault: MediaDefault = {
+  filter: ["mp4", "webm", "mkv", "ogg"],
+  setting: {
+    playPath: undefined,
+    currentTime: 0,
+    volume: 0.5,
+    playbackRate: 1.0,
+    muted: false,
+    paused: true,
+    shuffle: false,
+    repeat: "repeat_all",
+    playList: []
+  }
+}
 
 
 export const useAudioStore = createMediaStore<HTMLAudioElement>(audioDefault);

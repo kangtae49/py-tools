@@ -12,4 +12,6 @@ dependencies = [
     "pydantic-to-typescript",
     "pysubs2",
     "charset_normalizer",
+    "portalocker",
+    "wakepy"
 ]

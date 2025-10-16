@@ -6,29 +6,13 @@ import webview
 from apps import js_api
 from apps.listeners.window_event_listener import WindowEventListener
 
+
+
 api = js_api.JsApi()
 window_listener = None
 
 
-def run():
-    # webview.settings = {
-    #     'ALLOW_DOWNLOADS': False,
-    #     'ALLOW_FILE_URLS': True,
-    #     'DRAG_REGION_SELECTOR': 'pywebview-drag-region',
-    #     'OPEN_EXTERNAL_LINKS_IN_BROWSER': True,
-    #     'OPEN_DEVTOOLS_IN_DEBUG': True,
-    #     'IGNORE_SSL_ERRORS': False,
-    #     'REMOTE_DEBUGGING_PORT': None,
-    #     'SHOW_DEFAULT_MENUS': True
-    # }
-    print(webview.settings)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--verbose", action="store_true", help="verbose")
-    args = parser.parse_args()
-    debug = args.verbose
-    print(f'verbose: {args.verbose}')
-
+def get_index_url():
     if hasattr(sys, "_MEIPASS"):
         # py-tools.exe
         base_path = sys._MEIPASS
@@ -41,10 +25,30 @@ def run():
         # base_path = os.path.dirname(os.path.abspath(__file__))
         # index_path = os.path.join(base_path, "../dist/index.html")
         # server_url = f"file://{index_path}"
+    return server_url
+
+def run():
+    # webview.settings = {
+    #     'ALLOW_DOWNLOADS': False,
+    #     'ALLOW_FILE_URLS': True,
+    #     'DRAG_REGION_SELECTOR': 'pywebview-drag-region',
+    #     'OPEN_EXTERNAL_LINKS_IN_BROWSER': True,
+    #     'OPEN_DEVTOOLS_IN_DEBUG': True,
+    #     'IGNORE_SSL_ERRORS': False,
+    #     'REMOTE_DEBUGGING_PORT': None,
+    #     'SHOW_DEFAULT_MENUS': True
+    # }
+    print(webview.settings, flush=True)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--verbose", action="store_true", help="verbose")
+    args = parser.parse_args()
+    debug = args.verbose
+    print(f'verbose: {args.verbose}')
 
     window = webview.create_window(
         title='PyTools',
-        url=server_url,
+        url=get_index_url(),
         js_api=api,
         text_select=True,
         draggable=True,

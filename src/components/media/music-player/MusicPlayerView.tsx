@@ -1,6 +1,6 @@
-import "./MoviePlayerView.css"
+import "./MusicPlayerView.css"
 import React, {useEffect, useState} from "react";
-import {formatSeconds, getFilename, srcLocal} from "@/components/utils.ts";
+import {formatSeconds, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
@@ -14,24 +14,21 @@ import {
   faBackwardStep, faForwardStep,
   faShuffle,
   faFloppyDisk,
-  faArrowsSpin, faRotateRight, faMinus, faFilm, faExpand,
+  faArrowsSpin, faRotateRight, faMinus, faMusic,
 } from '@fortawesome/free-solid-svg-icons'
-import VideoView from "./VideoView.tsx";
-import {videoDefault as mediaDefault, type PlayerSetting, useVideoStore as useMediaStore} from "../mediaStore.ts";
-import type {DropFile, Sub} from "@/types/models";
-import {SplitPane} from "@rexxars/react-split-pane";
-import AutoSizer from "react-virtualized-auto-sizer";
-import {getSubs} from "@/components/media/media.ts";
-import {useMoviePlayListStore as usePlayListStore} from "@/components/media/playlist/playListStore.ts";
-import PlayListView from "@/components/media/playlist/PlayListView.tsx";
+import AudioView from "./AudioView.tsx";
+import {audioDefault as mediaDefault, type PlayerSetting, useAudioStore as useMediaStore} from "../mediaStore.ts";
+import type {DropFile} from "@/types/models";
+import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
+import PlayListView from "@/components/media/play-list/PlayListView.tsx";
 
-export const PLAYER_SETTING = 'movie-player.setting.json'
+export const PLAYER_SETTING = 'music-player.setting.json'
 
 interface Prop {
   winKey: WinKey
 }
 
-export default function MoviePlayerView({winKey: _}: Prop) {
+export default function MusicPlayerView({winKey: _}: Prop) {
   const [initialized, setInitialized] = useState(false);
 
   const {
@@ -47,7 +44,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     filter,
     changePlaybackRate,
     ready, setReady,
-    subs, setSubs, changeAllTrackMode,
   } = useMediaStore();
   const {
     paused, setPaused,
@@ -56,7 +52,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     scrollPlayPath,
     appendPlayList, shufflePlayList, natsortPlayList,
     getPrevPlayPath, getNextPlayPath,
-    selectedPlayList, setSelectedPlayList, appendSelectedPlayList,
+    checkedPlayList, setCheckedPlayList, appendCheckedPlayList,
     setSelectionBegin,
   } = usePlayListStore();
   const {
@@ -69,7 +65,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     commands.dialogOpen({
       dialog_type: "OPEN",
       allow_multiple: true,
-      file_types: [`Video files (${filter_ext})`]
+      file_types: [`Audio files (${filter_ext})`]
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;
@@ -83,7 +79,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     commands.dialogOpen({
       dialog_type: "OPEN",
       allow_multiple: false,
-      file_types: [`OpenVideo Book (${["*.json"].join(";")})`]
+      file_types: [`OpenAudio Book (${["*.json"].join(";")})`]
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;
@@ -118,7 +114,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     commands.dialogOpen({
       dialog_type: "SAVE",
       allow_multiple: true,
-      file_types: [`Save Video Book (${["*.json"].join(";")})`]
+      file_types: [`Save Audio Book (${["*.json"].join(";")})`]
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;
@@ -141,27 +137,11 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     setSetting((setting) => ({...setting, caller: "clickTogglePlay", paused: newPaused}))
   }
 
-  const clickVideo = (e: React.MouseEvent) => {
-    const state = useMediaStore.getState();
-    if (!state.fullscreen) {
-      const newPaused = !setting.paused;
-      setSetting((setting) => ({...setting, caller: "clickVideo", paused: newPaused}))
-      // setPaused(newPaused)
-    }
-    console.log('clickVideo', e);
-  }
 
   const clickSpeed = (_e: any, speed: string) => {
     const v = Number(speed);
     setSetting((setting) => ({...setting, caller: "clickSpeed", playbackRate: v}))
     changePlaybackRate(v);
-  }
-
-  const clickSubType = (_e: any, subType: string) => {
-    changeAllTrackMode('disabled');
-    let newSubType = undefined;
-    if (subType !== '') newSubType = subType;
-    setSetting((setting) => ({...setting, caller: "clickSubType", subType: newSubType}))
   }
 
   const playPrev = () => {
@@ -348,7 +328,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     if (setting.playList === undefined) return;
     console.log('setSetting onDropPlayPath')
     if(setting.playList.indexOf(file) < 0) {
-      appendSelectedPlayList([file]);
+      appendCheckedPlayList([file]);
     }
     const newPlayList = appendPlayList(setting.playList, [file]);
     setSetting((setting) => ({...setting, caller: "onDropPlayPath", playPath: file, paused: false, playList: newPlayList}))
@@ -360,7 +340,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     const playList = setting.playList ?? [];
     const addPlayList = files.filter((file) => playList.indexOf(file) < 0);
     const newPlayList = appendPlayList(playList, addPlayList);
-    appendSelectedPlayList(addPlayList);
+    appendCheckedPlayList(addPlayList);
     console.log('setSetting onDropPlayList')
     setSetting((setting) => ({...setting, caller: "onDropPlayList", playList: newPlayList}))
   }
@@ -380,18 +360,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
           setPlayPath(setting.playPath)
           setSelectionBegin(setting.playPath)
           scrollPlayPath(setting.playList ?? [], setting.playPath)
-          commands.getSubs(setting.playPath!).then((result) => {
-            if (result.status === 'ok') {
-              const subs = result.data;
-              getSubs(subs).then((subs) => {
-                setSubs(subs);
-              })
-            } else {
-              setSubs([])
-            }
-          })
         } else {
-          setSubs([])
           toast.error( `Fail ${setting.playPath}`);
           console.log('fetch error', res.status);
           const newPlayPath = getNextPlayPath(setting.playPath)
@@ -400,7 +369,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
           setPlayPath(newPlayPath);
           setSelectionBegin(newPlayPath);
           scrollPlayPath(setting.playList ?? [], newPlayPath)
-          return;
         }
       })
     ;
@@ -410,48 +378,26 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     const onDropFullPathHandler = (e: CustomEvent) => {
       setDropRef(null);
       console.log('onDropFullPathHandler', dropRef);
-      const filter_video = useMediaStore.getState().filter;
-      const state = useMediaStore.getState();
-      const filter_sub = [
-        "ass", "mpl", "json", "smi", "sami", "srt", "ssa", "sub", "tmp", "ttml", "vtt",];
-
       const newDropFiles = e.detail as DropFile[];
-
-      const videoFiles = newDropFiles.filter((file) => filter_video.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)));
-      const subFiles = newDropFiles.filter((file) => filter_sub.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)));
-
-      const videoFullpathFiles = videoFiles.map((file) => file.pywebview_full_path);
-      const subFullpathFiles = subFiles.map((file) => file.pywebview_full_path);
-
-      if (dropRef?.classList.contains('drop-video') || dropRef?.classList.contains('drop-top')) {
-        console.log('drop-top or drop-video');
-        if (videoFullpathFiles.length + subFullpathFiles.length === 1) {
-          if (videoFullpathFiles.length == 1) {
-            onDropPlayPath(videoFullpathFiles[0])
-            onDropPlayList(videoFullpathFiles);
-          } else {
-            if (!state.subs.find((sub) => sub.fullpath === subFullpathFiles[0])) {
-              const newSub: Sub = {
-                fullpath: subFullpathFiles[0],
-                lang: "??",
-                priority: 3,
-                subtype: getFilename(subFullpathFiles[0]) ?? '',
-                src: ''
-              }
-              getSubs([newSub]).then((addSubs) => {
-                if (addSubs.length > 0) {
-                  setSubs([...state.subs, addSubs[0]])
-                  setSetting((setting) => ({...setting, caller: "onDropFullPathHandler", subType: addSubs[0].subtype}))
-                }
-              });
-            }
-          }
-        } else if(videoFullpathFiles.length > 1) {
-          onDropPlayList(videoFullpathFiles);
+      let files = newDropFiles
+        .filter((file) => file.type.startsWith("audio/"))
+      if (filter.length > 0) {
+        files = files.filter((file) => filter.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
+      }
+      const fullpathFiles = files.map((file) => file.pywebview_full_path);
+      if (fullpathFiles.length == 0) {
+        return;
+      }
+      if (dropRef?.classList.contains('drop-top')){
+        console.log('drop-top');
+        if (fullpathFiles.length == 1) {
+          onDropPlayPath(fullpathFiles[0])
+        } else {
+          onDropPlayList(fullpathFiles)
         }
       } else if (dropRef?.classList.contains('drop-list')) {
         console.log('drop-list');
-        onDropPlayList(videoFullpathFiles);
+        onDropPlayList(fullpathFiles);
       }
     }
     dropRef?.addEventListener("drop-files", onDropFullPathHandler as EventListener)
@@ -474,176 +420,113 @@ export default function MoviePlayerView({winKey: _}: Prop) {
       onUnMount().then()
     }
   }, [])
-
-  const titleSubType = () => {
-    const subs = useMediaStore.getState().subs;
-    const setting = useMediaStore.getState().setting;
-    const sub = subs.find((v) => v.subtype === setting?.subType);
-    if (sub) {
-      return getFilename(sub.fullpath)
-    } else {
-      return '-'
-    }
-  }
-
-  const labelSubType = () => {
-    const setting = useMediaStore.getState().setting;
-    return titleSubType() === '-' ? '-' : setting?.subType?.slice(0, 6) ?? '-'
-  }
-
   return (
-    <div className={`widget movie-player`}
+    <div className={`widget music-player`}
          ref={setContainerRef}
          onKeyDown={onKeyDownHandler}
          tabIndex={0}
     >
-      <SplitPane
-        split="horizontal"
-        minSize={80}
-        primary="second"
-        defaultSize={200}
+      <div className="audio-player">
+        <AudioView />
+      </div>
+      <div className="top drop-top"
+           onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
       >
-        <AutoSizer>
-          {({ height, width }) => (
-            <div className="video-view drop-video"
-                 style={{width, height}}
-                 onClick={clickVideo}
-                 onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
-            >
-              <VideoView />
-            </div>
-            )
-          }
-        </AutoSizer>
-        <AutoSizer>
-          {({ height, width }) => (
-          <div className="controller" style={{width, height}}>
-            <div className="top drop-top"
-                 onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
-            >
-              <div className={`row time-line ${(!mediaRef?.paused && setting.playPath) ? 'playing' : ''}`}>
-                <div className="tm">{formatSeconds(setting.currentTime ?? 0)}</div>
-                <div className="slider">
-                  <input type="range" min={0} max={mediaRef?.duration || 0} step={1}
-                         value={setting.currentTime ?? 0}
-                         onChange={(e) => {
-                           const tm = Number(e.target.value);
-                           console.log('change currentTime', tm);
-                           setSetting((setting) => ({...setting, caller: "input range", currentTime: tm}));
-                           changeCurrentTime(tm);
-                         }}/>
-                </div>
-                <div className="tm">{formatSeconds(mediaRef?.duration ?? 0)}</div>
-              </div>
-              <div className="row first">
-                <div className="icon" onClick={openDialogPlayList} title="Open Video Files"><Icon icon={faFolderPlus}/></div>
-                <div className="icon" onClick={openDialogOpenJson} title="Open Video Book"><Icon icon={faBookMedical}/></div>
-                <div className="icon" onClick={openDialogSaveAsJson} title="Save Video Book"><Icon icon={faFloppyDisk}/></div>
-                <div className="icon badge-wrap"
-                     onClick={() => {
-                       setPlayList(playList.filter((path)=> !selectedPlayList.includes(path)))
-                       setSelectedPlayList([])
-                     }}
-                     title="Delete Selection Files">
-                  <Icon icon={faTrashCan} className={selectedPlayList.length > 0 ? '': 'inactive'}/>
-                  {selectedPlayList.length > 0 && <div className="badge">{selectedPlayList.length}</div>}
-                </div>
-                <div className="sub badge-wrap" >
-                  {subs.length > 0 && <div className="badge">{subs.length}</div>}
-                  <Menu menuButton={
-                    <MenuButton className="menu-select" title={titleSubType()}>
-                      {labelSubType()}
-                    </MenuButton>
-                  } transition>
-                    <MenuItem className={`menu-item ${setting?.subType == null ? 'selected': ''}`} value="" onClick={(e: any) => clickSubType(e, e.value)}>-</MenuItem>
-                    { subs && subs.map((sub, _index) => (
-                      <MenuItem key={sub.fullpath}
-                                className={`menu-item ${setting?.subType == sub.subtype ? 'selected': ''}`}
-                                title={getFilename(sub.fullpath)}
-                                value={sub.subtype}
-                                onClick={(e: any) => clickSubType(e, e.value)}
-                      >
-                        {sub.subtype}
-                      </MenuItem>
-                    ))}
-                  </Menu>
-                </div>
-                <div className="center">
-                  <div className="icon" onClick={() => toggleShuffle()}>
-                    <Icon icon={faShuffle} className={setting.shuffle ? '': 'inactive'}/>
-                  </div>
-                  <div className="icon" onClick={() => playPrev()}>
-                    <Icon icon={faBackwardStep}/>
-                  </div>
-                  <div className="icon middle"
-                       onClick={() => clickTogglePlay()}
-                  >
-                    <Icon icon={mediaRef?.paused ? faCirclePlay : faCirclePause } className={mediaRef?.paused ? 'blink': ''}/>
-                  </div>
-                  <div className="icon" onClick={() => playNext()}>
-                    <Icon icon={faForwardStep}/>
-                  </div>
-                  {setting.repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
-                  {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
-                  {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
-                </div>
-
-                <div className="speed" title="Speed">
-                  <Menu menuButton={<MenuButton className="menu-select">x{setting?.playbackRate || "1"}</MenuButton>} transition>
-                    <MenuItem className={`menu-item ${setting?.playbackRate == 0.25 ? 'selected': ''}`} value="0.25" onClick={(e: any) => clickSpeed(e, e.value)}>x0.25</MenuItem>
-                    <MenuItem className={`menu-item ${setting?.playbackRate == 0.5 ? 'selected': ''}`} value="0.5" onClick={(e: any) => clickSpeed(e, e.value)}>x0.5</MenuItem>
-                    <MenuItem className={`menu-item ${setting?.playbackRate == 0.75 ? 'selected': ''}`} value="0.75" onClick={(e: any) => clickSpeed(e, e.value)}>x0.75</MenuItem>
-                    <MenuItem className={`menu-item ${setting?.playbackRate == 1 ? 'selected': ''}`} value="1" onClick={(e: any) => clickSpeed(e, e.value)}>x1</MenuItem>
-                    <MenuItem className={`menu-item ${setting?.playbackRate == 1.25 ? 'selected': ''}`} value="1.25" onClick={(e: any) => clickSpeed(e, e.value)}>x1.25</MenuItem>
-                    <MenuItem className={`menu-item ${setting?.playbackRate == 1.5 ? 'selected': ''}`} value="1.5" onClick={(e: any) => clickSpeed(e, e.value)}>x1.5</MenuItem>
-                    <MenuItem className={`menu-item ${setting?.playbackRate == 1.75 ? 'selected': ''}`} value="1.75" onClick={(e: any) => clickSpeed(e, e.value)}>x1.75</MenuItem>
-                    <MenuItem className={`menu-item ${setting?.playbackRate == 2 ? 'selected': ''}`} value="2" onClick={(e: any) => clickSpeed(e, e.value)}>x2</MenuItem>
-                  </Menu>
-                </div>
-                <div className="slider">
-                  <input type="range" min={0} max={1} step={0.1}
-                         value={setting?.volume || 0}
-                         onChange={(e) => {
-                           let v = Number(e.target.value);
-                           console.log('change volume', v);
-                           setSetting((setting) => ({...setting, caller: "input range", volume: v}));
-                           changeVolume(v);
-                         }}/>
-                </div>
-                <div className="icon"
-                     onClick={
-                      () => {
-                        const newMuted = !setting.muted;
-                        let newVolume = setting.volume ?? 0;
-                        if(!newMuted && setting.volume === 0) {
-                          newVolume = 0.5;
-                        }
-                        setSetting((setting) => ({...setting, caller: "mute click", muted: newMuted, volume: newVolume}))
-                        changeMuted(newMuted)
-                        changeVolume(newVolume)
-                      }
-                  }>
-                  <Icon icon={setting.muted ? faVolumeMute : faVolumeHigh} className={setting?.muted ? 'blink': ''}/>
-                </div>
-                <div className="icon" onClick={() => toggleFullscreen()} title="Fullscreen(F11)">
-                  <Icon icon={faExpand}/>
-                </div>
-
-              </div>
-            </div>
-            <div className="drop-list"
-                 style={{ height: "calc(100% - 85px)", width }}
-                 onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
-            >
-              <PlayListView
-                usePlayListStore={usePlayListStore}
-                icon={<Icon icon={faFilm} />}
-              />
-            </div>
+        <div className={`row time-line ${(!mediaRef?.paused && setting.playPath) ? 'playing' : ''}`}>
+          <div className="tm">{formatSeconds(setting.currentTime ?? 0)}</div>
+          <div className="slider">
+            <input type="range" min={0} max={mediaRef?.duration || 0} step={1}
+                   value={setting.currentTime ?? 0}
+                   onChange={(e) => {
+                     const tm = Number(e.target.value);
+                     console.log('change currentTime', tm);
+                     setSetting({...setting, caller: "input range", currentTime: tm});
+                     changeCurrentTime(tm);
+                   }}/>
           </div>
-        )}
-        </AutoSizer>
-      </SplitPane>
+          <div className="tm">{formatSeconds(mediaRef?.duration ?? 0)}</div>
+        </div>
+
+        <div className="row first">
+          <div className="icon" onClick={openDialogPlayList} title="Open Audio Files"><Icon icon={faFolderPlus}/></div>
+          <div className="icon" onClick={openDialogOpenJson} title="Open Audio Book"><Icon icon={faBookMedical}/></div>
+          <div className="icon" onClick={openDialogSaveAsJson} title="Save Audio Book"><Icon icon={faFloppyDisk}/></div>
+          <div className="icon badge-wrap"
+               onClick={() => {
+                 setPlayList(playList.filter((path)=> !checkedPlayList.includes(path)))
+                 setCheckedPlayList([])
+               }}
+               title="Delete Selection Files">
+            <Icon icon={faTrashCan} className={checkedPlayList.length > 0 ? '': 'inactive'}/>
+            {checkedPlayList.length > 0 && <div className="badge">{checkedPlayList.length}</div>}
+          </div>
+          <div className="center">
+            <div className="icon" onClick={() => toggleShuffle()}>
+              <Icon icon={faShuffle} className={setting.shuffle ? '': 'inactive'}/>
+            </div>
+            <div className="icon" onClick={() => playPrev()}>
+              <Icon icon={faBackwardStep}/>
+            </div>
+            <div className="icon middle"
+                 onClick={() => clickTogglePlay()}
+            >
+              <Icon icon={mediaRef?.paused ? faCirclePlay : faCirclePause } className={mediaRef?.paused ? 'blink': ''}/>
+            </div>
+            <div className="icon" onClick={() => playNext()}>
+              <Icon icon={faForwardStep}/>
+            </div>
+            {setting.repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
+            {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
+            {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
+          </div>
+          <div className="speed" title="Speed">
+            <Menu menuButton={<MenuButton className="menu-select">x{setting?.playbackRate || "1"}</MenuButton>} transition>
+              <MenuItem className={`menu-item ${setting?.playbackRate == 0.25 ? 'selected': ''}`} value="0.25" onClick={(e: any) => clickSpeed(e, e.value)}>x0.25</MenuItem>
+              <MenuItem className={`menu-item ${setting?.playbackRate == 0.5 ? 'selected': ''}`} value="0.5" onClick={(e: any) => clickSpeed(e, e.value)}>x0.5</MenuItem>
+              <MenuItem className={`menu-item ${setting?.playbackRate == 0.75 ? 'selected': ''}`} value="0.75" onClick={(e: any) => clickSpeed(e, e.value)}>x0.75</MenuItem>
+              <MenuItem className={`menu-item ${setting?.playbackRate == 1 ? 'selected': ''}`} value="1" onClick={(e: any) => clickSpeed(e, e.value)}>x1</MenuItem>
+              <MenuItem className={`menu-item ${setting?.playbackRate == 1.25 ? 'selected': ''}`} value="1.25" onClick={(e: any) => clickSpeed(e, e.value)}>x1.25</MenuItem>
+              <MenuItem className={`menu-item ${setting?.playbackRate == 1.5 ? 'selected': ''}`} value="1.5" onClick={(e: any) => clickSpeed(e, e.value)}>x1.5</MenuItem>
+              <MenuItem className={`menu-item ${setting?.playbackRate == 1.75 ? 'selected': ''}`} value="1.75" onClick={(e: any) => clickSpeed(e, e.value)}>x1.75</MenuItem>
+              <MenuItem className={`menu-item ${setting?.playbackRate == 2 ? 'selected': ''}`} value="2" onClick={(e: any) => clickSpeed(e, e.value)}>x2</MenuItem>
+            </Menu>
+          </div>
+
+          <div className="slider">
+            <input type="range" min={0} max={1} step={0.1}
+                   value={setting?.volume || 0}
+                   onChange={(e) => {
+                     let v = Number(e.target.value);
+                     console.log('change volume', v);
+                     setSetting({...setting, caller: "input range", volume: v});
+                     changeVolume(v);
+                   }}/>
+          </div>
+          <div className="icon"
+               onClick={
+                () => {
+                  const newMuted = !setting.muted;
+                  let newVolume = setting?.volume ?? 0;
+                  if(!newMuted && setting?.volume === 0) {
+                    newVolume = 0.5;
+                  }
+                  setSetting({...setting, caller: "mute click", muted: newMuted, volume: newVolume})
+                  changeMuted(newMuted)
+                  changeVolume(newVolume)
+                }
+            }>
+            <Icon icon={setting.muted ? faVolumeMute : faVolumeHigh} className={setting?.muted ? 'blink': ''}/>
+          </div>
+        </div>
+      </div>
+      <div className="play-list drop-list"
+           onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+      >
+        <PlayListView
+          usePlayListStore={usePlayListStore}
+          icon={<Icon icon={faMusic} />}
+        />
+      </div>
     </div>
   )
 }

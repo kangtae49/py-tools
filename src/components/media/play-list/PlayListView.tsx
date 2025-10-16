@@ -6,7 +6,7 @@ import type {UseBoundStore} from "zustand";
 import type {StoreApi} from "zustand/vanilla";
 import {
   type PlayListStore,
-} from "@/components/media/playlist/playListStore.ts";
+} from "@/components/media/play-list/playListStore.ts";
 import React, {useEffect} from "react";
 import {getFilename} from "@/components/utils.ts";
 

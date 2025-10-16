@@ -7,15 +7,15 @@ import 'react-mosaic-component/react-mosaic-component.css'
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import {type WinKey, type WinType, getWinType, useMosaicStore, defaultLayout} from "./mosaicStore.ts";
-import MusicPlayerView from "@/components/media/music_player/MusicPlayerView.tsx";
+import MusicPlayerView from "@/components/media/music-player/MusicPlayerView.tsx";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faMusic, faFilm,
 } from '@fortawesome/free-solid-svg-icons'
-import MoviePlayerView from "@/components/media/movie_player/MoviePlayerView.tsx";
+import MoviePlayerView from "@/components/media/movie-player/MoviePlayerView.tsx";
 import {commands} from "@/bindings.ts";
 import {videoDefault} from "@/components/media/mediaStore.ts";
-import PicturePlayerView from "@/components/media/picture_player/PicturePlayerView.tsx";
+import PicturePlayerView from "@/components/media/picture-player/PicturePlayerView.tsx";
 
 export const MOSAIC_LAYOUT_SETTING = 'mosaic-layout.setting.json'
 

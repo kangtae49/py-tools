@@ -11,7 +11,7 @@ export interface PlayListStore {
   paused: boolean
   shuffle: boolean
   playList: string[]
-  selectedPlayList: string[];
+  checkedPlayList: string[];
   selectionBegin: string | undefined;
 
 
@@ -20,7 +20,7 @@ export interface PlayListStore {
   setPaused: (value: boolean) => void;
   setShuffle: (value: boolean) => void;
   setPlayList: (value: string[]) => void;
-  setSelectedPlayList: (value: string[]) => void;
+  setCheckedPlayList: (value: string[]) => void;
   setSelectionBegin: (value: string | undefined) => void;
 
 
@@ -35,8 +35,8 @@ export interface PlayListStore {
   getPrevPlayPath: (value: string | undefined) => string | undefined;
   getNextPlayPath: (value: string | undefined) => string | undefined;
 
-  appendSelectedPlayList: (value: string[]) => void;
-  removeSelectedPlayList: (value: string[]) => void;
+  appendCheckedPlayList: (value: string[]) => void;
+  removeCheckedPlayList: (value: string[]) => void;
   toggleAllChecked: (checked: boolean) => void;
 
   onKeyDownPlayList: (event: React.KeyboardEvent<HTMLDivElement>) => void;
@@ -51,7 +51,7 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
     paused: true,
     shuffle: false,
     playList: [],
-    selectedPlayList: [],
+    checkedPlayList: [],
     selectionBegin: undefined,
     ...defaultState,
 
@@ -63,7 +63,7 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
     setPaused: (value) => set({paused: value}),
     setShuffle: (value) => set({shuffle: value}),
     setPlayList: (value) => set({playList: value}),
-    setSelectedPlayList: (value) => set({ selectedPlayList: value }),
+    setCheckedPlayList: (value) => set({ checkedPlayList: value }),
     setSelectionBegin: (value) => set({ selectionBegin: value }),
 
 
@@ -134,48 +134,27 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
       return next;
     },
 
-    appendSelectedPlayList: (value) => {
-      const newSelectedPlayList = [...new Set([...get().selectedPlayList, ...value])];
-      set({ selectedPlayList: newSelectedPlayList})
+    appendCheckedPlayList: (value) => {
+      const newSelectedPlayList = [...new Set([...get().checkedPlayList, ...value])];
+      set({ checkedPlayList: newSelectedPlayList})
     },
-    removeSelectedPlayList: (value) => {
-      const selectedPlayList = get().selectedPlayList;
-      const setSelectedPlayList = get().setSelectedPlayList;
-      setSelectedPlayList(selectedPlayList.filter(v => !value.includes(v)));
-
-      // const selectionBegin = get().selectionBegin;
-      // const playList = get().playList;
-      // const setPlayList = get().setPlayList;
-      // const removePlayList = get().removePlayList;
-      // const setSelectionBegin = get().setSelectionBegin;
-      //
-      // const newPlayList = removePlayList(playList, selectedPlayList);
-      //
-      // let newSelectionBegin = selectionBegin;
-      //
-      // if (selectionBegin) {
-      //   const beginPos = playList.indexOf(selectionBegin);
-      //   if (newPlayList.indexOf(selectionBegin) < 0) {
-      //     let newBeginPos = Math.max(beginPos, 0);
-      //     newBeginPos = Math.min(newBeginPos, newPlayList.length - 1);
-      //     newSelectionBegin = newPlayList[newBeginPos]
-      //   }
-      //   setSelectionBegin(newSelectionBegin)
-      // }
-      // setPlayList(newPlayList);
+    removeCheckedPlayList: (value) => {
+      const selectedPlayList = get().checkedPlayList;
+      const setCheckedPlayList = get().setCheckedPlayList;
+      setCheckedPlayList(selectedPlayList.filter(v => !value.includes(v)));
     },
 
     toggleAllChecked: (checked: boolean) => {
       const {
         playList,
-        setSelectedPlayList
+        setCheckedPlayList
       } = get();
       if (playList.length === 0) return;
       let newPlayList: string[] = []
       if (checked) {
         newPlayList = [...playList]
       }
-      setSelectedPlayList(newPlayList)
+      setCheckedPlayList(newPlayList)
     },
 
 
@@ -184,22 +163,22 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
         playPath, setPlayPath,
         playList, setPlayList,
         selectionBegin, setSelectionBegin,
-        selectedPlayList, setSelectedPlayList,
+        checkedPlayList, setCheckedPlayList,
         getPrevPlayPath, getNextPlayPath,
         setPaused,
         scrollPlayPath,
-        removeSelectedPlayList,
-        appendSelectedPlayList,
+        removeCheckedPlayList,
+        appendCheckedPlayList,
       } = get();
       e.preventDefault()
       window.getSelection()?.removeAllRanges();
       if (playList.length == 0) return;
 
       if (e.ctrlKey && e.key === 'a') {
-        setSelectedPlayList(playList);
+        setCheckedPlayList(playList);
       } else if (e.key === "Delete") {
-        setPlayList(playList.filter((path)=> !selectedPlayList.includes(path)))
-        setSelectedPlayList([])
+        setPlayList(playList.filter((path)=> !checkedPlayList.includes(path)))
+        setCheckedPlayList([])
       } else if (e.key === "ArrowLeft") {
         const newPlayPath = getPrevPlayPath(playPath)
         console.log('setSetting ArrowLeft')
@@ -253,11 +232,11 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
           scrollPlayPath(playList, playList[0])
           return;
         }
-        const pos = selectedPlayList.indexOf(selectionBegin);
+        const pos = checkedPlayList.indexOf(selectionBegin);
         if (pos >= 0) {
-          removeSelectedPlayList([selectionBegin])
+          removeCheckedPlayList([selectionBegin])
         } else {
-          appendSelectedPlayList([selectionBegin])
+          appendCheckedPlayList([selectionBegin])
         }
       }
     }
@@ -270,7 +249,7 @@ interface DefaultPlayListState {
   paused: boolean
   shuffle: boolean
   playList: string[]
-  selectedPlayList: string[]
+  checkedPlayList: string[]
   selectionBegin: undefined,
 }
 
@@ -279,7 +258,7 @@ export const useMoviePlayListStore = createPlayListStore({
   paused: true,
   shuffle: false,
   playList: [],
-  selectedPlayList: [],
+  checkedPlayList: [],
   selectionBegin: undefined,
 });
 
@@ -288,7 +267,7 @@ export const useMusicPlayListStore = createPlayListStore({
   paused: true,
   shuffle: true,
   playList: [],
-  selectedPlayList: [],
+  checkedPlayList: [],
   selectionBegin: undefined,
 });
 
@@ -297,6 +276,6 @@ export const usePicturePlayListStore = createPlayListStore({
   paused: true,
   shuffle: false,
   playList: [],
-  selectedPlayList: [],
+  checkedPlayList: [],
   selectionBegin: undefined,
 });

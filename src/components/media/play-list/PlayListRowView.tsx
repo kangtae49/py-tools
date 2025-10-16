@@ -7,7 +7,7 @@ import { type RowComponentProps } from "react-window";
 import {getFilename} from "@/components/utils.ts";
 import type {StoreApi} from "zustand/vanilla";
 import type { UseBoundStore } from "zustand";
-import type {PlayListStore} from "@/components/media/playlist/playListStore.ts";
+import type {PlayListStore} from "@/components/media/play-list/playListStore.ts";
 
 
 
@@ -28,8 +28,8 @@ function PlayListRowView({
     paused,
     playList, removePlayList,
     selectionBegin, setSelectionBegin,
-    selectedPlayList,
-    appendSelectedPlayList, removeSelectedPlayList,
+    checkedPlayList,
+    appendCheckedPlayList, removeCheckedPlayList,
   } = usePlayListStore();
 
   const clickPlayPath = (path: string) => {
@@ -40,18 +40,18 @@ function PlayListRowView({
   }
   const clickRemovePlayPath = (path: string) => {
     removePlayList(playList, [path]);
-    removeSelectedPlayList([path]);
+    removeCheckedPlayList([path]);
   }
 
   const changeChecked = (path: string, checked: boolean) => {
     if (checked) {
-      appendSelectedPlayList([path]);
+      appendCheckedPlayList([path]);
     } else {
-      removeSelectedPlayList([path]);
+      removeCheckedPlayList([path]);
     }
   }
   const isPlayPath = playPath === playList[index];
-  const isChecked = selectedPlayList.includes(playList[index]);
+  const isChecked = checkedPlayList.includes(playList[index]);
   const isSelected = playList[index] === selectionBegin;
 
   return (

@@ -2,10 +2,10 @@ import "./PicturePlayerView.css"
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 import {SplitPane} from "@rexxars/react-split-pane";
 import AutoSizer from "react-virtualized-auto-sizer";
-import {Grid} from "react-window";
-import ImageListView from "./ImageListView.tsx";
-import PlayListView from "@/components/media/playlist/PlayListView.tsx";
-import {usePicturePlayListStore as usePlayListStore} from "@/components/media/playlist/playListStore.ts";
+import PlayListView from "@/components/media/play-list/PlayListView.tsx";
+import {
+  usePicturePlayListStore as usePlayListStore
+} from "@/components/media/play-list/playListStore.ts";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faArrowsSpin,
@@ -25,14 +25,15 @@ import {
   usePictureStore,
   pictureDefault
 } from "./pictureStore.ts";
-import {useVideoStore as useMediaStore} from "@/components/media/mediaStore.ts";
 import toast from "react-hot-toast";
 import type {DropFile} from "@/types/models";
+import PictureGridView from "@/components/media/picture-grid/PictureGridView.tsx";
 
 export const PLAYER_SETTING = 'picture-player.setting.json'
 
 interface Prop {
   winKey: WinKey
+
 }
 
 export default function PicturePlayerView({winKey: _}: Prop) {
@@ -55,7 +56,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     playList, setPlayList,
     appendPlayList, shufflePlayList, natsortPlayList,
     getPrevPlayPath, getNextPlayPath,
-    selectedPlayList, setSelectedPlayList, appendSelectedPlayList,
+    checkedPlayList, setCheckedPlayList, appendCheckedPlayList,
     setSelectionBegin,
   } = usePlayListStore();
 
@@ -69,7 +70,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     commands.dialogOpen({
       dialog_type: "OPEN",
       allow_multiple: true,
-      file_types: [`Video files (${filter_ext})`]
+      file_types: [`Image files (${filter_ext})`]
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;
@@ -83,7 +84,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     commands.dialogOpen({
       dialog_type: "OPEN",
       allow_multiple: false,
-      file_types: [`OpenVideo Book (${["*.json"].join(";")})`]
+      file_types: [`OpenImage Book (${["*.json"].join(";")})`]
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;
@@ -100,7 +101,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
   const readFiles = (files: string[]) => {
     console.log('setSetting readFiles')
-    const setting = useMediaStore.getState().setting;
+    const setting = usePictureStore.getState().setting;
     const newPlayList = appendPlayList(setting.playList ?? [], files);
     const shuffledPlayList = setting.shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
     let newPlayPath = setting.playPath;
@@ -113,7 +114,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
 
   const openDialogSaveAsJson = async () => {
-    const setting = useMediaStore.getState().setting;
+    const setting = usePictureStore.getState().setting;
     if (setting?.playList == null) return;
     commands.dialogOpen({
       dialog_type: "SAVE",
@@ -143,14 +144,14 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   }
 
   const playPrev = () => {
-    const setting = useMediaStore.getState().setting;
+    const setting = usePictureStore.getState().setting;
     const newPlayPath = getPrevPlayPath(setting.playPath);
     console.log('setSetting playPrev')
     setSetting((setting) => ({...setting, caller: "playPrev", playPath: newPlayPath, currentTime: 0}))
   }
 
   const playNext = () => {
-    const setting = useMediaStore.getState().setting;
+    const setting = usePictureStore.getState().setting;
     const newPlayPath = getNextPlayPath(setting.playPath);
     console.log('setSetting playNext')
     setSetting((setting) => ({...setting, caller: "playNext", playPath: newPlayPath, currentTime: 0}))
@@ -168,7 +169,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   }
 
   const toggleFullscreen = async () => {
-    const fullscreen = useMediaStore.getState().fullscreen;
+    const fullscreen = usePictureStore.getState().fullscreen;
     if (fullscreen) {
       await document.exitFullscreen();
     } else {
@@ -177,11 +178,11 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   }
 
   const onDropPlayPath = (file: string) => {
-    const setting = useMediaStore.getState().setting;
+    const setting = usePictureStore.getState().setting;
     if (setting.playList === undefined) return;
     console.log('setSetting onDropPlayPath')
     if(setting.playList.indexOf(file) < 0) {
-      appendSelectedPlayList([file]);
+      appendCheckedPlayList([file]);
     }
     const newPlayList = appendPlayList(setting.playList, [file]);
     setSetting((setting) => ({...setting, caller: "onDropPlayPath", playPath: file, paused: false, playList: newPlayList}))
@@ -189,11 +190,11 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
   const onDropPlayList = (files: string[]) => {
     if(files.length === 0) return;
-    const setting = useMediaStore.getState().setting;
+    const setting = usePictureStore.getState().setting;
     const playList = setting.playList ?? [];
     const addPlayList = files.filter((file) => playList.indexOf(file) < 0);
     const newPlayList = appendPlayList(playList, addPlayList);
-    appendSelectedPlayList(addPlayList);
+    appendCheckedPlayList(addPlayList);
     console.log('setSetting onDropPlayList')
     setSetting((setting) => ({...setting, caller: "onDropPlayList", playList: newPlayList}))
   }
@@ -310,13 +311,9 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                  ref={setPictureRef}
                  style={{width, height}}
             >
-              <Grid className="image-list"
-                    cellComponent={ImageListView}
-                    cellProps={{imageList: []}}
-                    columnCount={2}
-                    columnWidth={500}
-                    rowCount={2}
-                    rowHeight={500}
+              <PictureGridView
+                usePlayListStore={usePlayListStore}
+                icon={<Icon icon={faImage} />}
               />
 
               {/*<ImageView  />*/}
@@ -337,12 +334,12 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                   <div className="icon" onClick={openDialogSaveAsJson} title="Save Video Book"><Icon icon={faFloppyDisk}/></div>
                   <div className="icon badge-wrap"
                        onClick={() => {
-                         setPlayList(playList.filter((path)=> !selectedPlayList.includes(path)))
-                         setSelectedPlayList([])
+                         setPlayList(playList.filter((path)=> !checkedPlayList.includes(path)))
+                         setCheckedPlayList([])
                        }}
                        title="Delete Selection Files">
-                    <Icon icon={faTrashCan} className={selectedPlayList.length > 0 ? '': 'inactive'}/>
-                    {selectedPlayList.length > 0 && <div className="badge">{selectedPlayList.length}</div>}
+                    <Icon icon={faTrashCan} className={checkedPlayList.length > 0 ? '': 'inactive'}/>
+                    {checkedPlayList.length > 0 && <div className="badge">{checkedPlayList.length}</div>}
                   </div>
                   <div className="sub badge-wrap" >
                   </div>
@@ -377,20 +374,19 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                   </div>
 
                 </div>
-                <div className="drop-list"
-                     style={{ minHeight: "100%", height: "calc(100% - 85px)", width }}
-                     onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
-                >
-                  <PlayListView
-                    usePlayListStore={usePlayListStore}
-                    icon={<Icon icon={faImage} />}
-                  />
-                </div>
+              </div>
+              <div className="drop-list"
+                   style={{ height: "calc(100% - 50px)", width }}
+                   onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+              >
+                <PlayListView
+                  usePlayListStore={usePlayListStore}
+                  icon={<Icon icon={faImage} />}
+                />
               </div>
             </div>
           )}
         </AutoSizer>
-
       </SplitPane>
     </div>
   )

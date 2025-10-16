@@ -31,7 +31,7 @@ interface PictureStore {
 }
 
 
-function createMediaStore(pictureDefault?: PictureDefault) {
+function createPictureStore(pictureDefault?: PictureDefault) {
 
   return create<PictureStore>((set, _get) => ({
     pictureRef: null,
@@ -115,4 +115,4 @@ export const pictureDefault: PictureDefault = {
 
 };
 
-export const usePictureStore = createMediaStore(pictureDefault);
+export const usePictureStore = createPictureStore(pictureDefault);

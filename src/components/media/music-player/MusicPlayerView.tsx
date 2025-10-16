@@ -263,7 +263,17 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     commands.appWrite(PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
       console.log(result.status, 'appWrite', PLAYER_SETTING);
     })
-  }, [setting, playList, playPath, shuffle])
+  }, [
+    setting.playPath,
+    Math.floor(setting.currentTime || 0),
+    setting.volume,
+    setting.playbackRate,
+    setting.muted,
+    setting.paused,
+    setting.repeat,
+    setting.playList,
+    setting.shuffle,
+  ])
 
   useEffect(() => {
     console.log('ready', ready)

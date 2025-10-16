@@ -10,12 +10,10 @@ import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faArrowsSpin,
   faBackwardStep,
-  faBookMedical, faCirclePause, faCirclePlay, faExpand,
-  faFloppyDisk,
-  faFolderPlus, faForwardStep,
+  faCirclePause, faCirclePlay, faExpand,
+  faForwardStep,
   faImage, faMinus, faRotateRight,
   faShuffle,
-  faTrashCan,
 } from "@fortawesome/free-solid-svg-icons";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import React, {useEffect, useState} from "react";
@@ -25,7 +23,6 @@ import {
   usePictureStore,
   pictureDefault
 } from "./pictureStore.ts";
-import toast from "react-hot-toast";
 import type {DropFile} from "@/types/models";
 import PictureGridView from "@/components/media/picture-grid/PictureGridView.tsx";
 
@@ -53,10 +50,10 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
   const {
     setPaused,
-    playList, setPlayList,
-    appendPlayList, shufflePlayList, natsortPlayList,
+    setPlayList,
+    appendPlayList,
     getPrevPlayPath, getNextPlayPath,
-    checkedPlayList, setCheckedPlayList, appendCheckedPlayList,
+    appendCheckedPlayList,
     setSelectionBegin,
   } = usePlayListStore();
 
@@ -65,76 +62,76 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     dropRef,
   } = useReceivedDropFilesStore();
 
-  const openDialogPlayList = async () => {
-    const filter_ext = filter.map((ext)=> `*.${ext}`).join(";") // *.mp3;*.wav;*.ogg;*.m4a;*.opus;*.webm
-    commands.dialogOpen({
-      dialog_type: "OPEN",
-      allow_multiple: true,
-      file_types: [`Image files (${filter_ext})`]
-    }).then((result) => {
-      if(result.status === 'ok') {
-        const files = result.data;
-        if (files === null) { return }
-        readFiles(files);
-      }
-    })
-  }
+  // const openDialogPlayList = async () => {
+  //   const filter_ext = filter.map((ext)=> `*.${ext}`).join(";") // *.mp3;*.wav;*.ogg;*.m4a;*.opus;*.webm
+  //   commands.dialogOpen({
+  //     dialog_type: "OPEN",
+  //     allow_multiple: true,
+  //     file_types: [`Image files (${filter_ext})`]
+  //   }).then((result) => {
+  //     if(result.status === 'ok') {
+  //       const files = result.data;
+  //       if (files === null) { return }
+  //       readFiles(files);
+  //     }
+  //   })
+  // }
 
-  const openDialogOpenJson = async () => {
-    commands.dialogOpen({
-      dialog_type: "OPEN",
-      allow_multiple: false,
-      file_types: [`OpenImage Book (${["*.json"].join(";")})`]
-    }).then((result) => {
-      if(result.status === 'ok') {
-        const files = result.data;
-        if(files === null) return;
-        commands.readFile(files[0]).then(async (result) => {
-          if (result.status === 'ok'){
-            const files: string [] = JSON.parse(result.data);
-            readFiles(files);
-          }
-        })
-      }
-    })
-  }
-
-  const readFiles = (files: string[]) => {
-    console.log('setSetting readFiles')
-    const setting = usePictureStore.getState().setting;
-    const newPlayList = appendPlayList(setting.playList ?? [], files);
-    const shuffledPlayList = setting.shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
-    let newPlayPath = setting.playPath;
-    if (shuffledPlayList.length > 0) {
-      newPlayPath = shuffledPlayList[0];
-      setSelectionBegin(newPlayPath)
-    }
-    setPlayList(shuffledPlayList);
-  }
-
-
-  const openDialogSaveAsJson = async () => {
-    const setting = usePictureStore.getState().setting;
-    if (setting?.playList == null) return;
-    commands.dialogOpen({
-      dialog_type: "SAVE",
-      allow_multiple: true,
-      file_types: [`Save Video Book (${["*.json"].join(";")})`]
-    }).then((result) => {
-      if(result.status === 'ok') {
-        const files = result.data;
-        if (files === null) { return }
-        const content = JSON.stringify(setting.playList, null, 2);
-        commands.writeFile(files[0], content).then(async (result) => {
-          if (result.status === 'ok'){
-            toast.success("Success save");
-          } else {
-            toast.error("Fail save");
-          }
-        })
-      }
-    })
-  }
+  // const openDialogOpenJson = async () => {
+  //   commands.dialogOpen({
+  //     dialog_type: "OPEN",
+  //     allow_multiple: false,
+  //     file_types: [`OpenImage Book (${["*.json"].join(";")})`]
+  //   }).then((result) => {
+  //     if(result.status === 'ok') {
+  //       const files = result.data;
+  //       if(files === null) return;
+  //       commands.readFile(files[0]).then(async (result) => {
+  //         if (result.status === 'ok'){
+  //           const files: string [] = JSON.parse(result.data);
+  //           readFiles(files);
+  //         }
+  //       })
+  //     }
+  //   })
+  // }
+  //
+  // const readFiles = (files: string[]) => {
+  //   console.log('setSetting readFiles')
+  //   const setting = usePictureStore.getState().setting;
+  //   const newPlayList = appendPlayList(setting.playList ?? [], files);
+  //   const shuffledPlayList = setting.shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
+  //   let newPlayPath = setting.playPath;
+  //   if (shuffledPlayList.length > 0) {
+  //     newPlayPath = shuffledPlayList[0];
+  //     setSelectionBegin(newPlayPath)
+  //   }
+  //   setPlayList(shuffledPlayList);
+  // }
+  //
+  //
+  // const openDialogSaveAsJson = async () => {
+  //   const setting = usePictureStore.getState().setting;
+  //   if (setting?.playList == null) return;
+  //   commands.dialogOpen({
+  //     dialog_type: "SAVE",
+  //     allow_multiple: true,
+  //     file_types: [`Save Video Book (${["*.json"].join(";")})`]
+  //   }).then((result) => {
+  //     if(result.status === 'ok') {
+  //       const files = result.data;
+  //       if (files === null) { return }
+  //       const content = JSON.stringify(setting.playList, null, 2);
+  //       commands.writeFile(files[0], content).then(async (result) => {
+  //         if (result.status === 'ok'){
+  //           toast.success("Success save");
+  //         } else {
+  //           toast.error("Fail save");
+  //         }
+  //       })
+  //     }
+  //   })
+  // }
 
 
 
@@ -329,20 +326,20 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                 <div className={`row time-line ${(!setting.paused && setting.playPath) ? 'playing' : ''}`}>
                 </div>
                 <div className="row first">
-                  <div className="icon" onClick={openDialogPlayList} title="Open Video Files"><Icon icon={faFolderPlus}/></div>
-                  <div className="icon" onClick={openDialogOpenJson} title="Open Video Book"><Icon icon={faBookMedical}/></div>
-                  <div className="icon" onClick={openDialogSaveAsJson} title="Save Video Book"><Icon icon={faFloppyDisk}/></div>
-                  <div className="icon badge-wrap"
-                       onClick={() => {
-                         setPlayList(playList.filter((path)=> !checkedPlayList.includes(path)))
-                         setCheckedPlayList([])
-                       }}
-                       title="Delete Selection Files">
-                    <Icon icon={faTrashCan} className={checkedPlayList.length > 0 ? '': 'inactive'}/>
-                    {checkedPlayList.length > 0 && <div className="badge">{checkedPlayList.length}</div>}
-                  </div>
-                  <div className="sub badge-wrap" >
-                  </div>
+                  {/*<div className="icon" onClick={openDialogPlayList} title="Open Video Files"><Icon icon={faFolderPlus}/></div>*/}
+                  {/*<div className="icon" onClick={openDialogOpenJson} title="Open Video Book"><Icon icon={faBookMedical}/></div>*/}
+                  {/*<div className="icon" onClick={openDialogSaveAsJson} title="Save Video Book"><Icon icon={faFloppyDisk}/></div>*/}
+                  {/*<div className="icon badge-wrap"*/}
+                  {/*     onClick={() => {*/}
+                  {/*       setPlayList(playList.filter((path)=> !checkedPlayList.includes(path)))*/}
+                  {/*       setCheckedPlayList([])*/}
+                  {/*     }}*/}
+                  {/*     title="Delete Selection Files">*/}
+                  {/*  <Icon icon={faTrashCan} className={checkedPlayList.length > 0 ? '': 'inactive'}/>*/}
+                  {/*  {checkedPlayList.length > 0 && <div className="badge">{checkedPlayList.length}</div>}*/}
+                  {/*</div>*/}
+                  {/*<div className="sub badge-wrap" >*/}
+                  {/*</div>*/}
                   <div className="center">
                     <div className="icon" onClick={() => toggleShuffle()}>
                       <Icon icon={faShuffle} className={setting.shuffle ? '': 'inactive'}/>

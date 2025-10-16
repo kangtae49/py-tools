@@ -8,12 +8,9 @@ import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 import {Menu, MenuButton, MenuItem} from "@szhsin/react-menu";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
-  faBookMedical,
-  faFolderPlus, faTrashCan,
   faCirclePlay, faCirclePause, faVolumeHigh, faVolumeMute,
   faBackwardStep, faForwardStep,
   faShuffle,
-  faFloppyDisk,
   faArrowsSpin, faRotateRight, faMinus, faMusic,
 } from '@fortawesome/free-solid-svg-icons'
 import AudioView from "./AudioView.tsx";
@@ -50,87 +47,15 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     playPath, setPlayPath,
     playList, setPlayList,
     scrollPlayPath,
-    appendPlayList, shufflePlayList, toggleShuffle, natsortPlayList,
+    appendPlayList, shufflePlayList, toggleShuffle,
     getPrevPlayPath, getNextPlayPath,
-    checkedPlayList, setCheckedPlayList, appendCheckedPlayList,
+    appendCheckedPlayList,
     setSelectionBegin,
   } = usePlayListStore();
   const {
     setDropRef,
     dropRef,
   } = useReceivedDropFilesStore();
-
-  const openDialogPlayList = async () => {
-    const filter_ext = filter.map((ext)=> `*.${ext}`).join(";") // *.mp3;*.wav;*.ogg;*.m4a;*.opus;*.webm
-    commands.dialogOpen({
-      dialog_type: "OPEN",
-      allow_multiple: true,
-      file_types: [`Audio files (${filter_ext})`]
-    }).then((result) => {
-      if(result.status === 'ok') {
-        const files = result.data;
-        if (files === null) { return }
-        readFiles(files);
-      }
-    })
-  }
-
-  const openDialogOpenJson = async () => {
-    commands.dialogOpen({
-      dialog_type: "OPEN",
-      allow_multiple: false,
-      file_types: [`OpenAudio Book (${["*.json"].join(";")})`]
-    }).then((result) => {
-      if(result.status === 'ok') {
-        const files = result.data;
-        if(files === null) return;
-        commands.readFile(files[0]).then(async (result) => {
-          if (result.status === 'ok'){
-            const files: string [] = JSON.parse(result.data);
-            readFiles(files);
-          }
-        })
-      }
-    })
-  }
-
-  const readFiles = (files: string[]) => {
-    console.log('readFiles')
-    const {
-      playList, shuffle,
-    } = usePlayListStore.getState();
-    const newPlayList = appendPlayList(playList, files);
-    const shuffledPlayList = shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
-    let newPlayPath = playPath;
-    if (shuffledPlayList.length > 0) {
-      newPlayPath = shuffledPlayList[0];
-      setSelectionBegin(newPlayPath)
-    }
-    setPlayList(shuffledPlayList);
-  }
-
-
-  const openDialogSaveAsJson = async () => {
-    const {playList} = usePlayListStore.getState()
-    commands.dialogOpen({
-      dialog_type: "SAVE",
-      allow_multiple: true,
-      file_types: [`Save Audio Book (${["*.json"].join(";")})`]
-    }).then((result) => {
-      if(result.status === 'ok') {
-        const files = result.data;
-        if (files === null) { return }
-        const content = JSON.stringify(playList, null, 2);
-        commands.writeFile(files[0], content).then(async (result) => {
-          if (result.status === 'ok'){
-            toast.success("Success save");
-          } else {
-            toast.error("Fail save");
-          }
-        })
-      }
-    })
-  }
 
 
   const clickTogglePlay = async () => {
@@ -452,18 +377,18 @@ export default function MusicPlayerView({winKey: _}: Prop) {
         </div>
 
         <div className="row first">
-          <div className="icon" onClick={openDialogPlayList} title="Open Audio Files"><Icon icon={faFolderPlus}/></div>
-          <div className="icon" onClick={openDialogOpenJson} title="Open Audio Book"><Icon icon={faBookMedical}/></div>
-          <div className="icon" onClick={openDialogSaveAsJson} title="Save Audio Book"><Icon icon={faFloppyDisk}/></div>
-          <div className="icon badge-wrap"
-               onClick={() => {
-                 setPlayList(playList.filter((path)=> !checkedPlayList.includes(path)))
-                 setCheckedPlayList([])
-               }}
-               title="Delete Selection Files">
-            <Icon icon={faTrashCan} className={checkedPlayList.length > 0 ? '': 'inactive'}/>
-            {checkedPlayList.length > 0 && <div className="badge">{checkedPlayList.length}</div>}
-          </div>
+          {/*<div className="icon" onClick={openDialogPlayList} title="Open Audio Files"><Icon icon={faFolderPlus}/></div>*/}
+          {/*<div className="icon" onClick={openDialogOpenJson} title="Open Audio Book"><Icon icon={faBookMedical}/></div>*/}
+          {/*<div className="icon" onClick={openDialogSaveAsJson} title="Save Audio Book"><Icon icon={faFloppyDisk}/></div>*/}
+          {/*<div className="icon badge-wrap"*/}
+          {/*     onClick={() => {*/}
+          {/*       setPlayList(playList.filter((path)=> !checkedPlayList.includes(path)))*/}
+          {/*       setCheckedPlayList([])*/}
+          {/*     }}*/}
+          {/*     title="Delete Selection Files">*/}
+          {/*  <Icon icon={faTrashCan} className={checkedPlayList.length > 0 ? '': 'inactive'}/>*/}
+          {/*  {checkedPlayList.length > 0 && <div className="badge">{checkedPlayList.length}</div>}*/}
+          {/*</div>*/}
           <div className="center">
             <div className="icon" onClick={() => toggleShuffle()}>
               <Icon icon={faShuffle} className={shuffle ? '': 'inactive'}/>

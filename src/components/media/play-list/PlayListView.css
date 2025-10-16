@@ -50,6 +50,12 @@
 
 .play-list .head {
     display: flex;
+    height: 32px;
+    justify-content: left; align-items: center;
     text-align: start; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.play-list .head .title { cursor: pointer;}
+.play-list .head .dialog {
+    display: flex;
+    justify-content: left; align-items: center;
+}
+.play-list .head .title { cursor: pointer; margin-left: 10px;}

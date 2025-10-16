@@ -13,6 +13,7 @@ export interface PlayListStore {
   playList: string[]
   checkedPlayList: string[];
   selectionBegin: string | undefined;
+  filter: string[]
 
 
   setPlayListRef: (value: ListImperativeAPI | null) => void;
@@ -22,7 +23,7 @@ export interface PlayListStore {
   setPlayList: (value: string[]) => void;
   setCheckedPlayList: (value: string[]) => void;
   setSelectionBegin: (value: string | undefined) => void;
-
+  setFilter: (value: string[]) => void;
 
 
   scrollPlayPath: (curPlayList: string[], value: string | undefined) => void;
@@ -54,6 +55,7 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
     playList: [],
     checkedPlayList: [],
     selectionBegin: undefined,
+    filter: [],
     ...defaultState,
 
     setPlayListRef: (value) => {
@@ -66,7 +68,7 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
     setPlayList: (value) => set({playList: value}),
     setCheckedPlayList: (value) => set({ checkedPlayList: value }),
     setSelectionBegin: (value) => set({ selectionBegin: value }),
-
+    setFilter: (value) => set({filter: value}),
 
 
     scrollPlayPath: (curPlayList, value) => {
@@ -253,7 +255,8 @@ interface DefaultPlayListState {
   shuffle: boolean
   playList: string[]
   checkedPlayList: string[]
-  selectionBegin: undefined,
+  selectionBegin: undefined
+  filter: string[]
 }
 
 export const useMoviePlayListStore = createPlayListStore({
@@ -263,6 +266,7 @@ export const useMoviePlayListStore = createPlayListStore({
   playList: [],
   checkedPlayList: [],
   selectionBegin: undefined,
+  filter: ["mp4", "webm", "mkv", "ogg"],
 });
 
 export const useMusicPlayListStore = createPlayListStore({
@@ -272,6 +276,7 @@ export const useMusicPlayListStore = createPlayListStore({
   playList: [],
   checkedPlayList: [],
   selectionBegin: undefined,
+  filter: ["mp3", "wav", "ogg", "m4a", "opus", "webm"],
 });
 
 export const usePicturePlayListStore = createPlayListStore({
@@ -281,4 +286,5 @@ export const usePicturePlayListStore = createPlayListStore({
   playList: [],
   checkedPlayList: [],
   selectionBegin: undefined,
+  filter: ["jpg", "png", "svg", "bmp"],
 });

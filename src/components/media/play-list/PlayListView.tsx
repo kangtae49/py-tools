@@ -9,6 +9,10 @@ import {
 } from "@/components/media/play-list/playListStore.ts";
 import React, {useEffect} from "react";
 import {getFilename} from "@/components/utils.ts";
+import {FontAwesomeIcon as Icon} from "@fortawesome/react-fontawesome";
+import {faBookMedical, faFloppyDisk, faFolderPlus, faTrashCan} from "@fortawesome/free-solid-svg-icons";
+import {commands} from "@/bindings.ts";
+import toast from "react-hot-toast";
 
 interface Prop {
   usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
@@ -19,12 +23,89 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     shuffle,
     paused,
     playPath,
-    playList, setPlayList,
+    playList, setPlayList, appendPlayList,
     setPlayListRef,
+    checkedPlayList, setCheckedPlayList,
     scrollPlayPath,
     shufflePlayList, natsortPlayList,
     toggleAllChecked,
+    setSelectionBegin,
+    filter,
   } = usePlayListStore();
+
+  const openDialogPlayList = async () => {
+    const filter_ext = filter.map((ext)=> `*.${ext}`).join(";") // *.mp3;*.wav;*.ogg;*.m4a;*.opus;*.webm
+    commands.dialogOpen({
+      dialog_type: "OPEN",
+      allow_multiple: true,
+      file_types: [`Audio files (${filter_ext})`]
+    }).then((result) => {
+      if(result.status === 'ok') {
+        const files = result.data;
+        if (files === null) { return }
+        readFiles(files);
+      }
+    })
+  }
+
+  const openDialogOpenJson = async () => {
+    commands.dialogOpen({
+      dialog_type: "OPEN",
+      allow_multiple: false,
+      file_types: [`OpenAudio Book (${["*.json"].join(";")})`]
+    }).then((result) => {
+      if(result.status === 'ok') {
+        const files = result.data;
+        if(files === null) return;
+        commands.readFile(files[0]).then(async (result) => {
+          if (result.status === 'ok'){
+            const files: string [] = JSON.parse(result.data);
+            readFiles(files);
+          }
+        })
+      }
+    })
+  }
+
+  const readFiles = (files: string[]) => {
+    console.log('readFiles')
+    const {
+      playList, shuffle,
+    } = usePlayListStore.getState();
+    const newPlayList = appendPlayList(playList, files);
+    const shuffledPlayList = shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
+    let newPlayPath = playPath;
+    if (shuffledPlayList.length > 0) {
+      newPlayPath = shuffledPlayList[0];
+      setSelectionBegin(newPlayPath)
+    }
+    setPlayList(shuffledPlayList);
+  }
+
+
+  const openDialogSaveAsJson = async () => {
+    const {playList} = usePlayListStore.getState()
+    commands.dialogOpen({
+      dialog_type: "SAVE",
+      allow_multiple: true,
+      file_types: [`Save Audio Book (${["*.json"].join(";")})`]
+    }).then((result) => {
+      if(result.status === 'ok') {
+        const files = result.data;
+        if (files === null) { return }
+        const content = JSON.stringify(playList, null, 2);
+        commands.writeFile(files[0], content).then(async (result) => {
+          if (result.status === 'ok'){
+            toast.success("Success save");
+          } else {
+            toast.error("Fail save");
+          }
+        })
+      }
+    })
+  }
+
+
 
 
   useEffect(() => {
@@ -41,12 +122,26 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
   return (
     <div className="play-list">
       <div className="head">
-        <div><input type="checkbox" onChange={(e) => toggleAllChecked(e.target.checked)}/></div>
-        {playPath && icon}
+        <div className="dialog">
+          <div><input type="checkbox" onChange={(e) => toggleAllChecked(e.target.checked)}/></div>
+          <div className="icon" onClick={openDialogPlayList} title="Open Audio Files"><Icon icon={faFolderPlus}/></div>
+          <div className="icon" onClick={openDialogOpenJson} title="Open Audio Book"><Icon icon={faBookMedical}/></div>
+          <div className="icon" onClick={openDialogSaveAsJson} title="Save Audio Book"><Icon icon={faFloppyDisk}/></div>
+          <div className="icon badge-wrap"
+               onClick={() => {
+                 setPlayList(playList.filter((path)=> !checkedPlayList.includes(path)))
+                 setCheckedPlayList([])
+               }}
+               title="Delete Selection Files">
+            <Icon icon={faTrashCan} className={checkedPlayList.length > 0 ? '': 'inactive'}/>
+            {checkedPlayList.length > 0 && <div className="badge">{checkedPlayList.length}</div>}
+          </div>
+        </div>
+
         <div className="title"
              title={playPath ?? ''}
              onClick={() => {playPath && scrollPlayPath(playList ?? [], playPath)}}
-        >{getFilename(playPath ?? '')}</div>
+        >{playPath && icon} {getFilename(playPath ?? '')}</div>
       </div>
       <List
             listRef={setPlayListRef}
@@ -57,7 +152,7 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
               usePlayListStore,
               icon,
             }}
-            style={{height: "calc(100% - 20px)"}}
+            style={{height: "calc(100% - 32px)"}}
       />
     </div>
   )

@@ -31,6 +31,7 @@ export interface PlayListStore {
   appendPlayList: (curList: string[], addList: string []) => string [];
   removePlayList: (curList: string[], delList: string[]) => string [];
   shufflePlayList: (curList: string[]) => string [];
+  toggleShuffle: () => void;
   natsortPlayList: (curList: string[]) => string [];
   getPrevPlayPath: (value: string | undefined) => string | undefined;
   getNextPlayPath: (value: string | undefined) => string | undefined;
@@ -156,7 +157,9 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
       }
       setCheckedPlayList(newPlayList)
     },
-
+    toggleShuffle: () => {
+      set((state) => ({shuffle:!state.shuffle}))
+    },
 
     onKeyDownPlayList: (e: React.KeyboardEvent<HTMLDivElement>) => {
       const {

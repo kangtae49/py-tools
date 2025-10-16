@@ -41,7 +41,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     changeCurrentTime,
     changeMuted,
     toggleRepeat,
-    toggleShuffle,
     ended, setEnded,
     setting, setSetting,
     filter,
@@ -50,11 +49,12 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     subs, setSubs, changeAllTrackMode,
   } = useMediaStore();
   const {
-    paused, setPaused,
+    shuffle, setShuffle,
+    setPaused,
     playPath, setPlayPath,
     playList, setPlayList,
     scrollPlayPath,
-    appendPlayList, shufflePlayList, natsortPlayList,
+    appendPlayList, shufflePlayList, toggleShuffle, natsortPlayList,
     getPrevPlayPath, getNextPlayPath,
     checkedPlayList, setCheckedPlayList, appendCheckedPlayList,
     setSelectionBegin,
@@ -63,6 +63,40 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     setDropRef,
     dropRef,
   } = useReceivedDropFilesStore();
+
+  const clickVideo = (e: React.MouseEvent) => {
+    const state = useMediaStore.getState();
+    if (!state.fullscreen) {
+      const newPaused = !setting.paused;
+      setSetting((setting) => ({...setting, caller: "clickVideo", paused: newPaused}))
+      // setPaused(newPaused)
+    }
+    console.log('clickVideo', e);
+  }
+
+  const clickSubType = (_e: any, subType: string) => {
+    changeAllTrackMode('disabled');
+    let newSubType = undefined;
+    if (subType !== '') newSubType = subType;
+    setSetting((setting) => ({...setting, caller: "clickSubType", subType: newSubType}))
+  }
+
+  const titleSubType = () => {
+    const subs = useMediaStore.getState().subs;
+    const setting = useMediaStore.getState().setting;
+    const sub = subs.find((v) => v.subtype === setting?.subType);
+    if (sub) {
+      return getFilename(sub.fullpath)
+    } else {
+      return '-'
+    }
+  }
+
+  const labelSubType = () => {
+    const setting = useMediaStore.getState().setting;
+    return titleSubType() === '-' ? '-' : setting?.subType?.slice(0, 6) ?? '-'
+  }
+
 
   const openDialogPlayList = async () => {
     const filter_ext = filter.map((ext)=> `*.${ext}`).join(";") // *.mp3;*.wav;*.ogg;*.m4a;*.opus;*.webm
@@ -99,11 +133,13 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const readFiles = (files: string[]) => {
-    console.log('setSetting readFiles')
-    const setting = useMediaStore.getState().setting;
-    const newPlayList = appendPlayList(setting.playList ?? [], files);
-    const shuffledPlayList = setting.shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
-    let newPlayPath = setting.playPath;
+    console.log('readFiles')
+    const {
+      playList, shuffle,
+    } = usePlayListStore.getState();
+    const newPlayList = appendPlayList(playList, files);
+    const shuffledPlayList = shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
+    let newPlayPath = playPath;
     if (shuffledPlayList.length > 0) {
       newPlayPath = shuffledPlayList[0];
       setSelectionBegin(newPlayPath)
@@ -113,8 +149,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
 
   const openDialogSaveAsJson = async () => {
-    const setting = useMediaStore.getState().setting;
-    if (setting?.playList == null) return;
+    const {playList} = usePlayListStore.getState()
     commands.dialogOpen({
       dialog_type: "SAVE",
       allow_multiple: true,
@@ -123,7 +158,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
       if(result.status === 'ok') {
         const files = result.data;
         if (files === null) { return }
-        const content = JSON.stringify(setting.playList, null, 2);
+        const content = JSON.stringify(playList, null, 2);
         commands.writeFile(files[0], content).then(async (result) => {
           if (result.status === 'ok'){
             toast.success("Success save");
@@ -141,15 +176,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     setSetting((setting) => ({...setting, caller: "clickTogglePlay", paused: newPaused}))
   }
 
-  const clickVideo = (e: React.MouseEvent) => {
-    const state = useMediaStore.getState();
-    if (!state.fullscreen) {
-      const newPaused = !setting.paused;
-      setSetting((setting) => ({...setting, caller: "clickVideo", paused: newPaused}))
-      // setPaused(newPaused)
-    }
-    console.log('clickVideo', e);
-  }
 
   const clickSpeed = (_e: any, speed: string) => {
     const v = Number(speed);
@@ -157,25 +183,20 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     changePlaybackRate(v);
   }
 
-  const clickSubType = (_e: any, subType: string) => {
-    changeAllTrackMode('disabled');
-    let newSubType = undefined;
-    if (subType !== '') newSubType = subType;
-    setSetting((setting) => ({...setting, caller: "clickSubType", subType: newSubType}))
-  }
-
   const playPrev = () => {
     const setting = useMediaStore.getState().setting;
     const newPlayPath = getPrevPlayPath(setting.playPath);
     console.log('setSetting playPrev')
-    setSetting((setting) => ({...setting, caller: "playPrev", playPath: newPlayPath, currentTime: 0}))
+    setPlayPath(newPlayPath)
+    setSetting((setting) => ({...setting, caller: "playPrev", currentTime: 0}))
   }
 
   const playNext = () => {
     const setting = useMediaStore.getState().setting;
     const newPlayPath = getNextPlayPath(setting.playPath);
     console.log('setSetting playNext')
-    setSetting((setting) => ({...setting, caller: "playNext", playPath: newPlayPath, currentTime: 0}))
+    setPlayPath(newPlayPath)
+    setSetting((setting) => ({...setting, caller: "playNext", currentTime: 0}))
   }
 
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -200,8 +221,10 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   useEffect(() => {
     if(!ready) return;
-    setSetting((setting) => ({...setting, caller: "useEffect [paused]", paused}))
-  }, [paused]);
+    if(setting.paused !== undefined) {
+      setPaused(setting.paused)
+    }
+  }, [setting.paused])
 
   useEffect(() => {
     if(!ready) return;
@@ -215,44 +238,30 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   useEffect(() => {
     if(!ready) return;
-    if(setting.paused !== undefined) {
-      setPaused(setting.paused)
-    }
-  }, [setting.paused])
-
-  useEffect(() => {
-    if(!ready) return;
-    if (setting.playList !== undefined) {
-      setPlayList(setting.playList)
-    }
-  }, [setting.playList])
+    setSetting((setting) => ({...setting, caller: "useEffect [playList]", shuffle}))
+  }, [shuffle])
 
   useEffect(() => {
     const setting = useMediaStore.getState().setting;
-    if(setting.playList === undefined) return;
-    if(!ready) return;
-    const shuffledPlayList = setting.shuffle ? shufflePlayList(setting.playList) : natsortPlayList(setting.playList);
-    console.log('shuffle', setting.shuffle, setting.playList, shuffledPlayList);
-    setSetting((setting) => ({...setting, caller: "useEffect[setting.shuffle]", playList: shuffledPlayList}))
-  }, [setting.shuffle])
-
-  useEffect(() => {
-    const setting = useMediaStore.getState().setting;
-    if (setting.playList === undefined) return;
+    const {
+      shuffle,
+      playList,
+    } = usePlayListStore.getState();
+    if (playList === undefined) return;
     if (mediaRef === null) return;
     if (ended) {
       setEnded(false);
-      if (setting.playList.length == 0) {
+      if (playList.length == 0) {
         return;
       }
       if (setting.repeat === 'repeat_all') {
-        if (setting.playList.length == 0) return;
-        let idx = setting.playList.indexOf(setting.playPath || '');
+        if (playList.length == 0) return;
+        let idx = playList.indexOf(setting.playPath || '');
 
-        let shuffledPlayList = setting.playList;
-        if (idx === setting.playList.length -1) {
-          if (setting.shuffle) {
-            shuffledPlayList = shufflePlayList(setting.playList);
+        let shuffledPlayList = playList;
+        if (idx === playList.length -1) {
+          if (shuffle) {
+            shuffledPlayList = shufflePlayList(playList);
           }
           idx = 0
         } else {
@@ -261,11 +270,13 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
         const nextPlay = shuffledPlayList[idx]
         console.log('setSetting useEffect[ended] repeat_all')
-        setSetting((setting) => ({...setting, caller: "useEffect[ended] repeat_all", playPath: nextPlay, playList: shuffledPlayList, currentTime: 0}))
+        setPlayPath(nextPlay);
+        setPlayList(shuffledPlayList);
       } else if (setting.repeat === 'repeat_one') {
         console.log('setSetting useEffect[ended] repeat_one')
-        if (setting.playPath) {
-          setSetting((setting) => ({...setting, caller: "useEffect[ended] repeat_one", playPath: setting.playPath, currentTime: 0}))
+        if (playPath) {
+          setPlayPath(playPath);
+          setSetting((setting) => ({...setting, caller: "useEffect[ended] repeat_one", currentTime: 0}))
           if (setting.paused !== mediaRef.paused) {
             if (setting.paused) {
               mediaRef.pause();
@@ -290,7 +301,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     commands.appWrite(PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
       console.log(result.status, 'appWrite', PLAYER_SETTING);
     })
-  }, [setting])
+  }, [setting, playList, playPath, shuffle])
 
   useEffect(() => {
     console.log('ready', ready)
@@ -321,9 +332,13 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     const newPlayList = newSetting?.playList ?? []
     const newPlayPath = newSetting?.playPath ?? newPlayList[0];
     const newCurrenTime = newSetting?.currentTime ?? 0;
+    const newShuffle = newSetting?.shuffle ?? false;
 
-    setSetting((_setting) => ({...newSetting, caller: "onMount", playPath: newPlayPath, currentTime: newCurrenTime}))
+    setSetting((_setting) => ({...newSetting, caller: "onMount", currentTime: newCurrenTime}))
+
+    setPlayPath(newPlayPath)
     setPlayList(newPlayList)
+    setShuffle(newShuffle)
     setPaused(newSetting?.paused ?? false)
     setSelectionBegin(newPlayPath)
 
@@ -344,25 +359,25 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const onDropPlayPath = (file: string) => {
-    const setting = useMediaStore.getState().setting;
-    if (setting.playList === undefined) return;
     console.log('setSetting onDropPlayPath')
-    if(setting.playList.indexOf(file) < 0) {
+    const {playList} = usePlayListStore.getState()
+    if(playList.length === 0) {
       appendCheckedPlayList([file]);
     }
-    const newPlayList = appendPlayList(setting.playList, [file]);
-    setSetting((setting) => ({...setting, caller: "onDropPlayPath", playPath: file, paused: false, playList: newPlayList}))
+    const newPlayList = appendPlayList(playList, [file]);
+    setPlayList(newPlayList)
+    setPlayPath(file)
+    setSetting((setting) => ({...setting, caller: "onDropPlayPath", paused: false}))
   };
 
   const onDropPlayList = (files: string[]) => {
     if(files.length === 0) return;
-    const setting = useMediaStore.getState().setting;
-    const playList = setting.playList ?? [];
+    const {playList} = usePlayListStore.getState()
     const addPlayList = files.filter((file) => playList.indexOf(file) < 0);
     const newPlayList = appendPlayList(playList, addPlayList);
+    setPlayList(newPlayList);
     appendCheckedPlayList(addPlayList);
     console.log('setSetting onDropPlayList')
-    setSetting((setting) => ({...setting, caller: "onDropPlayList", playList: newPlayList}))
   }
 
   useEffect(() => {
@@ -372,14 +387,12 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }, [setting.volume])
 
   useEffect(() => {
-    if (setting?.playPath == null) return;
+    if (playPath === undefined) return;
     console.log('fetch HEAD');
-    fetch(srcLocal(setting.playPath), {method: "HEAD"})
+    fetch(srcLocal(playPath), {method: "HEAD"})
       .then( (res) => {
+        const {playList} = usePlayListStore.getState()
         if (res.ok) {
-          setPlayPath(setting.playPath)
-          setSelectionBegin(setting.playPath)
-          scrollPlayPath(setting.playList ?? [], setting.playPath)
           commands.getSubs(setting.playPath!).then((result) => {
             if (result.status === 'ok') {
               const subs = result.data;
@@ -392,19 +405,17 @@ export default function MoviePlayerView({winKey: _}: Prop) {
           })
         } else {
           setSubs([])
-          toast.error( `Fail ${setting.playPath}`);
+          toast.error( `Fail ${playPath}`);
           console.log('fetch error', res.status);
-          const newPlayPath = getNextPlayPath(setting.playPath)
-          console.log('setSetting fetch')
-          setSetting((setting) => ({...setting, caller: "useEffect [setting.playPath] fetch", currentTime: 0, playPath: newPlayPath}))
+          const newPlayPath = getNextPlayPath(playPath)
           setPlayPath(newPlayPath);
           setSelectionBegin(newPlayPath);
-          scrollPlayPath(setting.playList ?? [], newPlayPath)
+          scrollPlayPath(playList, newPlayPath)
           return;
         }
       })
     ;
-  }, [setting.playPath]);
+  }, [playPath]);
 
   useEffect(() => {
     const onDropFullPathHandler = (e: CustomEvent) => {
@@ -474,22 +485,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
       onUnMount().then()
     }
   }, [])
-
-  const titleSubType = () => {
-    const subs = useMediaStore.getState().subs;
-    const setting = useMediaStore.getState().setting;
-    const sub = subs.find((v) => v.subtype === setting?.subType);
-    if (sub) {
-      return getFilename(sub.fullpath)
-    } else {
-      return '-'
-    }
-  }
-
-  const labelSubType = () => {
-    const setting = useMediaStore.getState().setting;
-    return titleSubType() === '-' ? '-' : setting?.subType?.slice(0, 6) ?? '-'
-  }
 
   return (
     <div className={`widget movie-player`}
@@ -570,7 +565,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                 </div>
                 <div className="center">
                   <div className="icon" onClick={() => toggleShuffle()}>
-                    <Icon icon={faShuffle} className={setting.shuffle ? '': 'inactive'}/>
+                    <Icon icon={faShuffle} className={shuffle ? '': 'inactive'}/>
                   </div>
                   <div className="icon" onClick={() => playPrev()}>
                     <Icon icon={faBackwardStep}/>

@@ -47,7 +47,7 @@ export interface MediaStore<T extends HTMLMediaElement> {
 
   togglePlay: () => Promise<void>;
   toggleRepeat: () => void;
-  toggleShuffle: () => void;
+  // toggleShuffle: () => void;
 
 }
 
@@ -150,14 +150,14 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
         }
       });
     },
-    toggleShuffle: () => {
-      set((state) => {
-        const newShuffle = state.setting.shuffle ?? true;
-        return {
-          setting: {...state.setting, caller: "toggleShuffle", shuffle: !newShuffle}
-        }
-      })
-    },
+    // toggleShuffle: () => {
+    //   set((state) => {
+    //     const newShuffle = state.setting.shuffle ?? true;
+    //     return {
+    //       setting: {...state.setting, caller: "toggleShuffle", shuffle: !newShuffle}
+    //     }
+    //   })
+    // },
 
 
   }))

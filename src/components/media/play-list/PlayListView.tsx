@@ -16,13 +16,22 @@ interface Prop {
 }
 export default function PlayListView({usePlayListStore, icon}: Prop) {
   const {
+    shuffle,
     paused,
     playPath,
-    playList,
+    playList, setPlayList,
     setPlayListRef,
     scrollPlayPath,
+    shufflePlayList, natsortPlayList,
     toggleAllChecked,
   } = usePlayListStore();
+
+
+  useEffect(() => {
+    if (playList.length === 0) return;
+    const shuffledPlayList = shuffle ? shufflePlayList(playList) : natsortPlayList(playList);
+    setPlayList(shuffledPlayList);
+  }, [shuffle])
 
   useEffect(() => {
     console.log('PlayListView', paused, playList, playPath)

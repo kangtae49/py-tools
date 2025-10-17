@@ -1,5 +1,5 @@
 import "./MusicPlayerView.css"
-import React, {useEffect, useState} from "react";
+import React, {type ChangeEvent, useEffect, useState} from "react";
 import {formatSeconds, srcLocal} from "@/components/utils.ts";
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
@@ -7,7 +7,7 @@ import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 import {Menu, MenuButton, MenuItem} from "@szhsin/react-menu";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
-  faCirclePlay, faCirclePause, faVolumeHigh, faVolumeMute,
+  faCirclePlay, faCirclePause,
   faBackwardStep, faForwardStep,
   faShuffle,
   faArrowsSpin, faRotateRight, faMinus, faMusic,
@@ -18,6 +18,7 @@ import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play
 import PlayListView from "@/components/media/play-list/PlayListView.tsx";
 import MusicDropListener from "@/components/media/music-player/MusicDropListener.tsx";
 import MusicSettingListener from "@/components/media/music-player/MusicSettingListener.tsx";
+import VolumeMenu from "@/components/media/volume-menu/VolumeMenu.tsx";
 
 export const PLAYER_SETTING = 'music-player.setting.json'
 
@@ -101,6 +102,26 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     } else {
       await mediaRef?.requestFullscreen()
     }
+  }
+
+  const toggleMute= (_e: React.MouseEvent ) => {
+    const { setting } = useMediaStore.getState()
+    const newMuted = !setting.muted;
+    let newVolume = setting.volume ?? 0;
+    if(!newMuted && setting.volume === 0) {
+      newVolume = 0.5;
+    }
+    setSetting((setting) => ({...setting, caller: "mute click", muted: newMuted, volume: newVolume}))
+    changeMuted(newMuted)
+    changeVolume(newVolume)
+  }
+
+
+  const onChangeVolume= (e: ChangeEvent<HTMLInputElement>) => {
+    let v = Number(e.target.value);
+    console.log('change volume', v);
+    setSetting((setting) => ({...setting, caller: "input range", volume: v}));
+    changeVolume(v);
   }
 
   useEffect(() => {
@@ -295,31 +316,11 @@ export default function MusicPlayerView({winKey: _}: Prop) {
             </Menu>
           </div>
 
-          <div className="slider">
-            <input type="range" min={0} max={1} step={0.1}
-                   value={setting?.volume || 0}
-                   onChange={(e) => {
-                     let v = Number(e.target.value);
-                     console.log('change volume', v);
-                     setSetting({...setting, caller: "input range", volume: v});
-                     changeVolume(v);
-                   }}/>
-          </div>
-          <div className="icon"
-               onClick={
-                () => {
-                  const newMuted = !setting.muted;
-                  let newVolume = setting?.volume ?? 0;
-                  if(!newMuted && setting?.volume === 0) {
-                    newVolume = 0.5;
-                  }
-                  setSetting({...setting, caller: "mute click", muted: newMuted, volume: newVolume})
-                  changeMuted(newMuted)
-                  changeVolume(newVolume)
-                }
-            }>
-            <Icon icon={setting.muted ? faVolumeMute : faVolumeHigh} className={setting?.muted ? 'blink': ''}/>
-          </div>
+          <VolumeMenu
+            muted={setting.muted} volume={setting.volume}
+            toggleMute={toggleMute}
+            onChangeVolume={onChangeVolume}
+          />
         </div>
       </div>
       <div className="play-list drop-list"

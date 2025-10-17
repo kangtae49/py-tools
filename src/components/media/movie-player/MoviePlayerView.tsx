@@ -1,14 +1,16 @@
 import "./MoviePlayerView.css"
-import React, {useEffect, useState} from "react";
+import React, {type ChangeEvent, useEffect, useState} from "react";
 import {formatSeconds, getFilename, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 import {Menu, MenuButton, MenuItem} from "@szhsin/react-menu";
+import '@szhsin/react-menu/dist/index.css';
+import '@szhsin/react-menu/dist/transitions/zoom.css';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
-  faCirclePlay, faCirclePause, faVolumeHigh, faVolumeMute,
+  faCirclePlay, faCirclePause,
   faBackwardStep, faForwardStep,
   faShuffle,
   faArrowsSpin, faRotateRight, faMinus, faFilm, faExpand,
@@ -22,6 +24,7 @@ import {useMoviePlayListStore as usePlayListStore} from "@/components/media/play
 import PlayListView from "@/components/media/play-list/PlayListView.tsx";
 import MovieDropListener from "@/components/media/movie-player/MovieDropListener.tsx";
 import MovieSettingListener from "@/components/media/movie-player/MovieSettingListener.tsx";
+import VolumeMenu from "@/components/media/volume-menu/VolumeMenu.tsx";
 
 export const PLAYER_SETTING = 'movie-player.setting.json'
 
@@ -137,6 +140,26 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     } else {
       await mediaRef?.requestFullscreen()
     }
+  }
+
+  const toggleMute= (_e: React.MouseEvent ) => {
+    const { setting } = useMediaStore.getState()
+    const newMuted = !setting.muted;
+    let newVolume = setting.volume ?? 0;
+    if(!newMuted && setting.volume === 0) {
+      newVolume = 0.5;
+    }
+    setSetting((setting) => ({...setting, caller: "mute click", muted: newMuted, volume: newVolume}))
+    changeMuted(newMuted)
+    changeVolume(newVolume)
+  }
+
+
+  const onChangeVolume= (e: ChangeEvent<HTMLInputElement>) => {
+    let v = Number(e.target.value);
+    console.log('change volume', v);
+    setSetting((setting) => ({...setting, caller: "input range", volume: v}));
+    changeVolume(v);
   }
 
   useEffect(() => {
@@ -380,31 +403,11 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                     <MenuItem className={`menu-item ${setting?.playbackRate == 2 ? 'selected': ''}`} value="2" onClick={(e: any) => clickSpeed(e, e.value)}>x2</MenuItem>
                   </Menu>
                 </div>
-                <div className="slider">
-                  <input type="range" min={0} max={1} step={0.1}
-                         value={setting?.volume || 0}
-                         onChange={(e) => {
-                           let v = Number(e.target.value);
-                           console.log('change volume', v);
-                           setSetting((setting) => ({...setting, caller: "input range", volume: v}));
-                           changeVolume(v);
-                         }}/>
-                </div>
-                <div className="icon"
-                     onClick={
-                      () => {
-                        const newMuted = !setting.muted;
-                        let newVolume = setting.volume ?? 0;
-                        if(!newMuted && setting.volume === 0) {
-                          newVolume = 0.5;
-                        }
-                        setSetting((setting) => ({...setting, caller: "mute click", muted: newMuted, volume: newVolume}))
-                        changeMuted(newMuted)
-                        changeVolume(newVolume)
-                      }
-                  }>
-                  <Icon icon={setting.muted ? faVolumeMute : faVolumeHigh} className={setting?.muted ? 'blink': ''}/>
-                </div>
+                <VolumeMenu
+                  muted={setting.muted} volume={setting.volume}
+                  toggleMute={toggleMute}
+                  onChangeVolume={onChangeVolume}
+                />
                 <div className="icon" onClick={() => toggleFullscreen()} title="Fullscreen(F11)">
                   <Icon icon={faExpand}/>
                 </div>

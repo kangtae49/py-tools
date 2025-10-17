@@ -49,7 +49,6 @@ export interface MediaStore<T extends HTMLMediaElement> {
 
   togglePlay: () => Promise<void>;
   toggleRepeat: () => void;
-  // toggleShuffle: () => void;
 
 }
 

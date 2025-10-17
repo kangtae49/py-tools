@@ -187,20 +187,17 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
       } else if (e.key === "ArrowLeft") {
         const newPlayPath = getPrevPlayPath(playPath)
         console.log('setSetting ArrowLeft')
-        // setSetting((setting) => ({...setting, caller: "onKeyDownHandler", currentTime: 0}))
         setPlayPath(newPlayPath);
         setSelectionBegin(newPlayPath)
         scrollPlayPath(playList, newPlayPath)
       } else if (e.key === "ArrowRight") {
         const newPlayPath = getNextPlayPath(playPath)
         console.log('setSetting ArrowRight')
-        // setSetting((setting) => ({...setting, caller: "onKeyDownHandler", currentTime: 0}))
         setPlayPath(newPlayPath);
         setSelectionBegin(newPlayPath)
         scrollPlayPath(playList, newPlayPath)
       } else if (e.key === "Enter") {
         console.log('setSetting Enter')
-        // setSetting((setting) => ({...setting, caller: "onKeyDownHandler", paused: false}))
         setPaused(false);
         setPlayPath(selectionBegin);
         setSelectionBegin(selectionBegin);

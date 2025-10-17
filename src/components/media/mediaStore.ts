@@ -3,9 +3,9 @@ import type {Sub} from "@/types/models";
 
 export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
 
-export interface PlayerSetting {
+export interface MediaSetting {
   caller?: string
-  playPath?: string
+  mediaPath?: string
   currentTime?: number
   volume?: number
   playbackRate?: number
@@ -24,18 +24,18 @@ export interface MediaStore<T extends HTMLMediaElement> {
   containerRef: HTMLDivElement | null
   ended: boolean
   currentTime: number
-  setting: PlayerSetting
-  filter: string[]
+  extensions: string[]
   fullscreen: boolean
   ready: boolean
   subs: Sub[]
+  setting: MediaSetting
 
   setMediaRef: (mediaRef: T | null) => void
   setContainerRef: (containerRef: HTMLDivElement | null) => void
   setEnded: (ended: boolean) => void;
   setCurrentTime: (currentTime: number) => void;
-  setSetting: (setting: PlayerSetting | ((prev: PlayerSetting) => PlayerSetting)) => void;
-  setFilter: (filter: string[]) => void;
+  setSetting: (setting: MediaSetting | ((prev: MediaSetting) => MediaSetting)) => void;
+  setExtensions: (filter: string[]) => void;
   setFullscreen: (fullscreen: boolean) => void;
   setReady: (ready: boolean) => void;
   setSubs: (subs: Sub[]) => void;
@@ -61,9 +61,9 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
     containerRef: null,
     ended: false,
     currentTime: 0,
-    filter: [],
+    extensions: [],
     setting: {
-      playPath: undefined,
+      mediaPath: undefined,
       currentTime: 0,
       volume: 0.5,
       playbackRate: 1.0,
@@ -92,7 +92,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
           typeof updater === "function" ? updater(state.setting) : updater,
       }))
     },
-    setFilter: (filter) => set({filter}),
+    setExtensions: (filter) => set({extensions: filter}),
     setFullscreen: (fullscreen) => set({fullscreen}),
     setReady: (ready) => set({ready}),
     setSubs: (subs) => set({subs}),
@@ -169,13 +169,13 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
 interface MediaDefault {
   shuffle?: boolean
   filter?: string[]
-  setting: PlayerSetting
+  setting: MediaSetting
 }
 
 export const audioDefault: MediaDefault = {
   filter: ["mp3", "wav", "ogg", "m4a", "opus", "webm"],
   setting: {
-    playPath: undefined,
+    mediaPath: undefined,
     currentTime: 0,
     volume: 0.5,
     playbackRate: 1.0,
@@ -191,7 +191,7 @@ export const audioDefault: MediaDefault = {
 export const videoDefault: MediaDefault = {
   filter: ["mp4", "webm", "mkv", "ogg"],
   setting: {
-    playPath: undefined,
+    mediaPath: undefined,
     currentTime: 0,
     volume: 0.5,
     playbackRate: 1.0,

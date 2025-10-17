@@ -48,7 +48,7 @@ function MovieDropListener() {
     const onDropFullPathHandler = (e: CustomEvent) => {
       setDropRef(null);
       console.log('onDropFullPathHandler', dropRef);
-      const filter_video = usePlayListStore.getState().filter;
+      const filter_video = useMediaStore.getState().extensions;
       const state = useMediaStore.getState();
       const filter_sub = [
         "ass", "mpl", "json", "smi", "sami", "srt", "ssa", "sub", "tmp", "ttml", "vtt",];

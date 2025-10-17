@@ -25,7 +25,7 @@ function PlayListRowView({
 }: RowComponentProps<Prop>) {
   const {
     playPath, setPlayPath,
-    paused,
+    playing,
     playList, removePlayList,
     selectionBegin, setSelectionBegin,
     checkedPlayList,
@@ -56,7 +56,7 @@ function PlayListRowView({
 
   return (
     <div className={`row ${isSelected ? 'selected': ''} ${isPlayPath ? 'playing' : ''}`} style={style}>
-      <div className={`title  ${(!paused && isPlayPath) ? 'playing' : ''}`}
+      <div className={`title  ${(playing && isPlayPath) ? 'playing' : ''}`}
            title={playList[index]}
       >
         <div className="no">{index+1}</div>

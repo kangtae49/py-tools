@@ -1,5 +1,5 @@
 import {
-  type PlayerSetting,
+  type MediaSetting,
   useVideoStore as useMediaStore,
   videoDefault as mediaDefault
 } from "@/components/media/mediaStore.ts";
@@ -20,10 +20,7 @@ function MovieSettingListener() {
     const setting = useMediaStore.getState().setting;
     if(setting === null) return;
     if(!ready) return;
-    console.log('setting', setting);
-    commands.appWrite(PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
-      console.log(result.status, 'appWrite', PLAYER_SETTING);
-    })
+    commands.appWrite(PLAYER_SETTING, JSON.stringify(setting, null, 2)).then()
   }, [setting])
 
   const onMount = async () => {
@@ -61,38 +58,33 @@ export const mountSetting = () => {
       setPlayPath,
       setPlayList,
       setShuffle,
-      setPaused,
+      setPlaying,
       setSelectionBegin,
     } = usePlayListStore.getState();
 
-    let newSetting: PlayerSetting | null;
+    let newSetting: MediaSetting | null;
     if(result.status === 'ok') {
       newSetting = JSON.parse(result.data);
       if (result.data === "null") {
         newSetting = mediaDefault.setting ?? null;
       }
-      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-        console.log(result.status, 'appWrite', PLAYER_SETTING);
-      })
+      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then()
     } else {
       newSetting = mediaDefault.setting ?? null;
-      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-        console.log(result.status, 'appWrite', PLAYER_SETTING);
-      })
-      commands.appWriteFile(PLAYER_SETTING, "null").then((result) => {
-        console.log(result.status, 'appWriteFile', PLAYER_SETTING);
+      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then(() => {
+        commands.appWriteFile(PLAYER_SETTING, "null").then()
       })
     }
 
     const newPlayList = newSetting?.playList ?? []
-    const newPlayPath = newSetting?.playPath ?? newPlayList[0];
+    const newPlayPath = newSetting?.mediaPath ?? newPlayList[0];
     const newCurrenTime = newSetting?.currentTime ?? 0;
     const newShuffle = newSetting?.shuffle ?? false;
     const newPaused = newSetting?.paused ?? false;
 
     setSetting((_setting) => ({
       ...newSetting, caller: "onMount",
-      playPath: newPlayPath,
+      mediaPath: newPlayPath,
       playList: newPlayList,
       shuffle: newShuffle,
       paused: newPaused,
@@ -102,8 +94,7 @@ export const mountSetting = () => {
     setPlayPath(newPlayPath)
     setPlayList(newPlayList)
     setShuffle(newShuffle)
-    setPaused(newPaused)
-    console.log('mount currentTime', newCurrenTime);
+    setPlaying(!newPaused)
     setCurrentTime(newCurrenTime)
     setSelectionBegin(newPlayPath)
   })
@@ -115,9 +106,7 @@ export function unMountSetting() {
   if (ready) {
     commands.appRead(PLAYER_SETTING).then((result) => {
       if (result.status === 'ok') {
-        commands.appWriteFile(PLAYER_SETTING, "{}").then((result) => {
-          console.log(result.status, 'appWriteFile', PLAYER_SETTING);
-        })
+        commands.appWriteFile(PLAYER_SETTING, "{}").then()
       }
     })
   }

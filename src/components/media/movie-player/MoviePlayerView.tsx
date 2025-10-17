@@ -47,7 +47,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   } = useMediaStore();
   const {
     shuffle,
-    paused, setPaused,
+    playing, setPlaying,
     playPath, setPlayPath,
     playList, setPlayList,
     scrollPlayPath,
@@ -105,7 +105,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   const playPrev = () => {
     const setting = useMediaStore.getState().setting;
-    const newPlayPath = getPrevPlayPath(setting.playPath);
+    const newPlayPath = getPrevPlayPath(setting.mediaPath);
     console.log('setSetting playPrev')
     setPlayPath(newPlayPath)
     setCurrentTime(0)
@@ -113,7 +113,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   const playNext = () => {
     const setting = useMediaStore.getState().setting;
-    const newPlayPath = getNextPlayPath(setting.playPath);
+    const newPlayPath = getNextPlayPath(setting.mediaPath);
     console.log('setSetting playNext')
     setPlayPath(newPlayPath)
     setCurrentTime(0)
@@ -142,7 +142,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   useEffect(() => {
     if(!ready) return;
     if(setting.paused !== undefined) {
-      setPaused(setting.paused)
+      setPlaying(!setting.paused)
     }
   }, [setting.paused])
 
@@ -153,8 +153,8 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   useEffect(() => {
     if(!ready) return;
-    setSetting((setting) => ({...setting, caller: "useEffect [playList]", paused}))
-  }, [paused]);
+    setSetting((setting) => ({...setting, caller: "useEffect [playList]", paused: !playing}))
+  }, [playing]);
 
   useEffect(() => {
     if(!ready) return;
@@ -175,13 +175,13 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   useEffect(() => {
     if(!ready) return;
     if (playPath === undefined) return;
-    setSetting((setting) => ({...setting, caller: "useEffect [playPath]", playPath}))
+    setSetting((setting) => ({...setting, caller: "useEffect [playPath]", mediaPath: playPath}))
     console.log('fetch HEAD');
     fetch(srcLocal(playPath), {method: "HEAD"})
       .then( (res) => {
         const {playList} = usePlayListStore.getState()
         if (res.ok) {
-          commands.getSubs(setting.playPath!).then((result) => {
+          commands.getSubs(setting.mediaPath!).then((result) => {
             if (result.status === 'ok') {
               const subs = result.data;
               getSubs(subs).then((subs) => {
@@ -220,7 +220,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
       }
       if (setting.repeat === 'repeat_all') {
         if (playList.length == 0) return;
-        let idx = playList.indexOf(setting.playPath || '');
+        let idx = playList.indexOf(setting.mediaPath || '');
 
         let shuffledPlayList = playList;
         if (idx === playList.length -1) {
@@ -313,7 +313,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
             <div className="top drop-top"
                  onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
             >
-              <div className={`row time-line ${(!mediaRef?.paused && setting.playPath) ? 'playing' : ''}`}>
+              <div className={`row time-line ${(!mediaRef?.paused && setting.mediaPath) ? 'playing' : ''}`}>
                 <div className="tm">{formatSeconds(currentTime)}</div>
                 <div className="slider">
                   <input type="range" min={0} max={mediaRef?.duration || 0} step={1}

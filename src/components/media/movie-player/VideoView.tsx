@@ -26,12 +26,12 @@ function VideoView() {
   useEffect(() => {
     if (!ready) return;
     loadSrc()
-  }, [ready, setting?.playPath])
+  }, [ready, setting?.mediaPath])
 
   useEffect(() => {
     if (!ready) return;
     if(mediaRef === null) return;
-    if(setting.playPath == undefined) return;
+    if(setting.mediaPath == undefined) return;
 
     console.log('ready state', mediaRef?.readyState, currentTime)
 
@@ -48,7 +48,7 @@ function VideoView() {
   const isNullPlaying = () => {
     const state = useMediaStore.getState();
     if (state.mediaRef === null) return true;
-    if (state.setting.playPath == undefined) return true;
+    if (state.setting.mediaPath == undefined) return true;
     if (!state.mediaRef) return true;
     return state.mediaRef.currentSrc === '';
   }
@@ -57,9 +57,9 @@ function VideoView() {
     const state = useMediaStore.getState();
     let settingSrc;
     if (import.meta.env.PROD) {
-      settingSrc = new URL(srcLocal(state.setting?.playPath ?? '')).href;
+      settingSrc = new URL(srcLocal(state.setting?.mediaPath ?? '')).href;
     } else {
-      settingSrc = srcLocal(state.setting?.playPath ?? '')
+      settingSrc = srcLocal(state.setting?.mediaPath ?? '')
     }
     return !!state.mediaRef?.currentSrc.endsWith(settingSrc);
   }
@@ -67,10 +67,10 @@ function VideoView() {
   const loadSrc = () => {
     const state = useMediaStore.getState();
     state.changeAllTrackMode('disabled');
-    if(state.setting.playPath == undefined) return;
+    if(state.setting.mediaPath == undefined) return;
     if (state.mediaRef === null) return;
-    console.log('playPath', state.setting.playPath);
-    state.mediaRef.src = srcLocal(state.setting.playPath);
+    console.log('playPath', state.setting.mediaPath);
+    state.mediaRef.src = srcLocal(state.setting.mediaPath);
     state.mediaRef.load();
   }
 
@@ -102,10 +102,8 @@ function VideoView() {
     if (isNullPlaying()) return;
 
     if (isValidSrc()) {
-      console.log('mediaRef!.currentTime', mediaRef!.currentTime)
       setCurrentTime(mediaRef!.currentTime)
     } else {
-      console.log('mediaRef!.currentTime', 0)
       setCurrentTime(0)
     }
   }

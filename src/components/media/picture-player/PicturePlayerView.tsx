@@ -49,7 +49,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   } = usePictureStore();
 
   const {
-    setPaused,
+    setPlaying,
     setPlayList,
     appendPlayList,
     getPrevPlayPath, getNextPlayPath,
@@ -180,13 +180,15 @@ export default function PicturePlayerView({winKey: _}: Prop) {
         console.log(result.status, 'appWriteFile', PLAYER_SETTING);
       })
     }
-    const newPlayList = newSetting?.playList ?? []
-    const newPlayPath = newSetting?.playPath ?? newPlayList[0];
-
-    setSetting((_setting) => ({...newSetting, caller: "onMount", playPath: newPlayPath}))
-    setPlayList(newPlayList)
-    setPaused(newSetting?.paused ?? false)
-    setSelectionBegin(newPlayPath)
+    if (newSetting !== null) {
+      const newPlayList = newSetting.playList ?? []
+      const newPlayPath = newSetting.playPath ?? newPlayList[0];
+      const newPaused  = newSetting.paused ?? false
+      setSetting((_setting) => ({...newSetting, caller: "onMount", playPath: newPlayPath}))
+      setPlayList(newPlayList)
+      setPlaying(!newPaused)
+      setSelectionBegin(newPlayPath)
+    }
 
   }
 
@@ -255,20 +257,6 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                 <div className={`row time-line ${(!setting.paused && setting.playPath) ? 'playing' : ''}`}>
                 </div>
                 <div className="row first">
-                  {/*<div className="icon" onClick={openDialogPlayList} title="Open Video Files"><Icon icon={faFolderPlus}/></div>*/}
-                  {/*<div className="icon" onClick={openDialogOpenJson} title="Open Video Book"><Icon icon={faBookMedical}/></div>*/}
-                  {/*<div className="icon" onClick={openDialogSaveAsJson} title="Save Video Book"><Icon icon={faFloppyDisk}/></div>*/}
-                  {/*<div className="icon badge-wrap"*/}
-                  {/*     onClick={() => {*/}
-                  {/*       setPlayList(playList.filter((path)=> !checkedPlayList.includes(path)))*/}
-                  {/*       setCheckedPlayList([])*/}
-                  {/*     }}*/}
-                  {/*     title="Delete Selection Files">*/}
-                  {/*  <Icon icon={faTrashCan} className={checkedPlayList.length > 0 ? '': 'inactive'}/>*/}
-                  {/*  {checkedPlayList.length > 0 && <div className="badge">{checkedPlayList.length}</div>}*/}
-                  {/*</div>*/}
-                  {/*<div className="sub badge-wrap" >*/}
-                  {/*</div>*/}
                   <div className="center">
                     <div className="icon" onClick={() => toggleShuffle()}>
                       <Icon icon={faShuffle} className={setting.shuffle ? '': 'inactive'}/>

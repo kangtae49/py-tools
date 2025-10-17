@@ -100,16 +100,13 @@ export function MosaicLayoutView() {
       if (result.data === "{}") {
         newSetting = videoDefault.setting ?? null;
       }
-      commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-        console.log(result.status, 'appWrite', MOSAIC_LAYOUT_SETTING);
-      })
+      commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(newSetting, null, 2)).then()
     } else {
       newSetting = defaultLayout;
       commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-        console.log(result.status, 'appWrite', MOSAIC_LAYOUT_SETTING);
-      })
-      commands.appWriteFile(MOSAIC_LAYOUT_SETTING, "").then((result) => {
-        console.log(result.status, 'appWriteFile', MOSAIC_LAYOUT_SETTING);
+        if (result.status === 'ok') {
+          commands.appWriteFile(MOSAIC_LAYOUT_SETTING, "").then()
+        }
       })
     }
     setMosaicValue(newSetting);

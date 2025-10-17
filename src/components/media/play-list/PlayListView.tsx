@@ -21,7 +21,7 @@ interface Prop {
 export default function PlayListView({usePlayListStore, icon}: Prop) {
   const {
     shuffle,
-    paused,
+    playing,
     playPath,
     playList, setPlayList, appendPlayList,
     setPlayListRef,
@@ -115,7 +115,7 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
   }, [shuffle])
 
   useEffect(() => {
-    console.log('PlayListView', paused, playList, playPath)
+    console.log('PlayListView', playing, playList, playPath)
   }, [])
 
 

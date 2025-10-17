@@ -8,7 +8,7 @@ import React from "react";
 export interface PlayListStore {
   playListRef: ListImperativeAPI | null
   playPath: string | undefined
-  paused: boolean
+  playing: boolean
   shuffle: boolean
   playList: string[]
   checkedPlayList: string[];
@@ -18,7 +18,7 @@ export interface PlayListStore {
 
   setPlayListRef: (value: ListImperativeAPI | null) => void;
   setPlayPath: (value: string | undefined) => void;
-  setPaused: (value: boolean) => void;
+  setPlaying: (value: boolean) => void;
   setShuffle: (value: boolean) => void;
   setPlayList: (value: string[]) => void;
   setCheckedPlayList: (value: string[]) => void;
@@ -50,7 +50,7 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
   return create<PlayListStore>((set, get) => ({
     playListRef: null,
     playPath: undefined,
-    paused: true,
+    playing: false,
     shuffle: false,
     playList: [],
     checkedPlayList: [],
@@ -63,7 +63,7 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
       set({playListRef: value})
     },
     setPlayPath: (value) => set({playPath: value}),
-    setPaused: (value) => set({paused: value}),
+    setPlaying: (value) => set({playing: value}),
     setShuffle: (value) => set({shuffle: value}),
     setPlayList: (value) => set({playList: value}),
     setCheckedPlayList: (value) => set({ checkedPlayList: value }),
@@ -170,7 +170,7 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
         selectionBegin, setSelectionBegin,
         checkedPlayList, setCheckedPlayList,
         getPrevPlayPath, getNextPlayPath,
-        setPaused,
+        setPlaying,
         scrollPlayPath,
         removeCheckedPlayList,
         appendCheckedPlayList,
@@ -198,7 +198,7 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
         scrollPlayPath(playList, newPlayPath)
       } else if (e.key === "Enter") {
         console.log('setSetting Enter')
-        setPaused(false);
+        setPlaying(true);
         setPlayPath(selectionBegin);
         setSelectionBegin(selectionBegin);
       } else if (e.key === "ArrowUp") {

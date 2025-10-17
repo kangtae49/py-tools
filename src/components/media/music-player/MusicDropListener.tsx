@@ -44,11 +44,11 @@ function MusicDropListener() {
   useEffect(() => {
     const onDropFullPathHandler = (e: CustomEvent) => {
       setDropRef(null);
-      const {filter} = usePlayListStore.getState();
+      const {extensions} = useMediaStore.getState();
       console.log('onDropFullPathHandler', dropRef);
       const newDropFiles = e.detail as DropFile[];
       const fullpathFiles = newDropFiles
-        .filter((file) => filter.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
+        .filter((file) => extensions.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
         .map((file) => file.pywebview_full_path);
       if (fullpathFiles.length == 0) {
         return;

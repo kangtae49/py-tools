@@ -9,7 +9,7 @@ function AudioView() {
 
   const {
     mediaRef, setMediaRef,
-    changeCurrentTime,
+    currentTime, setCurrentTime, changeCurrentTime,
     changeVolume,
     changeMuted,
     setEnded,
@@ -28,7 +28,7 @@ function AudioView() {
     if(mediaRef === null) return;
     if(setting.playPath == undefined) return;
 
-    console.log('ready state', mediaRef?.readyState)
+    console.log('ready state', mediaRef?.readyState, currentTime)
 
     if (setting.paused !== mediaRef.paused) {
       if (setting.paused) {
@@ -71,19 +71,20 @@ function AudioView() {
   const onloadedMetaData = async () => {
     if (isNullPlaying()) return;
     if (!isValidSrc()) return;
-    const state = useMediaStore.getState();
+    const {setting, currentTime, mediaRef} = useMediaStore.getState();
 
-    changeVolume(state.setting!.volume);
-    changeCurrentTime(state.setting!.currentTime);
-    changePlaybackRate(state.setting!.playbackRate);
-    changeMuted(state.setting!.muted ?? false)
-    console.log('duration', state.mediaRef!.duration)
+    changeVolume(setting.volume ?? 0.5);
+    setCurrentTime(currentTime);
+    changeCurrentTime(currentTime)
+    changePlaybackRate(setting.playbackRate ?? 1.0);
+    changeMuted(setting.muted ?? false)
+    console.log('duration', mediaRef!.duration)
 
-    if (state.setting!.paused !== state.mediaRef!.paused) {
-      if (state.setting!.paused) {
-        state.mediaRef!.pause();
+    if (setting.paused !== mediaRef!.paused) {
+      if (setting.paused) {
+        mediaRef!.pause();
       } else {
-        state.mediaRef!.play().then();
+        mediaRef!.play().then();
       }
     }
   }
@@ -95,9 +96,11 @@ function AudioView() {
     if (isNullPlaying()) return;
 
     if (isValidSrc()) {
-      setSetting((setting) => ({...setting, caller: "onTimeUpdate", currentTime: mediaRef!.currentTime}))
+      console.log('mediaRef!.currentTime', mediaRef!.currentTime)
+      setCurrentTime(mediaRef!.currentTime)
     } else {
-      setSetting((setting) => ({...setting, caller: "onTimeUpdate", currentTime: 0}))
+      console.log('mediaRef!.currentTime', 0)
+      setCurrentTime(0)
     }
   }
 

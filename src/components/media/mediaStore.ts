@@ -23,6 +23,7 @@ export interface MediaStore<T extends HTMLMediaElement> {
   mediaRef: T | null
   containerRef: HTMLDivElement | null
   ended: boolean
+  currentTime: number
   setting: PlayerSetting
   filter: string[]
   fullscreen: boolean
@@ -32,6 +33,7 @@ export interface MediaStore<T extends HTMLMediaElement> {
   setMediaRef: (mediaRef: T | null) => void
   setContainerRef: (containerRef: HTMLDivElement | null) => void
   setEnded: (ended: boolean) => void;
+  setCurrentTime: (currentTime: number) => void;
   setSetting: (setting: PlayerSetting | ((prev: PlayerSetting) => PlayerSetting)) => void;
   setFilter: (filter: string[]) => void;
   setFullscreen: (fullscreen: boolean) => void;
@@ -59,6 +61,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
     mediaRef: null,
     containerRef: null,
     ended: false,
+    currentTime: 0,
     filter: [],
     setting: {
       playPath: undefined,
@@ -83,6 +86,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
       set({containerRef})
     },
     setEnded: (ended) => set({ended}),
+    setCurrentTime: (currentTime) => set({currentTime}),
     setSetting: (updater) => {
       set((state) => ({
         setting:

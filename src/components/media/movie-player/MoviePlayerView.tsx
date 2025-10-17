@@ -36,7 +36,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     mediaRef,
     containerRef, setContainerRef,
     changeVolume,
-    changeCurrentTime,
+    currentTime, changeCurrentTime, setCurrentTime,
     changeMuted,
     toggleRepeat,
     ended, setEnded,
@@ -108,7 +108,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     const newPlayPath = getPrevPlayPath(setting.playPath);
     console.log('setSetting playPrev')
     setPlayPath(newPlayPath)
-    setSetting((setting) => ({...setting, caller: "playPrev", currentTime: 0}))
+    setCurrentTime(0)
   }
 
   const playNext = () => {
@@ -116,7 +116,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     const newPlayPath = getNextPlayPath(setting.playPath);
     console.log('setSetting playNext')
     setPlayPath(newPlayPath)
-    setSetting((setting) => ({...setting, caller: "playNext", currentTime: 0}))
+    setCurrentTime(0)
   }
 
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -148,12 +148,17 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   useEffect(() => {
     if(!ready) return;
+    setSetting((setting) => ({...setting, caller: "useEffect [currentTime]", currentTime: Math.floor(currentTime)}))
+  }, [currentTime])
+
+  useEffect(() => {
+    if(!ready) return;
     setSetting((setting) => ({...setting, caller: "useEffect [playList]", paused}))
   }, [paused]);
 
   useEffect(() => {
     if(!ready) return;
-    setSetting((setting) => ({...setting, caller: "useEffect [playList]", playList: playList}))
+    setSetting((setting) => ({...setting, caller: "useEffect [playList]", playList}))
   }, [playList])
 
   useEffect(() => {
@@ -235,7 +240,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
         console.log('setSetting useEffect[ended] repeat_one')
         if (playPath) {
           setPlayPath(playPath);
-          setSetting((setting) => ({...setting, caller: "useEffect[ended] repeat_one", currentTime: 0}))
+          setCurrentTime(0);
           if (setting.paused !== mediaRef.paused) {
             if (setting.paused) {
               mediaRef.pause();
@@ -309,14 +314,14 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                  onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
             >
               <div className={`row time-line ${(!mediaRef?.paused && setting.playPath) ? 'playing' : ''}`}>
-                <div className="tm">{formatSeconds(setting.currentTime ?? 0)}</div>
+                <div className="tm">{formatSeconds(currentTime)}</div>
                 <div className="slider">
                   <input type="range" min={0} max={mediaRef?.duration || 0} step={1}
-                         value={setting.currentTime ?? 0}
+                         value={currentTime}
                          onChange={(e) => {
                            const tm = Number(e.target.value);
                            console.log('change currentTime', tm);
-                           setSetting((setting) => ({...setting, caller: "input range", currentTime: tm}));
+                           setCurrentTime(tm);
                            changeCurrentTime(tm);
                          }}/>
                 </div>
@@ -422,5 +427,3 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     </div>
   )
 }
-
-

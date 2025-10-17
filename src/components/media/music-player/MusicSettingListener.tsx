@@ -16,25 +16,15 @@ function MusicSettingListener() {
   } = useMediaStore();
 
   useEffect(() => {
-    const state = useMediaStore.getState();
+    const {ready} = useMediaStore.getState();
     const setting = useMediaStore.getState().setting;
     if(setting === null) return;
-    if(!state.ready) return;
+    if(!ready) return;
     console.log('setting', setting);
     commands.appWrite(PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
       console.log(result.status, 'appWrite', PLAYER_SETTING);
     })
-  }, [
-    setting.playPath,
-    Math.floor(setting.currentTime || 0),
-    setting.volume,
-    setting.playbackRate,
-    setting.muted,
-    setting.paused,
-    setting.repeat,
-    setting.playList,
-    setting.shuffle,
-  ])
+  }, [setting])
 
   const onMount = async () => {
     console.log('onMount')
@@ -65,6 +55,7 @@ export const mountSetting = () => {
   commands.appReadFile(PLAYER_SETTING).then(result => {
     const {
       setSetting,
+      setCurrentTime,
     } = useMediaStore.getState()
     const {
       setPlayPath,
@@ -97,13 +88,23 @@ export const mountSetting = () => {
     const newPlayPath = newSetting?.playPath ?? newPlayList[0];
     const newCurrenTime = newSetting?.currentTime ?? 0;
     const newShuffle = newSetting?.shuffle ?? false;
+    const newPaused = newSetting?.paused ?? false;
 
-    setSetting((_setting) => ({...newSetting, caller: "onMount", currentTime: newCurrenTime}))
+    setSetting((_setting) => ({
+      ...newSetting, caller: "onMount",
+      playPath: newPlayPath,
+      playList: newPlayList,
+      shuffle: newShuffle,
+      paused: newPaused,
+      currentTime: newCurrenTime,
+    }))
 
     setPlayPath(newPlayPath)
     setPlayList(newPlayList)
     setShuffle(newShuffle)
-    setPaused(newSetting?.paused ?? false)
+    setPaused(newPaused)
+    console.log('mount currentTime', newCurrenTime);
+    setCurrentTime(newCurrenTime)
     setSelectionBegin(newPlayPath)
   })
 

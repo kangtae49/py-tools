@@ -15,9 +15,9 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import AudioView from "./AudioView.tsx";
 import {audioDefault as mediaDefault, type PlayerSetting, useAudioStore as useMediaStore} from "../mediaStore.ts";
-import type {DropFile} from "@/types/models";
 import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
 import PlayListView from "@/components/media/play-list/PlayListView.tsx";
+import MusicDropListener from "@/components/media/music-player/MusicDropListener.tsx";
 
 export const PLAYER_SETTING = 'music-player.setting.json'
 
@@ -37,24 +37,21 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     toggleRepeat,
     ended, setEnded,
     setting, setSetting,
-    filter,
     changePlaybackRate,
     ready, setReady,
   } = useMediaStore();
   const {
     shuffle, setShuffle,
-    setPaused,
+    paused, setPaused,
     playPath, setPlayPath,
     playList, setPlayList,
     scrollPlayPath,
-    appendPlayList, shufflePlayList, toggleShuffle,
+    shufflePlayList, toggleShuffle,
     getPrevPlayPath, getNextPlayPath,
-    appendCheckedPlayList,
     setSelectionBegin,
   } = usePlayListStore();
   const {
     setDropRef,
-    dropRef,
   } = useReceivedDropFilesStore();
 
 
@@ -115,18 +112,45 @@ export default function MusicPlayerView({winKey: _}: Prop) {
 
   useEffect(() => {
     if(!ready) return;
-    setSetting((setting) => ({...setting, caller: "useEffect [playPath]", playPath}))
-  }, [playPath])
+    setSetting((setting) => ({...setting, caller: "useEffect [playList]", paused}))
+  }, [paused]);
 
   useEffect(() => {
     if(!ready) return;
-    setSetting((setting) => ({...setting, caller: "useEffect [playList]", playList: playList}))
+    setSetting((setting) => ({...setting, caller: "useEffect [playList]", playList}))
   }, [playList])
 
   useEffect(() => {
     if(!ready) return;
     setSetting((setting) => ({...setting, caller: "useEffect [playList]", shuffle}))
   }, [shuffle])
+
+  useEffect(() => {
+    const newMuted = setting.volume == 0;
+    changeMuted(newMuted);
+    setSetting((setting) => ({...setting, caller: "useEffect[setting.volume]", muted: newMuted}))
+  }, [setting.volume])
+
+  useEffect(() => {
+    if(!ready) return;
+    if (playPath === undefined) return;
+    setSetting((setting) => ({...setting, caller: "useEffect [playPath]", playPath}))
+    console.log('fetch HEAD');
+    fetch(srcLocal(playPath), {method: "HEAD"})
+      .then( (res) => {
+        const {playList} = usePlayListStore.getState()
+        if (res.ok) {
+        } else {
+          toast.error( `Fail ${playPath}`);
+          console.log('fetch error', res.status);
+          const newPlayPath = getNextPlayPath(playPath)
+          setPlayPath(newPlayPath);
+          setSelectionBegin(newPlayPath);
+          scrollPlayPath(playList, newPlayPath)
+        }
+      })
+    ;
+  }, [playPath]);
 
   useEffect(() => {
     const setting = useMediaStore.getState().setting;
@@ -255,86 +279,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     }
   }
 
-  const onDropPlayPath = (file: string) => {
-    console.log('setSetting onDropPlayPath')
-    const {playList} = usePlayListStore.getState()
-    if(playList.length === 0) {
-      appendCheckedPlayList([file]);
-    }
-    const newPlayList = appendPlayList(playList, [file]);
-    setPlayList(newPlayList)
-    setPlayPath(file)
-    setSetting((setting) => ({...setting, caller: "onDropPlayPath", paused: false}))
-  };
-
-  const onDropPlayList = (files: string[]) => {
-    if(files.length === 0) return;
-    const {playList} = usePlayListStore.getState()
-    const addPlayList = files.filter((file) => playList.indexOf(file) < 0);
-    const newPlayList = appendPlayList(playList, addPlayList);
-    setPlayList(newPlayList);
-    appendCheckedPlayList(addPlayList);
-    console.log('setSetting onDropPlayList')
-  }
-
-  useEffect(() => {
-    const newMuted = setting.volume == 0;
-    changeMuted(newMuted);
-    setSetting((setting) => ({...setting, caller: "useEffect[setting.volume]", muted: newMuted}))
-  }, [setting.volume])
-
-  useEffect(() => {
-    if (playPath === undefined) return;
-    console.log('fetch HEAD');
-    fetch(srcLocal(playPath), {method: "HEAD"})
-      .then( (res) => {
-        const {playList} = usePlayListStore.getState()
-        if (res.ok) {
-        } else {
-          toast.error( `Fail ${playPath}`);
-          console.log('fetch error', res.status);
-          const newPlayPath = getNextPlayPath(playPath)
-          setPlayPath(newPlayPath);
-          setSelectionBegin(newPlayPath);
-          scrollPlayPath(playList, newPlayPath)
-        }
-      })
-    ;
-  }, [playPath]);
-
-  useEffect(() => {
-    const onDropFullPathHandler = (e: CustomEvent) => {
-      setDropRef(null);
-      console.log('onDropFullPathHandler', dropRef);
-      const newDropFiles = e.detail as DropFile[];
-      let files = newDropFiles
-        .filter((file) => file.type.startsWith("audio/"))
-      if (filter.length > 0) {
-        files = files.filter((file) => filter.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
-      }
-      const fullpathFiles = files.map((file) => file.pywebview_full_path);
-      if (fullpathFiles.length == 0) {
-        return;
-      }
-      if (dropRef?.classList.contains('drop-top')){
-        console.log('drop-top');
-        if (fullpathFiles.length == 1) {
-          onDropPlayPath(fullpathFiles[0])
-        } else {
-          onDropPlayList(fullpathFiles)
-        }
-      } else if (dropRef?.classList.contains('drop-list')) {
-        console.log('drop-list');
-        onDropPlayList(fullpathFiles);
-      }
-    }
-    dropRef?.addEventListener("drop-files", onDropFullPathHandler as EventListener)
-    return () => {
-      console.log('remove onDropTopHandler', dropRef);
-      dropRef?.removeEventListener("drop-files", onDropFullPathHandler as EventListener)
-    }
-  }, [dropRef])
-
   useEffect(() => {
     if (!initialized) {
       setInitialized(true);
@@ -355,6 +299,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
          onKeyDown={onKeyDownHandler}
          tabIndex={0}
     >
+      <MusicDropListener />
       <div className="audio-player">
         <AudioView />
       </div>
@@ -377,18 +322,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
         </div>
 
         <div className="row first">
-          {/*<div className="icon" onClick={openDialogPlayList} title="Open Audio Files"><Icon icon={faFolderPlus}/></div>*/}
-          {/*<div className="icon" onClick={openDialogOpenJson} title="Open Audio Book"><Icon icon={faBookMedical}/></div>*/}
-          {/*<div className="icon" onClick={openDialogSaveAsJson} title="Save Audio Book"><Icon icon={faFloppyDisk}/></div>*/}
-          {/*<div className="icon badge-wrap"*/}
-          {/*     onClick={() => {*/}
-          {/*       setPlayList(playList.filter((path)=> !checkedPlayList.includes(path)))*/}
-          {/*       setCheckedPlayList([])*/}
-          {/*     }}*/}
-          {/*     title="Delete Selection Files">*/}
-          {/*  <Icon icon={faTrashCan} className={checkedPlayList.length > 0 ? '': 'inactive'}/>*/}
-          {/*  {checkedPlayList.length > 0 && <div className="badge">{checkedPlayList.length}</div>}*/}
-          {/*</div>*/}
           <div className="center">
             <div className="icon" onClick={() => toggleShuffle()}>
               <Icon icon={faShuffle} className={shuffle ? '': 'inactive'}/>

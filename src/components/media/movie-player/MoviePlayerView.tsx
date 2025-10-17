@@ -15,12 +15,12 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import VideoView from "./VideoView.tsx";
 import {videoDefault as mediaDefault, type PlayerSetting, useVideoStore as useMediaStore} from "../mediaStore.ts";
-import type {DropFile, Sub} from "@/types/models";
 import {SplitPane} from "@rexxars/react-split-pane";
 import AutoSizer from "react-virtualized-auto-sizer";
 import {getSubs} from "@/components/media/media.ts";
 import {useMoviePlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
 import PlayListView from "@/components/media/play-list/PlayListView.tsx";
+import MovieDropListener from "@/components/media/movie-player/MovieDropListener.tsx";
 
 export const PLAYER_SETTING = 'movie-player.setting.json'
 
@@ -46,18 +46,16 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   } = useMediaStore();
   const {
     shuffle, setShuffle,
-    setPaused,
+    paused, setPaused,
     playPath, setPlayPath,
     playList, setPlayList,
     scrollPlayPath,
-    appendPlayList, shufflePlayList, toggleShuffle,
+    shufflePlayList, toggleShuffle,
     getPrevPlayPath, getNextPlayPath,
-    appendCheckedPlayList,
     setSelectionBegin,
   } = usePlayListStore();
   const {
     setDropRef,
-    dropRef,
   } = useReceivedDropFilesStore();
 
   const clickVideo = (e: React.MouseEvent) => {
@@ -92,80 +90,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     const setting = useMediaStore.getState().setting;
     return titleSubType() === '-' ? '-' : setting?.subType?.slice(0, 6) ?? '-'
   }
-
-  //
-  // const openDialogPlayList = async () => {
-  //   const filter_ext = filter.map((ext)=> `*.${ext}`).join(";") // *.mp3;*.wav;*.ogg;*.m4a;*.opus;*.webm
-  //   commands.dialogOpen({
-  //     dialog_type: "OPEN",
-  //     allow_multiple: true,
-  //     file_types: [`Video files (${filter_ext})`]
-  //   }).then((result) => {
-  //     if(result.status === 'ok') {
-  //       const files = result.data;
-  //       if (files === null) { return }
-  //       readFiles(files);
-  //     }
-  //   })
-  // }
-  //
-  // const openDialogOpenJson = async () => {
-  //   commands.dialogOpen({
-  //     dialog_type: "OPEN",
-  //     allow_multiple: false,
-  //     file_types: [`OpenVideo Book (${["*.json"].join(";")})`]
-  //   }).then((result) => {
-  //     if(result.status === 'ok') {
-  //       const files = result.data;
-  //       if(files === null) return;
-  //       commands.readFile(files[0]).then(async (result) => {
-  //         if (result.status === 'ok'){
-  //           const files: string [] = JSON.parse(result.data);
-  //           readFiles(files);
-  //         }
-  //       })
-  //     }
-  //   })
-  // }
-  //
-  // const readFiles = (files: string[]) => {
-  //   console.log('readFiles')
-  //   const {
-  //     playList, shuffle,
-  //   } = usePlayListStore.getState();
-  //   const newPlayList = appendPlayList(playList, files);
-  //   const shuffledPlayList = shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
-  //   let newPlayPath = playPath;
-  //   if (shuffledPlayList.length > 0) {
-  //     newPlayPath = shuffledPlayList[0];
-  //     setSelectionBegin(newPlayPath)
-  //   }
-  //   setPlayList(shuffledPlayList);
-  // }
-  //
-  //
-  // const openDialogSaveAsJson = async () => {
-  //   const {playList} = usePlayListStore.getState()
-  //   commands.dialogOpen({
-  //     dialog_type: "SAVE",
-  //     allow_multiple: true,
-  //     file_types: [`Save Video Book (${["*.json"].join(";")})`]
-  //   }).then((result) => {
-  //     if(result.status === 'ok') {
-  //       const files = result.data;
-  //       if (files === null) { return }
-  //       const content = JSON.stringify(playList, null, 2);
-  //       commands.writeFile(files[0], content).then(async (result) => {
-  //         if (result.status === 'ok'){
-  //           toast.success("Success save");
-  //         } else {
-  //           toast.error("Fail save");
-  //         }
-  //       })
-  //     }
-  //   })
-  // }
-
 
   const clickTogglePlay = async () => {
     const newPaused = !setting.paused
@@ -224,8 +148,8 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   useEffect(() => {
     if(!ready) return;
-    setSetting((setting) => ({...setting, caller: "useEffect [playPath]", playPath}))
-  }, [playPath])
+    setSetting((setting) => ({...setting, caller: "useEffect [playList]", paused}))
+  }, [paused]);
 
   useEffect(() => {
     if(!ready) return;
@@ -236,6 +160,45 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     if(!ready) return;
     setSetting((setting) => ({...setting, caller: "useEffect [playList]", shuffle}))
   }, [shuffle])
+
+  useEffect(() => {
+    const newMuted = setting.volume == 0;
+    changeMuted(newMuted);
+    setSetting((setting) => ({...setting, caller: "useEffect[setting.volume]", muted: newMuted}))
+  }, [setting.volume])
+
+  useEffect(() => {
+    if(!ready) return;
+    if (playPath === undefined) return;
+    setSetting((setting) => ({...setting, caller: "useEffect [playPath]", playPath}))
+    console.log('fetch HEAD');
+    fetch(srcLocal(playPath), {method: "HEAD"})
+      .then( (res) => {
+        const {playList} = usePlayListStore.getState()
+        if (res.ok) {
+          commands.getSubs(setting.playPath!).then((result) => {
+            if (result.status === 'ok') {
+              const subs = result.data;
+              getSubs(subs).then((subs) => {
+                setSubs(subs);
+              })
+            } else {
+              setSubs([])
+            }
+          })
+        } else {
+          setSubs([])
+          toast.error( `Fail ${playPath}`);
+          console.log('fetch error', res.status);
+          const newPlayPath = getNextPlayPath(playPath)
+          setPlayPath(newPlayPath);
+          setSelectionBegin(newPlayPath);
+          scrollPlayPath(playList, newPlayPath)
+          return;
+        }
+      })
+    ;
+  }, [playPath]);
 
   useEffect(() => {
     const setting = useMediaStore.getState().setting;
@@ -364,120 +327,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     }
   }
 
-  const onDropPlayPath = (file: string) => {
-    console.log('setSetting onDropPlayPath')
-    const {playList} = usePlayListStore.getState()
-    if(playList.length === 0) {
-      appendCheckedPlayList([file]);
-    }
-    const newPlayList = appendPlayList(playList, [file]);
-    setPlayList(newPlayList)
-    setPlayPath(file)
-    setSetting((setting) => ({...setting, caller: "onDropPlayPath", paused: false}))
-  };
-
-  const onDropPlayList = (files: string[]) => {
-    if(files.length === 0) return;
-    const {playList} = usePlayListStore.getState()
-    const addPlayList = files.filter((file) => playList.indexOf(file) < 0);
-    const newPlayList = appendPlayList(playList, addPlayList);
-    setPlayList(newPlayList);
-    appendCheckedPlayList(addPlayList);
-    console.log('setSetting onDropPlayList')
-  }
-
-  useEffect(() => {
-    const newMuted = setting.volume == 0;
-    changeMuted(newMuted);
-    setSetting((setting) => ({...setting, caller: "useEffect[setting.volume]", muted: newMuted}))
-  }, [setting.volume])
-
-  useEffect(() => {
-    if (playPath === undefined) return;
-    console.log('fetch HEAD');
-    fetch(srcLocal(playPath), {method: "HEAD"})
-      .then( (res) => {
-        const {playList} = usePlayListStore.getState()
-        if (res.ok) {
-          commands.getSubs(setting.playPath!).then((result) => {
-            if (result.status === 'ok') {
-              const subs = result.data;
-              getSubs(subs).then((subs) => {
-                setSubs(subs);
-              })
-            } else {
-              setSubs([])
-            }
-          })
-        } else {
-          setSubs([])
-          toast.error( `Fail ${playPath}`);
-          console.log('fetch error', res.status);
-          const newPlayPath = getNextPlayPath(playPath)
-          setPlayPath(newPlayPath);
-          setSelectionBegin(newPlayPath);
-          scrollPlayPath(playList, newPlayPath)
-          return;
-        }
-      })
-    ;
-  }, [playPath]);
-
-  useEffect(() => {
-    const onDropFullPathHandler = (e: CustomEvent) => {
-      setDropRef(null);
-      console.log('onDropFullPathHandler', dropRef);
-      const filter_video = useMediaStore.getState().filter;
-      const state = useMediaStore.getState();
-      const filter_sub = [
-        "ass", "mpl", "json", "smi", "sami", "srt", "ssa", "sub", "tmp", "ttml", "vtt",];
-
-      const newDropFiles = e.detail as DropFile[];
-
-      const videoFiles = newDropFiles.filter((file) => filter_video.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)));
-      const subFiles = newDropFiles.filter((file) => filter_sub.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)));
-
-      const videoFullpathFiles = videoFiles.map((file) => file.pywebview_full_path);
-      const subFullpathFiles = subFiles.map((file) => file.pywebview_full_path);
-
-      if (dropRef?.classList.contains('drop-video') || dropRef?.classList.contains('drop-top')) {
-        console.log('drop-top or drop-video');
-        if (videoFullpathFiles.length + subFullpathFiles.length === 1) {
-          if (videoFullpathFiles.length == 1) {
-            onDropPlayPath(videoFullpathFiles[0])
-            onDropPlayList(videoFullpathFiles);
-          } else {
-            if (!state.subs.find((sub) => sub.fullpath === subFullpathFiles[0])) {
-              const newSub: Sub = {
-                fullpath: subFullpathFiles[0],
-                lang: "??",
-                priority: 3,
-                subtype: getFilename(subFullpathFiles[0]) ?? '',
-                src: ''
-              }
-              getSubs([newSub]).then((addSubs) => {
-                if (addSubs.length > 0) {
-                  setSubs([...state.subs, addSubs[0]])
-                  setSetting((setting) => ({...setting, caller: "onDropFullPathHandler", subType: addSubs[0].subtype}))
-                }
-              });
-            }
-          }
-        } else if(videoFullpathFiles.length > 1) {
-          onDropPlayList(videoFullpathFiles);
-        }
-      } else if (dropRef?.classList.contains('drop-list')) {
-        console.log('drop-list');
-        onDropPlayList(videoFullpathFiles);
-      }
-    }
-    dropRef?.addEventListener("drop-files", onDropFullPathHandler as EventListener)
-    return () => {
-      console.log('remove onDropTopHandler', dropRef);
-      dropRef?.removeEventListener("drop-files", onDropFullPathHandler as EventListener)
-    }
-  }, [dropRef])
-
   useEffect(() => {
     if (!initialized) {
       setInitialized(true);
@@ -498,6 +347,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
          onKeyDown={onKeyDownHandler}
          tabIndex={0}
     >
+      <MovieDropListener />
       <SplitPane
         split="horizontal"
         minSize={80}
@@ -537,18 +387,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                 <div className="tm">{formatSeconds(mediaRef?.duration ?? 0)}</div>
               </div>
               <div className="row first">
-                {/*<div className="icon" onClick={openDialogPlayList} title="Open Video Files"><Icon icon={faFolderPlus}/></div>*/}
-                {/*<div className="icon" onClick={openDialogOpenJson} title="Open Video Book"><Icon icon={faBookMedical}/></div>*/}
-                {/*<div className="icon" onClick={openDialogSaveAsJson} title="Save Video Book"><Icon icon={faFloppyDisk}/></div>*/}
-                {/*<div className="icon badge-wrap"*/}
-                {/*     onClick={() => {*/}
-                {/*       setPlayList(playList.filter((path)=> !checkedPlayList.includes(path)))*/}
-                {/*       setCheckedPlayList([])*/}
-                {/*     }}*/}
-                {/*     title="Delete Selection Files">*/}
-                {/*  <Icon icon={faTrashCan} className={checkedPlayList.length > 0 ? '': 'inactive'}/>*/}
-                {/*  {checkedPlayList.length > 0 && <div className="badge">{checkedPlayList.length}</div>}*/}
-                {/*</div>*/}
                 <div className="sub badge-wrap" >
                   {subs.length > 0 && <div className="badge">{subs.length}</div>}
                   <Menu menuButton={

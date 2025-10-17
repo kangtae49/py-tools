@@ -14,13 +14,14 @@ import {
   faArrowsSpin, faRotateRight, faMinus, faFilm, faExpand,
 } from '@fortawesome/free-solid-svg-icons'
 import VideoView from "./VideoView.tsx";
-import {videoDefault as mediaDefault, type PlayerSetting, useVideoStore as useMediaStore} from "../mediaStore.ts";
+import {useVideoStore as useMediaStore} from "../mediaStore.ts";
 import {SplitPane} from "@rexxars/react-split-pane";
 import AutoSizer from "react-virtualized-auto-sizer";
 import {getSubs} from "@/components/media/media.ts";
 import {useMoviePlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
 import PlayListView from "@/components/media/play-list/PlayListView.tsx";
 import MovieDropListener from "@/components/media/movie-player/MovieDropListener.tsx";
+import MovieSettingListener from "@/components/media/movie-player/MovieSettingListener.tsx";
 
 export const PLAYER_SETTING = 'movie-player.setting.json'
 
@@ -45,7 +46,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     subs, setSubs, changeAllTrackMode,
   } = useMediaStore();
   const {
-    shuffle, setShuffle,
+    shuffle,
     paused, setPaused,
     playPath, setPlayPath,
     playList, setPlayList,
@@ -63,7 +64,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     if (!state.fullscreen) {
       const newPaused = !setting.paused;
       setSetting((setting) => ({...setting, caller: "clickVideo", paused: newPaused}))
-      // setPaused(newPaused)
     }
     console.log('clickVideo', e);
   }
@@ -252,79 +252,15 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }, [ended])
 
   useEffect(() => {
-    const state = useMediaStore.getState();
-    const setting = useMediaStore.getState().setting;
-    if(setting === null) return;
-    if(!state.ready) return;
-    console.log('setting', setting);
-    commands.appWrite(PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
-      console.log(result.status, 'appWrite', PLAYER_SETTING);
-    })
-  }, [
-    setting.playPath,
-    Math.floor(setting.currentTime || 0),
-    setting.volume,
-    setting.playbackRate,
-    setting.muted,
-    setting.paused,
-    setting.repeat,
-    setting.playList,
-    setting.shuffle,
-  ])
-
-  useEffect(() => {
     console.log('ready', ready)
   }, [ready])
 
   const onMount = async () => {
     console.log('onMount')
-    const result = await commands.appReadFile(PLAYER_SETTING);
-    let newSetting: PlayerSetting | null;
-
-    if(result.status === 'ok') {
-      newSetting = JSON.parse(result.data);
-      if (result.data === "null") {
-        newSetting = mediaDefault.setting ?? null;
-      }
-      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-        console.log(result.status, 'appWrite', PLAYER_SETTING);
-      })
-    } else {
-      newSetting = mediaDefault.setting ?? null;
-      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-        console.log(result.status, 'appWrite', PLAYER_SETTING);
-      })
-      commands.appWriteFile(PLAYER_SETTING, "null").then((result) => {
-        console.log(result.status, 'appWriteFile', PLAYER_SETTING);
-      })
-    }
-    const newPlayList = newSetting?.playList ?? []
-    const newPlayPath = newSetting?.playPath ?? newPlayList[0];
-    const newCurrenTime = newSetting?.currentTime ?? 0;
-    const newShuffle = newSetting?.shuffle ?? false;
-
-    setSetting((_setting) => ({...newSetting, caller: "onMount", currentTime: newCurrenTime}))
-
-    setPlayPath(newPlayPath)
-    setPlayList(newPlayList)
-    setShuffle(newShuffle)
-    setPaused(newSetting?.paused ?? false)
-    setSelectionBegin(newPlayPath)
-
   }
 
   const onUnMount = async () => {
-    const ready = useMediaStore.getState().ready;
     console.log('onUnMount', ready)
-    if (ready) {
-      commands.appRead(PLAYER_SETTING).then((result) => {
-        if (result.status === 'ok') {
-          commands.appWriteFile(PLAYER_SETTING, "{}").then((result) => {
-            console.log(result.status, 'appWriteFile', PLAYER_SETTING);
-          })
-        }
-      })
-    }
   }
 
   useEffect(() => {
@@ -340,14 +276,14 @@ export default function MoviePlayerView({winKey: _}: Prop) {
       onUnMount().then()
     }
   }, [])
-
   return (
     <div className={`widget movie-player`}
          ref={setContainerRef}
          onKeyDown={onKeyDownHandler}
          tabIndex={0}
     >
-      <MovieDropListener />
+      <MovieDropListener/>
+      <MovieSettingListener/>
       <SplitPane
         split="horizontal"
         minSize={80}

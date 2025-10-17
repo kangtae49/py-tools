@@ -1,7 +1,6 @@
 import "./MusicPlayerView.css"
 import React, {useEffect, useState} from "react";
 import {formatSeconds, srcLocal} from "@/components/utils.ts";
-import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
@@ -14,10 +13,11 @@ import {
   faArrowsSpin, faRotateRight, faMinus, faMusic,
 } from '@fortawesome/free-solid-svg-icons'
 import AudioView from "./AudioView.tsx";
-import {audioDefault as mediaDefault, type PlayerSetting, useAudioStore as useMediaStore} from "../mediaStore.ts";
+import {useAudioStore as useMediaStore} from "../mediaStore.ts";
 import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
 import PlayListView from "@/components/media/play-list/PlayListView.tsx";
 import MusicDropListener from "@/components/media/music-player/MusicDropListener.tsx";
+import MusicSettingListener from "@/components/media/music-player/MusicSettingListener.tsx";
 
 export const PLAYER_SETTING = 'music-player.setting.json'
 
@@ -41,7 +41,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     ready, setReady,
   } = useMediaStore();
   const {
-    shuffle, setShuffle,
+    shuffle,
     paused, setPaused,
     playPath, setPlayPath,
     playList, setPlayList,
@@ -204,79 +204,15 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }, [ended])
 
   useEffect(() => {
-    const state = useMediaStore.getState();
-    const setting = useMediaStore.getState().setting;
-    if(setting === null) return;
-    if(!state.ready) return;
-    console.log('setting', setting);
-    commands.appWrite(PLAYER_SETTING, JSON.stringify(setting, null, 2)).then((result) => {
-      console.log(result.status, 'appWrite', PLAYER_SETTING);
-    })
-  }, [
-    setting.playPath,
-    Math.floor(setting.currentTime || 0),
-    setting.volume,
-    setting.playbackRate,
-    setting.muted,
-    setting.paused,
-    setting.repeat,
-    setting.playList,
-    setting.shuffle,
-  ])
-
-  useEffect(() => {
     console.log('ready', ready)
   }, [ready])
 
   const onMount = async () => {
     console.log('onMount')
-    const result = await commands.appReadFile(PLAYER_SETTING);
-    let newSetting: PlayerSetting | null;
-
-    if(result.status === 'ok') {
-      newSetting = JSON.parse(result.data);
-      if (result.data === "null") {
-        newSetting = mediaDefault.setting ?? null;
-      }
-      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-        console.log(result.status, 'appWrite', PLAYER_SETTING);
-      })
-    } else {
-      newSetting = mediaDefault.setting ?? null;
-      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-        console.log(result.status, 'appWrite', PLAYER_SETTING);
-      })
-      commands.appWriteFile(PLAYER_SETTING, "null").then((result) => {
-        console.log(result.status, 'appWriteFile', PLAYER_SETTING);
-      })
-    }
-    const newPlayList = newSetting?.playList ?? []
-    const newPlayPath = newSetting?.playPath ?? newPlayList[0];
-    const newCurrenTime = newSetting?.currentTime ?? 0;
-    const newShuffle = newSetting?.shuffle ?? false;
-
-    setSetting((_setting) => ({...newSetting, caller: "onMount", currentTime: newCurrenTime}))
-
-    setPlayPath(newPlayPath)
-    setPlayList(newPlayList)
-    setShuffle(newShuffle)
-    setPaused(newSetting?.paused ?? false)
-    setSelectionBegin(newPlayPath)
-
   }
 
   const onUnMount = async () => {
-    const ready = useMediaStore.getState().ready;
     console.log('onUnMount', ready)
-    if (ready) {
-      commands.appRead(PLAYER_SETTING).then((result) => {
-        if (result.status === 'ok') {
-          commands.appWriteFile(PLAYER_SETTING, "{}").then((result) => {
-            console.log(result.status, 'appWriteFile', PLAYER_SETTING);
-          })
-        }
-      })
-    }
   }
 
   useEffect(() => {
@@ -292,7 +228,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       onUnMount().then()
     }
   }, [])
-
   return (
     <div className={`widget music-player`}
          ref={setContainerRef}
@@ -300,6 +235,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
          tabIndex={0}
     >
       <MusicDropListener />
+      <MusicSettingListener />
       <div className="audio-player">
         <AudioView />
       </div>

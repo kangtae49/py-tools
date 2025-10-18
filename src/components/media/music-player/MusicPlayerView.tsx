@@ -4,7 +4,7 @@ import {formatSeconds, srcLocal} from "@/components/utils.ts";
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
-import {Menu, MenuButton, MenuItem} from "@szhsin/react-menu";
+import {type ClickEvent} from "@szhsin/react-menu";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faCirclePlay, faCirclePause,
@@ -18,7 +18,8 @@ import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play
 import PlayListView from "@/components/media/play-list/PlayListView.tsx";
 import MusicDropListener from "@/components/media/music-player/MusicDropListener.tsx";
 import MusicSettingListener from "@/components/media/music-player/MusicSettingListener.tsx";
-import VolumeMenu from "@/components/media/volume-menu/VolumeMenu.tsx";
+import VolumeMenu from "@/components/media/menu/volume-menu/VolumeMenu.tsx";
+import SpeedMenu from "@/components/media/menu/speed-menu/SpeedMenu.tsx";
 
 export const PLAYER_SETTING = 'music-player.setting.json'
 
@@ -59,13 +60,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   const clickTogglePlay = async () => {
     const newPaused = !setting.paused
     setSetting((setting) => ({...setting, caller: "clickTogglePlay", paused: newPaused}))
-  }
-
-
-  const clickSpeed = (_e: any, speed: string) => {
-    const v = Number(speed);
-    setSetting((setting) => ({...setting, caller: "clickSpeed", playbackRate: v}))
-    changePlaybackRate(v);
   }
 
   const playPrev = () => {
@@ -116,6 +110,11 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     changeVolume(newVolume)
   }
 
+  const onChangeSpeed = (e: ClickEvent) => {
+    const v = Number(e.value)
+    setSetting((setting) => ({...setting, caller: "clickSpeed", playbackRate: v}))
+    changePlaybackRate(v);
+  }
 
   const onChangeVolume= (e: ChangeEvent<HTMLInputElement>) => {
     let v = Number(e.target.value);
@@ -303,19 +302,9 @@ export default function MusicPlayerView({winKey: _}: Prop) {
             {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
             {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
           </div>
-          <div className="speed" title="Speed">
-            <Menu menuButton={<MenuButton className="menu-select">x{setting?.playbackRate || "1"}</MenuButton>} transition>
-              <MenuItem className={`menu-item ${setting?.playbackRate == 0.25 ? 'selected': ''}`} value="0.25" onClick={(e: any) => clickSpeed(e, e.value)}>x0.25</MenuItem>
-              <MenuItem className={`menu-item ${setting?.playbackRate == 0.5 ? 'selected': ''}`} value="0.5" onClick={(e: any) => clickSpeed(e, e.value)}>x0.5</MenuItem>
-              <MenuItem className={`menu-item ${setting?.playbackRate == 0.75 ? 'selected': ''}`} value="0.75" onClick={(e: any) => clickSpeed(e, e.value)}>x0.75</MenuItem>
-              <MenuItem className={`menu-item ${setting?.playbackRate == 1 ? 'selected': ''}`} value="1" onClick={(e: any) => clickSpeed(e, e.value)}>x1</MenuItem>
-              <MenuItem className={`menu-item ${setting?.playbackRate == 1.25 ? 'selected': ''}`} value="1.25" onClick={(e: any) => clickSpeed(e, e.value)}>x1.25</MenuItem>
-              <MenuItem className={`menu-item ${setting?.playbackRate == 1.5 ? 'selected': ''}`} value="1.5" onClick={(e: any) => clickSpeed(e, e.value)}>x1.5</MenuItem>
-              <MenuItem className={`menu-item ${setting?.playbackRate == 1.75 ? 'selected': ''}`} value="1.75" onClick={(e: any) => clickSpeed(e, e.value)}>x1.75</MenuItem>
-              <MenuItem className={`menu-item ${setting?.playbackRate == 2 ? 'selected': ''}`} value="2" onClick={(e: any) => clickSpeed(e, e.value)}>x2</MenuItem>
-            </Menu>
-          </div>
-
+          <SpeedMenu
+            playbackRate={setting.playbackRate}
+            onChangeSpeed={onChangeSpeed} />
           <VolumeMenu
             muted={setting.muted} volume={setting.volume}
             toggleMute={toggleMute}

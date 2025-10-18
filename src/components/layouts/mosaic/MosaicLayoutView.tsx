@@ -123,9 +123,6 @@ export function MosaicLayoutView() {
   }
 
   useEffect(() => {
-    // const state = useMosaicStore.getState();
-    // if(!state.ready) return;
-    // if(mosaicValue === null) return;
     console.log('mosaicValue', mosaicValue);
     commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(mosaicValue, null, 2)).then((result) => {
       console.log(result.status, 'appWrite', MOSAIC_LAYOUT_SETTING);

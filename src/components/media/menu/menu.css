@@ -1,0 +1,70 @@
+.hover-menu {
+    --icon-color: #f4a261;
+    --icon-color-up: #dd4e79;
+    --icon-color-down: #c5bcb5;
+    --icon-font-size: 17px;
+    --icon-hover-scale: scale(1.2);
+    --icon-color-inactive: #d9d9d9;
+}
+
+.hover-menu .target {
+    border-radius: 5px;
+    padding: 0 4px;
+}
+
+.badge-wrap{
+    position: relative;
+    display: inline-block;
+}
+
+.badge{
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(35%, -35%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 20px;
+    min-width: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #ea7a9c;
+    color: #fff;
+    font-size: 12px;
+    line-height: 1;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    pointer-events: none;
+    user-select: none;
+}
+
+.badge-bottom{
+    position: absolute;
+    bottom: -25px;
+    left: -7px;
+    transform: translate(35%, -35%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 20px;
+    min-width: 20px;
+    white-space: nowrap;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #ea7a9c;
+    color: #fff;
+    font-size: 12px;
+    line-height: 1;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    pointer-events: none;
+    user-select: none;
+}
+
+.fa-person-biking { color: var(--icon-color); font-size: var(--icon-font-size);}
+.fa-person-biking:hover { transform: var(--icon-hover-scale); cursor: pointer;}
+.fa-person-biking.up { color: var(--icon-color-up);}
+.fa-person-biking.down { color: var(--icon-color-down); }
+
+.fa-message { color: var(--icon-color); font-size: var(--icon-font-size);}
+.fa-message:hover { transform: var(--icon-hover-scale); cursor: pointer;}
+.fa-message.inactive { color: var(--icon-color-inactive)}

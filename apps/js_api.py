@@ -104,7 +104,6 @@ class JsApi:
             fullpath = os.path.join(appdata_local, "py-tools", subpath)
             # self.setting.update({subpath: content})
             content = self.setting.get(subpath, default)
-            print(f"setting.update {subpath}: {content}")
             self.write_file(fullpath, content)
         except ApiError as e:
             raise e
@@ -117,7 +116,6 @@ class JsApi:
         return self.setting.get(subpath)
 
     def app_write(self, subpath: str, content: str):
-        print(f"setting.update! {subpath}: {content}")
         self.setting.update({subpath: content})
 
     def unload(self):

@@ -14,7 +14,7 @@ function SpeedMenu({playbackRate, onChangeSpeed}: Prop) {
   const { anchorProps, hoverProps } = useHover(isOpen, setOpen);
   let ref = useRef<HTMLDivElement | null>(null);
 
-  let speedNm = "";
+  let speedNm;
   let speed = playbackRate ?? 1;
   if (speed > 1) {
     speedNm = "up";

@@ -168,12 +168,12 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
 
 interface MediaDefault {
   shuffle?: boolean
-  filter?: string[]
+  extensions?: string[]
   setting: MediaSetting
 }
 
 export const audioDefault: MediaDefault = {
-  filter: ["mp3", "wav", "ogg", "m4a", "opus", "webm"],
+  extensions: ["mp3", "wav", "ogg", "m4a", "opus", "webm"],
   setting: {
     mediaPath: undefined,
     currentTime: 0,
@@ -189,7 +189,7 @@ export const audioDefault: MediaDefault = {
 };
 
 export const videoDefault: MediaDefault = {
-  filter: ["mp4", "webm", "mkv", "ogg"],
+  extensions: ["mp4", "webm", "mkv", "ogg"],
   setting: {
     mediaPath: undefined,
     currentTime: 0,

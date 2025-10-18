@@ -115,11 +115,13 @@ export const useMosaicStore = create<MosaicStore>((set, get) => ({
     const existingIds = collectIds(current);
 
     if (!existingIds.includes(id)) {
+      // get().mosaicValue;
+
       set({
         mosaicValue: {
           direction: 'row',
           first: id,
-          second: current,
+          second: current
         }
       });
       return;

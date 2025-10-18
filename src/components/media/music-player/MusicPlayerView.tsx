@@ -1,10 +1,9 @@
 import "./MusicPlayerView.css"
-import React, {type ChangeEvent, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {formatSeconds, srcLocal} from "@/components/utils.ts";
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
-import {type ClickEvent} from "@szhsin/react-menu";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faCirclePlay, faCirclePause,
@@ -110,14 +109,14 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     changeVolume(newVolume)
   }
 
-  const onChangeSpeed = (e: ClickEvent) => {
-    const v = Number(e.value)
+  const onChangeSpeed = (value: string) => {
+    const v = Number(value)
     setSetting((setting) => ({...setting, caller: "clickSpeed", playbackRate: v}))
     changePlaybackRate(v);
   }
 
-  const onChangeVolume= (e: ChangeEvent<HTMLInputElement>) => {
-    let v = Number(e.target.value);
+  const onChangeVolume= (value: string) => {
+    let v = Number(value);
     console.log('change volume', v);
     setSetting((setting) => ({...setting, caller: "input range", volume: v}));
     changeVolume(v);

@@ -119,6 +119,7 @@ class JsApi:
         self.setting.update({subpath: content})
 
     def unload(self):
+        print(f"unload! all save setting")
         for k, v in self.setting.items():
             self.app_write_file(k, v)
             print(f'save {k}: {v}')

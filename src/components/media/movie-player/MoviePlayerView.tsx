@@ -1,5 +1,5 @@
 import "./MoviePlayerView.css"
-import React, {type ChangeEvent, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {formatSeconds, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
@@ -134,14 +134,14 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     changeVolume(newVolume)
   }
 
-  const onChangeSpeed = (e: ClickEvent) => {
-    const v = Number(e.value)
+  const onChangeSpeed = (value: string) => {
+    const v = Number(value)
     setSetting((setting) => ({...setting, caller: "clickSpeed", playbackRate: v}))
     changePlaybackRate(v);
   }
 
-  const onChangeVolume= (e: ChangeEvent<HTMLInputElement>) => {
-    let v = Number(e.target.value);
+  const onChangeVolume= (value: string) => {
+    let v = Number(value);
     console.log('change volume', v);
     setSetting((setting) => ({...setting, caller: "input range", volume: v}));
     changeVolume(v);

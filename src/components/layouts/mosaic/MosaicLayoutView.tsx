@@ -25,51 +25,52 @@ interface TitleInfo {
   view: (winKey: WinKey) => JSX.Element,
 }
 
-const ELEMENT_MAP: Record<WinType, TitleInfo> = {
-  "about": {
-    title: "About",
-    icon: <div />,
-    view: (winKey) => (<AboutView winKey={winKey} />)
-  },
-  "help": {
-    title: "Help",
-    icon: <div />,
-    view: (winKey: WinKey) => (<HelpView winKey={winKey} />)
-  },
-  "music-player": {
-    title: "Music",
-    icon: <div><Icon icon={faMusic} /></div>,
-    view: (winKey: WinKey) => (<MusicPlayerView winKey={winKey} />)
-  },
-  "movie-player": {
-    title: "Movie",
-    icon: <div><Icon icon={faFilm} /></div>,
-    view: (winKey: WinKey) => (<MoviePlayerView winKey={winKey} />)
-  },
-  "picture-player": {
-    title: "Picture",
-    icon: <div><Icon icon={faFilm} /></div>,
-    view: (winKey: WinKey) => (<PicturePlayerView winKey={winKey} />)
-  },
-  "monaco": {
-    title: "Monaco Editor",
-    icon: <div />,
-    view: (winKey: WinKey) => (<HelpView winKey={winKey} />)
-  },
-  "md": {
-    title: "MdEditor",
-    icon: <div />,
-    view: (winKey: WinKey) => (<HelpView winKey={winKey} />)
-  },
-  // "music_player": {
-  //   title: "Music Player",
-  //   icon: <div><Icon icon={faMusic} /></div>,
-  //   view: <MusicPlayerView/>
-  // }
-}
+
 
 function MosaicLayoutView() {
   const [initialized, setInitialized] = useState(false);
+  const ELEMENT_MAP: Record<WinType, TitleInfo> = {
+    "about": {
+      title: "About",
+      icon: <div />,
+      view: (winKey) => (<AboutView winKey={winKey} />)
+    },
+    "help": {
+      title: "Help",
+      icon: <div />,
+      view: (winKey: WinKey) => (<HelpView winKey={winKey} />)
+    },
+    "music-player": {
+      title: "Music",
+      icon: <div><Icon icon={faMusic} /></div>,
+      view: (winKey: WinKey) => (<MusicPlayerView winKey={winKey} />)
+    },
+    "movie-player": {
+      title: "Movie",
+      icon: <div><Icon icon={faFilm} /></div>,
+      view: (winKey: WinKey) => (<MoviePlayerView winKey={winKey} />)
+    },
+    "picture-player": {
+      title: "Picture",
+      icon: <div><Icon icon={faFilm} /></div>,
+      view: (winKey: WinKey) => (<PicturePlayerView winKey={winKey} />)
+    },
+    "monaco": {
+      title: "Monaco Editor",
+      icon: <div />,
+      view: (winKey: WinKey) => (<HelpView winKey={winKey} />)
+    },
+    "md": {
+      title: "MdEditor",
+      icon: <div />,
+      view: (winKey: WinKey) => (<HelpView winKey={winKey} />)
+    },
+    // "music_player": {
+    //   title: "Music Player",
+    //   icon: <div><Icon icon={faMusic} /></div>,
+    //   view: <MusicPlayerView/>
+    // }
+  }
   const {
     // minimizeView, maximizeView,
     removeView,
@@ -148,6 +149,7 @@ function MosaicLayoutView() {
       onChange={setMosaicValue}
       renderTile={(id, path) => (
         <MosaicWindow<WinKey>
+          key={id}
           path={path}
           title={id}
           renderToolbar={()=> (

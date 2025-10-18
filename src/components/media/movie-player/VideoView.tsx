@@ -12,7 +12,7 @@ function VideoView() {
   const {
     mediaRef, setMediaRef,
     containerRef,
-    currentTime, setCurrentTime, changeCurrentTime,
+    setCurrentTime, changeCurrentTime,
     changeVolume,
     changeMuted,
     setEnded,
@@ -31,9 +31,18 @@ function VideoView() {
   useEffect(() => {
     if (!ready) return;
     if(mediaRef === null) return;
+
+    const {setting, currentTime} = useMediaStore.getState();
+
     if(setting.mediaPath == undefined) return;
 
     console.log('ready state', mediaRef?.readyState, currentTime)
+
+    changeVolume(setting.volume ?? 0.5);
+    setCurrentTime(currentTime);
+    changeCurrentTime(currentTime)
+    changePlaybackRate(setting.playbackRate ?? 1.0);
+    changeMuted(setting.muted ?? false)
 
     if (setting.paused !== mediaRef.paused) {
       if (setting.paused) {
@@ -77,6 +86,7 @@ function VideoView() {
   const onloadedMetaData = async () => {
     if (isNullPlaying()) return;
     if (!isValidSrc()) return;
+    console.log('onloadedMetaData')
     const {setting, currentTime, mediaRef} = useMediaStore.getState();
 
     changeVolume(setting.volume ?? 0.5);

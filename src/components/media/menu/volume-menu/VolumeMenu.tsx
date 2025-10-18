@@ -1,13 +1,13 @@
 import {faVolumeHigh, faVolumeMute} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon as Icon} from "@fortawesome/react-fontawesome";
-import React, {type ChangeEvent, useRef, useState} from "react";
+import React, {useRef, useState} from "react";
 import {ControlledMenu, MenuItem, type RectElement, useHover} from "@szhsin/react-menu";
 
 interface Prop {
   muted: boolean | undefined
   volume: number | undefined
   toggleMute: (e: React.MouseEvent) => void
-  onChangeVolume: (e: ChangeEvent<HTMLInputElement>) => void
+  onChangeVolume: (value: string) => void
 }
 
 function VolumeMenu({muted, volume, toggleMute, onChangeVolume}: Prop) {
@@ -30,7 +30,7 @@ function VolumeMenu({muted, volume, toggleMute, onChangeVolume}: Prop) {
           <div className="slider">
             <input type="range" min={0} max={1} step={0.1}
                    value={volume || 0}
-                   onChange={onChangeVolume}
+                   onChange={(e) => onChangeVolume(e.target.value)}
             />
           </div>
           <div className="icon" onClick={(e) => toggleMute(e)}>

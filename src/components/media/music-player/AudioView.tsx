@@ -9,7 +9,7 @@ function AudioView() {
 
   const {
     mediaRef, setMediaRef,
-    currentTime, setCurrentTime, changeCurrentTime,
+    setCurrentTime, changeCurrentTime,
     changeVolume,
     changeMuted,
     setEnded,
@@ -26,9 +26,18 @@ function AudioView() {
   useEffect(() => {
     if (!ready) return;
     if(mediaRef === null) return;
+
+    const {setting, currentTime} = useMediaStore.getState();
+
     if(setting.mediaPath == undefined) return;
 
     console.log('ready state', mediaRef?.readyState, currentTime)
+
+    changeVolume(setting.volume ?? 0.5);
+    setCurrentTime(currentTime);
+    changeCurrentTime(currentTime)
+    changePlaybackRate(setting.playbackRate ?? 1.0);
+    changeMuted(setting.muted ?? false)
 
     if (setting.paused !== mediaRef.paused) {
       if (setting.paused) {
@@ -71,6 +80,7 @@ function AudioView() {
   const onloadedMetaData = async () => {
     if (isNullPlaying()) return;
     if (!isValidSrc()) return;
+    console.log('onloadedMetaData')
     const {setting, currentTime, mediaRef} = useMediaStore.getState();
 
     changeVolume(setting.volume ?? 0.5);
@@ -186,7 +196,7 @@ function AudioView() {
   return (
     <audio
       ref={setMediaRef}
-      controls
+      controls={false}
       preload="metadata"
       autoPlay={false}
     >

@@ -1,12 +1,12 @@
 import "../menu.css"
 import React, {useRef, useState} from "react";
-import {type ClickEvent, ControlledMenu, MenuItem, type RectElement, useHover} from "@szhsin/react-menu";
+import {ControlledMenu, MenuItem, type RectElement, useHover} from "@szhsin/react-menu";
 import {FontAwesomeIcon as Icon} from "@fortawesome/react-fontawesome";
 import {faPersonBiking} from "@fortawesome/free-solid-svg-icons";
 
 interface Prop {
   playbackRate: number | undefined
-  onChangeSpeed: (e: ClickEvent) => void
+  onChangeSpeed: (value: string) => void
 }
 
 function SpeedMenu({playbackRate, onChangeSpeed}: Prop) {
@@ -26,7 +26,7 @@ function SpeedMenu({playbackRate, onChangeSpeed}: Prop) {
 
   return (
     <div className="hover-menu">
-      <div className="target" ref={ref} {...anchorProps}>
+      <div className="target" ref={ref} {...anchorProps} onClick={() => onChangeSpeed("1")}>
         <Icon icon={faPersonBiking} className={speedNm} />
       </div>
       <ControlledMenu
@@ -35,8 +35,8 @@ function SpeedMenu({playbackRate, onChangeSpeed}: Prop) {
         anchorRef={ref as React.RefObject<Element | RectElement>}
         onClose={() => setOpen(false)}
       >
-        { ["0.25", "0.5", "0.75", "1", "1.25", "1.5", "1.75", "2"].map((v) => (
-          <MenuItem className={`menu-item ${playbackRate == Number(v) ? 'selected': ''}`} value={v} onClick={onChangeSpeed}>x{v}</MenuItem>
+        { ["0.25", "0.5", "0.75", "1", "1.25", "1.5", "1.75", "2"].map((v, idx) => (
+          <MenuItem key={idx} className={`menu-item ${playbackRate == Number(v) ? 'selected': ''}`} value={v} onClick={(e) => onChangeSpeed(e.value)}>x{v}</MenuItem>
         ))}
       </ControlledMenu>
     </div>

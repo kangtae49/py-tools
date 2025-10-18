@@ -22,6 +22,7 @@ def get_index_url():
         # pnpm dev
         # uv run main.py
         server_url = "http://localhost:5173"
+        # server_url = "http://localhost:8097"
         # base_path = os.path.dirname(os.path.abspath(__file__))
         # index_path = os.path.join(base_path, "../dist/index.html")
         # server_url = f"file://{index_path}"

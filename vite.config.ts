@@ -8,7 +8,12 @@ import * as fs from "node:fs";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    react(), viteTsconfigPaths(),
+    react({
+      babel: {
+        plugins: ['babel-plugin-react-compiler'],
+      },
+    }),
+    viteTsconfigPaths(),
     {
       name: 'local-file-middleware',
       configureServer(server) {
@@ -51,6 +56,10 @@ export default defineConfig({
       },
     },
   ],
+  server: {
+    port: 5173,
+    // port: 8097,
+  },
   base: './',
 
 })

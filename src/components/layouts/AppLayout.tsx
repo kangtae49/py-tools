@@ -1,7 +1,7 @@
 import {createHashRouter, Outlet} from "react-router-dom";
 import {DropFilesListener} from "../../listeners/DropFilesListener.tsx";
 import ErrorView from "../ErrView.tsx";
-import {MosaicLayoutView} from "@/components/layouts/mosaic/MosaicLayoutView.tsx";
+import MosaicLayoutView from "@/components/layouts/mosaic/MosaicLayoutView.tsx";
 import {WindowEventListener} from "@/listeners/WindowEventListener.tsx";
 import AppMenuView from "@/components/menu/AppMenuView.tsx";
 

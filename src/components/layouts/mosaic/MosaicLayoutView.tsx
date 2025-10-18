@@ -1,5 +1,5 @@
 import './MosaicLayoutView.css'
-import React, {type JSX, useCallback, useEffect, useState} from "react";
+import React, {type JSX, useEffect, useState} from "react";
 import AboutView from "@/components/about/AboutView.tsx";
 import HelpView from "@/components/help/HelpView.tsx";
 import {DefaultToolbarButton, Mosaic, MosaicWindow} from "react-mosaic-component";
@@ -68,7 +68,7 @@ const ELEMENT_MAP: Record<WinType, TitleInfo> = {
   // }
 }
 
-export function MosaicLayoutView() {
+function MosaicLayoutView() {
   const [initialized, setInitialized] = useState(false);
   const {
     // minimizeView, maximizeView,
@@ -146,7 +146,7 @@ export function MosaicLayoutView() {
     <Mosaic<WinKey>
       value={mosaicValue}
       onChange={setMosaicValue}
-      renderTile={useCallback((id, path) => (
+      renderTile={(id, path) => (
         <MosaicWindow<WinKey>
           path={path}
           title={id}
@@ -184,9 +184,11 @@ export function MosaicLayoutView() {
         >
           {ELEMENT_MAP[getWinType(id)].view(id)}
         </MosaicWindow>
-      ), [])}
+      )}
       className="mosaic-blueprint-theme"
       blueprintNamespace="bp6"
     />
   )
 }
+
+export default MosaicLayoutView

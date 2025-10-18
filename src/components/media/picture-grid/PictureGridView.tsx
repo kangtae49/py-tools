@@ -1,3 +1,4 @@
+import "./PictureGridView.css"
 import {Grid} from "react-window";
 import React from "react";
 import type {UseBoundStore} from "zustand";
@@ -27,18 +28,31 @@ function PictureGridView({
 
 
   return (
+  <div className="picture-grid">
+    <div className="slider-wrap-w">
+      <input type="checkbox" />
+      <div className="slider-w">
+        <input type="range" min={0} max={1} step={0.1} />
+      </div>
+    </div>
+    <div className="slider-wrap-h">
+      <div className="slider-h">
+        <input type="range" min={0} max={1} step={0.1} />
+      </div>
+        <Grid className="picture-grid"
+              cellComponent={PictureGridCellView}
+              cellProps={{
+                usePlayListStore,
+                icon: <Icon icon={faImage} />
+              }}
+              columnCount={2}
+              columnWidth={500}
+              rowCount={playList.length}
+              rowHeight={500}
+        />
+      </div>
+    </div>
 
-  <Grid className="picture-grid"
-        cellComponent={PictureGridCellView}
-        cellProps={{
-          usePlayListStore,
-          icon: <Icon icon={faImage} />
-        }}
-        columnCount={2}
-        columnWidth={500}
-        rowCount={playList.length}
-        rowHeight={500}
-  />
 
 )
 }

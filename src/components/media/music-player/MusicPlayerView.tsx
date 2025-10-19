@@ -14,13 +14,12 @@ import {
 import AudioView from "./AudioView.tsx";
 import {useAudioStore as useMediaStore} from "../mediaStore.ts";
 import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
+import MusicDropListener from "./MusicDropListener.tsx";
+import MusicSettingListener from "./MusicSettingListener.tsx";
 import PlayListView from "@/components/media/play-list/PlayListView.tsx";
-import MusicDropListener from "@/components/media/music-player/MusicDropListener.tsx";
-import MusicSettingListener from "@/components/media/music-player/MusicSettingListener.tsx";
 import VolumeMenu from "@/components/media/menu/volume-menu/VolumeMenu.tsx";
 import SpeedMenu from "@/components/media/menu/speed-menu/SpeedMenu.tsx";
 
-export const PLAYER_SETTING = 'music-player.setting.json'
 
 interface Prop {
   winKey: WinKey
@@ -167,7 +166,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   const onUnMount = async () => {
-    console.log('onUnMount') //, ready)
+    console.log('onUnMount')
   }
 
 
@@ -238,72 +237,74 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }
 
   return (
-    <div className={`widget music-player`}
-         ref={setContainerRef}
-         onKeyDown={onKeyDownHandler}
-         tabIndex={0}
-    >
+    <>
       <MusicDropListener />
       <MusicSettingListener />
-      <div className="audio-player">
-        <AudioView />
-      </div>
-      <div className="top drop-top"
-           onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+      <div className={`widget music-player`}
+           ref={setContainerRef}
+           onKeyDown={onKeyDownHandler}
+           tabIndex={0}
       >
-        <div className={`row time-line ${(!mediaRef?.paused && setting.mediaPath) ? 'playing' : ''}`}>
-          <div className="tm">{formatSeconds(currentTime)}</div>
-          <div className="slider">
-            <input type="range" min={0} max={mediaRef?.duration || 0} step={1}
-                   value={currentTime}
-                   onChange={(e) => {
-                     const tm = Number(e.target.value);
-                     console.log('change currentTime', tm);
-                     setCurrentTime(tm);
-                     changeCurrentTime(tm);
-                   }}/>
-          </div>
-          <div className="tm">{formatSeconds(mediaRef?.duration ?? 0)}</div>
+        <div className="audio-player">
+          <AudioView />
         </div>
-
-        <div className="row first">
-          <div className="center">
-            <div className="icon" onClick={() => toggleShuffle()}>
-              <Icon icon={faShuffle} className={shuffle ? '': 'inactive'}/>
+        <div className="top drop-top"
+             onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+        >
+          <div className={`row time-line ${(!mediaRef?.paused && setting.mediaPath) ? 'playing' : ''}`}>
+            <div className="tm">{formatSeconds(currentTime)}</div>
+            <div className="slider">
+              <input type="range" min={0} max={mediaRef?.duration || 0} step={1}
+                     value={currentTime}
+                     onChange={(e) => {
+                       const tm = Number(e.target.value);
+                       console.log('change currentTime', tm);
+                       setCurrentTime(tm);
+                       changeCurrentTime(tm);
+                     }}/>
             </div>
-            <div className="icon" onClick={() => playPrev()}>
-              <Icon icon={faBackwardStep}/>
-            </div>
-            <div className="icon middle"
-                 onClick={() => clickTogglePlay()}
-            >
-              <Icon icon={mediaRef?.paused ? faCirclePlay : faCirclePause } className={mediaRef?.paused ? 'blink': ''}/>
-            </div>
-            <div className="icon" onClick={() => playNext()}>
-              <Icon icon={faForwardStep}/>
-            </div>
-            {setting.repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
-            {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
-            {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
+            <div className="tm">{formatSeconds(mediaRef?.duration ?? 0)}</div>
           </div>
-          <SpeedMenu
-            playbackRate={setting.playbackRate}
-            onChangeSpeed={onChangeSpeed} />
-          <VolumeMenu
-            muted={setting.muted} volume={setting.volume}
-            toggleMute={toggleMute}
-            onChangeVolume={onChangeVolume}
+
+          <div className="row first">
+            <div className="center">
+              <div className="icon" onClick={() => toggleShuffle()}>
+                <Icon icon={faShuffle} className={shuffle ? '': 'inactive'}/>
+              </div>
+              <div className="icon" onClick={() => playPrev()}>
+                <Icon icon={faBackwardStep}/>
+              </div>
+              <div className="icon middle"
+                   onClick={() => clickTogglePlay()}
+              >
+                <Icon icon={mediaRef?.paused ? faCirclePlay : faCirclePause } className={mediaRef?.paused ? 'blink': ''}/>
+              </div>
+              <div className="icon" onClick={() => playNext()}>
+                <Icon icon={faForwardStep}/>
+              </div>
+              {setting.repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
+              {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
+              {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
+            </div>
+            <SpeedMenu
+              playbackRate={setting.playbackRate}
+              onChangeSpeed={onChangeSpeed} />
+            <VolumeMenu
+              muted={setting.muted} volume={setting.volume}
+              toggleMute={toggleMute}
+              onChangeVolume={onChangeVolume}
+            />
+          </div>
+        </div>
+        <div className="play-list drop-list"
+             onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+        >
+          <PlayListView
+            usePlayListStore={usePlayListStore}
+            icon={<Icon icon={faMusic} />}
           />
         </div>
       </div>
-      <div className="play-list drop-list"
-           onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
-      >
-        <PlayListView
-          usePlayListStore={usePlayListStore}
-          icon={<Icon icon={faMusic} />}
-        />
-      </div>
-    </div>
+    </>
   )
 }

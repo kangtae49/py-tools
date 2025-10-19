@@ -1,13 +1,12 @@
 import "./MoviePlayerView.css"
 import React, {useEffect} from "react";
-import {formatSeconds, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
+import {SplitPane} from "@rexxars/react-split-pane";
+import AutoSizer from "react-virtualized-auto-sizer";
+import {formatSeconds, srcLocal} from "@/components/utils.ts";
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
-import {type ClickEvent} from "@szhsin/react-menu";
-import '@szhsin/react-menu/dist/index.css';
-import '@szhsin/react-menu/dist/transitions/zoom.css';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faCirclePlay, faCirclePause,
@@ -17,18 +16,15 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import VideoView from "./VideoView.tsx";
 import {useVideoStore as useMediaStore} from "../mediaStore.ts";
-import {SplitPane} from "@rexxars/react-split-pane";
-import AutoSizer from "react-virtualized-auto-sizer";
-import {getSubs} from "@/components/media/media.ts";
 import {useMoviePlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
+import MovieDropListener from "./MovieDropListener.tsx";
+import MovieSettingListener from "./MovieSettingListener.tsx";
 import PlayListView from "@/components/media/play-list/PlayListView.tsx";
-import MovieDropListener from "@/components/media/movie-player/MovieDropListener.tsx";
-import MovieSettingListener from "@/components/media/movie-player/MovieSettingListener.tsx";
 import VolumeMenu from "@/components/media/menu/volume-menu/VolumeMenu.tsx";
 import SpeedMenu from "@/components/media/menu/speed-menu/SpeedMenu.tsx";
-import SubtitleMenu from "@/components/media/menu/subtitle-menu/SubtitleMenu.tsx";
 
-export const PLAYER_SETTING = 'movie-player.setting.json'
+import SubtitleMenu from "@/components/media/menu/subtitle-menu/SubtitleMenu.tsx";
+import {getSubs} from "@/components/media/media.ts";
 
 interface Prop {
   winKey: WinKey
@@ -69,10 +65,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
       onUnMount().then()
     }
   }, [])
-
-  // useEffect(() => {
-  //   console.log('ready', ready)
-  // }, [ready])
 
   useEffect(() => {
     if(setting.paused !== undefined) {
@@ -193,7 +185,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const onUnMount = async () => {
-    console.log('onUnMount') //, ready)
+    console.log('onUnMount')
   }
 
 
@@ -272,8 +264,8 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     console.log('clickVideo', e);
   }
 
-  const onChangeSub = (e: ClickEvent) => {
-    const subType = e.value;
+  const onChangeSub = (value: string) => {
+    const subType = value;
     changeAllTrackMode('disabled');
     let newSubType = undefined;
     if (subType !== '') newSubType = subType;
@@ -283,103 +275,105 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
 
   return (
-    <div className={`widget movie-player`}
-         ref={setContainerRef}
-         onKeyDown={onKeyDownHandler}
-         tabIndex={0}
-    >
+    <>
       <MovieDropListener/>
       <MovieSettingListener/>
-      <SplitPane
-        split="horizontal"
-        minSize={80}
-        primary="second"
-        defaultSize={200}
+      <div className={`widget movie-player`}
+           ref={setContainerRef}
+           onKeyDown={onKeyDownHandler}
+           tabIndex={0}
       >
-        <AutoSizer>
-          {({ height, width }) => (
-            <div className="video-view drop-video"
-                 style={{width, height}}
-                 onClick={clickVideo}
-                 onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
-            >
-              <VideoView />
-            </div>
-            )
-          }
-        </AutoSizer>
-        <AutoSizer>
-          {({ height, width }) => (
-          <div className="controller" style={{width, height}}>
-            <div className="top drop-top"
-                 onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
-            >
-              <div className={`row time-line ${(!mediaRef?.paused && setting.mediaPath) ? 'playing' : ''}`}>
-                <div className="tm">{formatSeconds(currentTime)}</div>
-                <div className="slider">
-                  <input type="range" min={0} max={mediaRef?.duration || 0} step={1}
-                         value={currentTime}
-                         onChange={(e) => {
-                           const tm = Number(e.target.value);
-                           console.log('change currentTime', tm);
-                           setCurrentTime(tm);
-                           changeCurrentTime(tm);
-                         }}/>
-                </div>
-                <div className="tm">{formatSeconds(mediaRef?.duration ?? 0)}</div>
+        <SplitPane
+          split="horizontal"
+          minSize={80}
+          primary="second"
+          defaultSize={200}
+        >
+          <AutoSizer>
+            {({ height, width }) => (
+              <div className="video-view drop-video"
+                   style={{width, height}}
+                   onClick={clickVideo}
+                   onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+              >
+                <VideoView />
               </div>
-              <div className="row first">
-                <SubtitleMenu
-                  subs={subs}
-                  subType={setting.subType}
-                  onChangeSub={onChangeSub}
-                />
-                <div className="center">
-                  <div className="icon" onClick={() => toggleShuffle()}>
-                    <Icon icon={faShuffle} className={shuffle ? '': 'inactive'}/>
+              )
+            }
+          </AutoSizer>
+          <AutoSizer>
+            {({ height, width }) => (
+            <div className="controller" style={{width, height}}>
+              <div className="top drop-top"
+                   onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+              >
+                <div className={`row time-line ${(!mediaRef?.paused && setting.mediaPath) ? 'playing' : ''}`}>
+                  <div className="tm">{formatSeconds(currentTime)}</div>
+                  <div className="slider">
+                    <input type="range" min={0} max={mediaRef?.duration || 0} step={1}
+                           value={currentTime}
+                           onChange={(e) => {
+                             const tm = Number(e.target.value);
+                             console.log('change currentTime', tm);
+                             setCurrentTime(tm);
+                             changeCurrentTime(tm);
+                           }}/>
                   </div>
-                  <div className="icon" onClick={() => playPrev()}>
-                    <Icon icon={faBackwardStep}/>
-                  </div>
-                  <div className="icon middle"
-                       onClick={() => clickTogglePlay()}
-                  >
-                    <Icon icon={mediaRef?.paused ? faCirclePlay : faCirclePause } className={mediaRef?.paused ? 'blink': ''}/>
-                  </div>
-                  <div className="icon" onClick={() => playNext()}>
-                    <Icon icon={faForwardStep}/>
-                  </div>
-                  {setting.repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
-                  {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
-                  {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
+                  <div className="tm">{formatSeconds(mediaRef?.duration ?? 0)}</div>
                 </div>
-                <SpeedMenu
-                  playbackRate={setting.playbackRate}
-                  onChangeSpeed={onChangeSpeed} />
-                <VolumeMenu
-                  muted={setting.muted} volume={setting.volume}
-                  toggleMute={toggleMute}
-                  onChangeVolume={onChangeVolume}
-                />
-                <div className="icon" onClick={() => toggleFullscreen()} title="Fullscreen(F11)">
-                  <Icon icon={faExpand}/>
-                </div>
+                <div className="row first">
+                  <SubtitleMenu
+                    subs={subs}
+                    subType={setting.subType}
+                    onChangeSub={onChangeSub}
+                  />
+                  <div className="center">
+                    <div className="icon" onClick={() => toggleShuffle()}>
+                      <Icon icon={faShuffle} className={shuffle ? '': 'inactive'}/>
+                    </div>
+                    <div className="icon" onClick={() => playPrev()}>
+                      <Icon icon={faBackwardStep}/>
+                    </div>
+                    <div className="icon middle"
+                         onClick={() => clickTogglePlay()}
+                    >
+                      <Icon icon={mediaRef?.paused ? faCirclePlay : faCirclePause } className={mediaRef?.paused ? 'blink': ''}/>
+                    </div>
+                    <div className="icon" onClick={() => playNext()}>
+                      <Icon icon={faForwardStep}/>
+                    </div>
+                    {setting.repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
+                    {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
+                    {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
+                  </div>
+                  <SpeedMenu
+                    playbackRate={setting.playbackRate}
+                    onChangeSpeed={onChangeSpeed} />
+                  <VolumeMenu
+                    muted={setting.muted} volume={setting.volume}
+                    toggleMute={toggleMute}
+                    onChangeVolume={onChangeVolume}
+                  />
+                  <div className="icon" onClick={() => toggleFullscreen()} title="Fullscreen(F11)">
+                    <Icon icon={faExpand}/>
+                  </div>
 
+                </div>
+              </div>
+              <div className="drop-list"
+                   style={{ height: "calc(100% - 85px)", width }}
+                   onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+              >
+                <PlayListView
+                  usePlayListStore={usePlayListStore}
+                  icon={<Icon icon={faFilm} />}
+                />
               </div>
             </div>
-            <div className="drop-list"
-                 style={{ height: "calc(100% - 85px)", width }}
-                 onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
-            >
-              <PlayListView
-                usePlayListStore={usePlayListStore}
-                icon={<Icon icon={faFilm} />}
-              />
-            </div>
-          </div>
-        )}
-        </AutoSizer>
-      </SplitPane>
-    </div>
+          )}
+          </AutoSizer>
+        </SplitPane>
+      </div>
+    </>
   )
 }

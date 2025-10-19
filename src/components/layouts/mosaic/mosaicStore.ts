@@ -18,6 +18,11 @@ export const defaultLayout: MosaicNode<WinKey> = {
   second: "help"
 }
 
+export interface MosaicDefault {
+  settingName: string
+  layout: MosaicNode<WinKey> | null
+}
+
 export type WinKey =
   | AboutKey
   | HelpKey
@@ -35,6 +40,10 @@ export type WinType =
   | PicturePlayerKey
   | MonacoKey
   | MdKey
+
+export interface MosaicSetting {
+  layout: MosaicNode<WinKey> | null
+}
 
 export function getWinPath(key: WinKey): string | null {
 
@@ -59,12 +68,16 @@ export function getWinType(key: WinKey): WinType {
 }
 
 interface MosaicStore {
+  setting: MosaicSetting
+  defaultSetting: MosaicDefault | undefined
+
   viewRefs: Partial<Record<WinKey, HTMLDivElement | null>>
   mosaicValue: MosaicNode<WinKey> | null;
   maxScreenView: WinKey | null;
 
   setMosaicValue: (value: MosaicNode<WinKey> | null) => void;
   setMaxScreenView: (value: WinKey | null) => void;
+  setSetting: (setting: MosaicSetting | ((prev: MosaicSetting) => MosaicSetting)) => void;
 
   updateViewRef: (id: WinKey, el: HTMLDivElement | null) => void;
   addView: (id: WinKey) => void;
@@ -85,9 +98,23 @@ export const useMosaicStore = create<MosaicStore>((set, get) => ({
   mosaicValue: null,
   viewRefs: {},
   maxScreenView: null,
+  setting: {
+    settingName: "mosaic-layout.setting.json",
+    layout: null
+  },
+  defaultSetting: {
+    settingName: "mosaic-layout.setting.json",
+    layout: null
+  },
 
   setMosaicValue: (value) => set({ mosaicValue: value }),
   setMaxScreenView: (value) => set({ maxScreenView: value }),
+  setSetting: (updater) => {
+    set((state) => ({
+      setting:
+        typeof updater === "function" ? updater(state.setting) : updater,
+    }))
+  },
 
   updateViewRef: (id, el) => {
     if (el === null) return;

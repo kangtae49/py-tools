@@ -1,6 +1,6 @@
 import "../menu.css"
 import React, {useRef, useState} from "react";
-import {type ClickEvent, ControlledMenu, MenuItem, type RectElement, useHover} from "@szhsin/react-menu";
+import {ControlledMenu, MenuItem, type RectElement, useHover} from "@szhsin/react-menu";
 import {FontAwesomeIcon as Icon} from "@fortawesome/react-fontawesome";
 import {faMessage} from "@fortawesome/free-solid-svg-icons";
 import type {Sub} from "@/types/models";
@@ -9,7 +9,7 @@ import {getFilename} from "@/components/utils.ts";
 interface Prop {
   subs: Sub[]
   subType: string | undefined
-  onChangeSub: (e: ClickEvent) => void
+  onChangeSub: (value: string) => void
 }
 
 function SubtitleMenu({subs, subType, onChangeSub}: Prop) {
@@ -43,13 +43,13 @@ function SubtitleMenu({subs, subType, onChangeSub}: Prop) {
         anchorRef={ref as React.RefObject<Element | RectElement>}
         onClose={() => setOpen(false)}
       >
-        <MenuItem className={`menu-item ${subType === undefined ? 'selected': ''}`} value="" onClick={onChangeSub}>-</MenuItem>
+        <MenuItem className={`menu-item ${subType === undefined ? 'selected': ''}`} value="" onClick={(e) => onChangeSub(e.value)}>-</MenuItem>
         { subs && subs.map((sub, _index) => (
           <MenuItem key={sub.fullpath}
                     className={`menu-item ${subType == sub.subtype ? 'selected': ''}`}
                     title={getFilename(sub.fullpath)}
                     value={sub.subtype}
-                    onClick={onChangeSub}
+                    onClick={(e) => onChangeSub(e.value)}
           >
             {sub.subtype}
           </MenuItem>

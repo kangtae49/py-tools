@@ -3,15 +3,13 @@ import {commands} from "@/bindings.ts";
 import {
   type MediaSetting,
   useAudioStore as useMediaStore,
-  audioDefault as mediaDefault
 } from "@/components/media/mediaStore.ts";
-import {PLAYER_SETTING} from "./MusicPlayerView.tsx";
 import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
 
 function MusicSettingListener() {
-
   const {
     setting,
+    defaultSetting
   } = useMediaStore();
 
   useEffect(() => {
@@ -23,9 +21,8 @@ function MusicSettingListener() {
   }, [])
 
   useEffect(() => {
-    const setting = useMediaStore.getState().setting;
-    if(setting === null) return;
-    commands.appWrite(PLAYER_SETTING, JSON.stringify(setting, null, 2)).then()
+    if(defaultSetting?.settingName === undefined) return;
+    commands.appWrite(defaultSetting.settingName, JSON.stringify(setting, null, 2)).then()
   }, [setting])
 
   const onMount = async () => {
@@ -46,6 +43,7 @@ export const mountSetting = async () => {
   const {
     setSetting,
     setCurrentTime,
+    defaultSetting
   } = useMediaStore.getState()
   const {
     setPlayPath,
@@ -54,21 +52,20 @@ export const mountSetting = async () => {
     setPlaying,
     setSelectionBegin,
   } = usePlayListStore.getState();
-
+  if(defaultSetting?.settingName === undefined) return;
   let newSetting: MediaSetting | null = null;
 
-  const result = await commands.appReadFile(PLAYER_SETTING);
+  const result = await commands.appReadFile(defaultSetting.settingName);
   if(result.status === 'ok') {
     newSetting = JSON.parse(result.data);
     if (result.data === "null") {
-      newSetting = mediaDefault.setting ?? null;
+      newSetting = defaultSetting;
     }
-    commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then()
+    await commands.appWrite(defaultSetting.settingName, JSON.stringify(newSetting, null, 2))
   } else {
-    newSetting = mediaDefault.setting ?? null;
-    commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then(() => {
-      commands.appWriteFile(PLAYER_SETTING, "null").then()
-    })
+    newSetting = defaultSetting;
+    await commands.appWrite(defaultSetting.settingName, JSON.stringify(newSetting, null, 2))
+    await commands.appWriteFile(defaultSetting.settingName, JSON.stringify(newSetting, null, 2))
   }
 
   const newPlayList = newSetting?.playList ?? []
@@ -96,11 +93,11 @@ export const mountSetting = async () => {
 }
 
 export const unMountSetting = async () => {
-  const {setting} = useMediaStore.getState();
-  const result = await commands.appWrite(PLAYER_SETTING, JSON.stringify(setting, null, 2))
-  if (result.status === 'ok') {
-    await commands.appWriteFile(PLAYER_SETTING, "{}")
-  }
+  const {setting, defaultSetting} = useMediaStore.getState();
+  if(defaultSetting?.settingName === undefined) return;
+
+  await commands.appWrite(defaultSetting.settingName, JSON.stringify(setting, null, 2))
+  await commands.appWriteFile(defaultSetting.settingName, JSON.stringify(setting, null, 2))
 }
 
 export default MusicSettingListener;

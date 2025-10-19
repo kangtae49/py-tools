@@ -6,18 +6,15 @@ import {DefaultToolbarButton, Mosaic, MosaicWindow} from "react-mosaic-component
 import 'react-mosaic-component/react-mosaic-component.css'
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
-import {type WinKey, type WinType, getWinType, useMosaicStore, defaultLayout} from "./mosaicStore.ts";
-import MusicPlayerView from "@/components/media/music-player/MusicPlayerView.tsx";
+import {type WinKey, type WinType, getWinType, useMosaicStore} from "./mosaicStore.ts";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faMusic, faFilm,
 } from '@fortawesome/free-solid-svg-icons'
+import MusicPlayerView from "@/components/media/music-player/MusicPlayerView.tsx";
 import MoviePlayerView from "@/components/media/movie-player/MoviePlayerView.tsx";
-import {commands} from "@/bindings.ts";
-import {videoDefault} from "@/components/media/mediaStore.ts";
 import PicturePlayerView from "@/components/media/picture-player/PicturePlayerView.tsx";
-
-export const MOSAIC_LAYOUT_SETTING = 'mosaic-layout.setting.json'
+import MosaicSettingListener from "./MosaicSettingListener.tsx";
 
 interface TitleInfo {
   title: string,
@@ -72,6 +69,7 @@ function MosaicLayoutView() {
   }
   const {
     // minimizeView, maximizeView,
+    setSetting,
     removeView,
     mosaicValue, setMosaicValue,
     updateViewRef,
@@ -79,17 +77,10 @@ function MosaicLayoutView() {
   } = useMosaicStore();
 
   useEffect(() => {
-    onMount().then();
-    return () => {
-      onUnMount().then();
-    }
   }, [])
 
   useEffect(() => {
-    console.log('mosaicValue', mosaicValue);
-    commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(mosaicValue, null, 2)).then((result) => {
-      console.log(result.status, 'appWrite', MOSAIC_LAYOUT_SETTING);
-    })
+    setSetting((setting) => ({...setting, layout: mosaicValue}))
   }, [mosaicValue])
 
   const toggleMaximizeView = async (e: React.MouseEvent, id: WinKey) => {
@@ -103,85 +94,56 @@ function MosaicLayoutView() {
     }
   }
 
-  const onMount = async () => {
-    console.log('onMount')
-
-    const result = await commands.appReadFile(MOSAIC_LAYOUT_SETTING);
-    let newSetting;
-    if (result.status === 'ok') {
-      newSetting = JSON.parse(result.data);
-      if (result.data === "{}") {
-        newSetting = videoDefault.setting ?? null;
-      }
-      commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(newSetting, null, 2)).then()
-    } else {
-      newSetting = defaultLayout;
-      commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-        if (result.status === 'ok') {
-          commands.appWriteFile(MOSAIC_LAYOUT_SETTING, "").then()
-        }
-      })
-    }
-    setMosaicValue(newSetting);
-  }
-
-  const onUnMount = async () => {
-    console.log('onUnMount')
-    commands.appWriteFile(MOSAIC_LAYOUT_SETTING, "").then((result) => {
-      console.log(result.status, 'appWriteFile', MOSAIC_LAYOUT_SETTING);
-    })
-  }
-
-
-
-
   return (
-    <Mosaic<WinKey>
-      value={mosaicValue}
-      onChange={setMosaicValue}
-      renderTile={(id, path) => (
-        <MosaicWindow<WinKey>
-          key={id}
-          path={path}
-          title={id}
-          renderToolbar={()=> (
-            <div className="title-bar"
-              ref={(el) => updateViewRef(id, el)}
-            >
-              <div className="title"
-                onDoubleClick={(e) => toggleMaximizeView(e, id)}
-              >
-                {ELEMENT_MAP[getWinType(id)].icon}<div>{ELEMENT_MAP[getWinType(id)].title}</div>
-              </div>
-              <div className="controls">
-                {/*<DefaultToolbarButton*/}
-                {/*  title="Minimize"*/}
-                {/*  onClick={() => minimizeView(id)}*/}
-                {/*  className="bp6-icon-minus"*/}
-                {/*/>*/}
+    <>
+      <MosaicSettingListener />
+      <Mosaic<WinKey>
+        value={mosaicValue}
+        onChange={setMosaicValue}
+        renderTile={(id, path) => (
+            <MosaicWindow<WinKey>
+              key={id}
+              path={path}
+              title={id}
+              renderToolbar={()=> (
+                <div className="title-bar"
+                  ref={(el) => updateViewRef(id, el)}
+                >
+                  <div className="title"
+                    onDoubleClick={(e) => toggleMaximizeView(e, id)}
+                  >
+                    {ELEMENT_MAP[getWinType(id)].icon}<div>{ELEMENT_MAP[getWinType(id)].title}</div>
+                  </div>
+                  <div className="controls">
+                    {/*<DefaultToolbarButton*/}
+                    {/*  title="Minimize"*/}
+                    {/*  onClick={() => minimizeView(id)}*/}
+                    {/*  className="bp6-icon-minus"*/}
+                    {/*/>*/}
 
-                <DefaultToolbarButton
-                  title={maxScreenView === id ? "Minimize" : "Maximize"}
-                  // title={document.fullscreenElement !== null ? "Minimize" : "Maximize"}
-                  onClick={(e) => toggleMaximizeView(e, id)}
-                  className={maxScreenView === id ? "bp6-icon-minus" : "bp6-icon-maximize"}
-                  // className={document.fullscreenElement !== null ? "bp6-icon-minus" : "bp6-icon-maximize"}
-                />
-                <DefaultToolbarButton
-                  title="Close Window"
-                  onClick={() => removeView(id)}
-                  className="mosaic-default-control bp6-button bp6-minimal close-button bp6-icon-cross"
-                />
-              </div>
-            </div>
-          )}
-        >
-          {ELEMENT_MAP[getWinType(id)].view(id)}
-        </MosaicWindow>
-      )}
-      className="mosaic-blueprint-theme"
-      blueprintNamespace="bp6"
-    />
+                    <DefaultToolbarButton
+                      title={maxScreenView === id ? "Minimize" : "Maximize"}
+                      // title={document.fullscreenElement !== null ? "Minimize" : "Maximize"}
+                      onClick={(e) => toggleMaximizeView(e, id)}
+                      className={maxScreenView === id ? "bp6-icon-minus" : "bp6-icon-maximize"}
+                      // className={document.fullscreenElement !== null ? "bp6-icon-minus" : "bp6-icon-maximize"}
+                    />
+                    <DefaultToolbarButton
+                      title="Close Window"
+                      onClick={() => removeView(id)}
+                      className="mosaic-default-control bp6-button bp6-minimal close-button bp6-icon-cross"
+                    />
+                  </div>
+                </div>
+              )}
+            >
+              {ELEMENT_MAP[getWinType(id)].view(id)}
+            </MosaicWindow>
+        )}
+        className="mosaic-blueprint-theme"
+        blueprintNamespace="bp6"
+      />
+    </>
   )
 }
 

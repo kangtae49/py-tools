@@ -28,6 +28,7 @@ export interface MediaStore<T extends HTMLMediaElement> {
   fullscreen: boolean
   subs: Sub[]
   setting: MediaSetting
+  defaultSetting: MediaDefault | undefined
 
   setMediaRef: (mediaRef: T | null) => void
   setContainerRef: (containerRef: HTMLDivElement | null) => void
@@ -71,6 +72,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
       repeat: "repeat_all",
       playList: []
     },
+    defaultSetting: mediaDefault,
     fullscreen: false,
     subs: [],
     ...mediaDefault,
@@ -163,12 +165,14 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
 }
 
 interface MediaDefault {
+  settingName?: string
   shuffle?: boolean
   extensions?: string[]
   setting: MediaSetting
 }
 
 export const audioDefault: MediaDefault = {
+  settingName: 'music-player.setting.json',
   extensions: ["mp3", "wav", "ogg", "m4a", "opus", "webm"],
   setting: {
     mediaPath: undefined,
@@ -181,10 +185,10 @@ export const audioDefault: MediaDefault = {
     repeat: "repeat_all",
     playList: []
   }
-
-};
+}
 
 export const videoDefault: MediaDefault = {
+  settingName: 'movie-player.setting.json',
   extensions: ["mp4", "webm", "mkv", "ogg"],
   setting: {
     mediaPath: undefined,

@@ -50,7 +50,7 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     commands.dialogOpen({
       dialog_type: "OPEN",
       allow_multiple: true,
-      file_types: [`Audio files (${filter_ext})`]
+      file_types: [`Media files (${filter_ext})`]
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;
@@ -64,7 +64,7 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     commands.dialogOpen({
       dialog_type: "OPEN",
       allow_multiple: false,
-      file_types: [`OpenAudio Book (${["*.json"].join(";")})`]
+      file_types: [`OpenMedia Book (${["*.json"].join(";")})`]
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;
@@ -100,7 +100,7 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     commands.dialogOpen({
       dialog_type: "SAVE",
       allow_multiple: true,
-      file_types: [`Save Audio Book (${["*.json"].join(";")})`]
+      file_types: [`Save Media Book (${["*.json"].join(";")})`]
     }).then((result) => {
       if(result.status === 'ok') {
         const files = result.data;

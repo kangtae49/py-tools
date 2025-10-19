@@ -76,13 +76,10 @@ function MosaicLayoutView() {
     mosaicValue, setMosaicValue,
     updateViewRef,
     maxScreenView, setMaxScreenView,
-    setReady,
   } = useMosaicStore();
 
   useEffect(() => {
-    onMount().then(() => {
-      setReady(true);
-    });
+    onMount().then();
     return () => {
       onUnMount().then();
     }
@@ -130,20 +127,12 @@ function MosaicLayoutView() {
 
   const onUnMount = async () => {
     console.log('onUnMount')
-    const state = useMosaicStore.getState();
-    if (state.ready) {
-      commands.appWriteFile(MOSAIC_LAYOUT_SETTING, "").then((result) => {
-        console.log(result.status, 'appWriteFile', MOSAIC_LAYOUT_SETTING);
-      })
-    }
+    commands.appWriteFile(MOSAIC_LAYOUT_SETTING, "").then((result) => {
+      console.log(result.status, 'appWriteFile', MOSAIC_LAYOUT_SETTING);
+    })
   }
 
-  useEffect(() => {
-    console.log('mosaicValue', mosaicValue);
-    commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(mosaicValue, null, 2)).then((result) => {
-      console.log(result.status, 'appWrite', MOSAIC_LAYOUT_SETTING);
-    })
-  }, [mosaicValue])
+
 
 
   return (

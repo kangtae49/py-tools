@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 import {useVideoStore as useMediaStore} from "../mediaStore.ts";
 import {srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts";
@@ -6,7 +6,6 @@ import type {Sub} from "@/types/models";
 
 
 function VideoView() {
-  const [ready, setReady] = useState(false);
 
   const {
     mediaRef, setMediaRef,
@@ -22,48 +21,8 @@ function VideoView() {
   } = useMediaStore();
 
   useEffect(() => {
-    return () => {
-      removeListener();
-    }
+    onMount();
   }, []);
-
-  useEffect(() => {
-    if(mediaRef) {
-      setReady(true);
-      onMount();
-    }
-  }, [mediaRef])
-
-  useEffect(() => {
-    if (!ready) return;
-    loadSrc()
-  }, [ready, setting?.mediaPath])
-
-  useEffect(() => {
-    if (!ready) return;
-    if(mediaRef === null) return;
-
-    const {setting, currentTime} = useMediaStore.getState();
-
-    if(setting.mediaPath == undefined) return;
-
-    console.log('ready state', mediaRef?.readyState, currentTime)
-
-    changeVolume(setting.volume ?? 0.5);
-    setCurrentTime(currentTime);
-    changeCurrentTime(currentTime)
-    changePlaybackRate(setting.playbackRate ?? 1.0);
-    changeMuted(setting.muted ?? false)
-
-    if (setting.paused !== mediaRef.paused) {
-      if (setting.paused) {
-        mediaRef.pause();
-      } else {
-        mediaRef.play().then();
-      }
-    }
-  }, [ready, setting.paused]);
-
 
   useEffect(() => {
     if (mediaRef) {
@@ -89,6 +48,33 @@ function VideoView() {
 
   }, [mediaRef])
 
+  useEffect(() => {
+    loadSrc()
+  }, [setting?.mediaPath])
+
+  useEffect(() => {
+    if(mediaRef === null) return;
+
+    const {setting, currentTime} = useMediaStore.getState();
+
+    if(setting.mediaPath == undefined) return;
+
+    console.log('ready state', mediaRef?.readyState, currentTime)
+
+    changeVolume(setting.volume ?? 0.5);
+    setCurrentTime(currentTime);
+    changeCurrentTime(currentTime)
+    changePlaybackRate(setting.playbackRate ?? 1.0);
+    changeMuted(setting.muted ?? false)
+
+    if (setting.paused !== mediaRef.paused) {
+      if (setting.paused) {
+        mediaRef.pause();
+      } else {
+        mediaRef.play().then();
+      }
+    }
+  }, [setting.paused])
 
   useEffect(() => {
     if (subs.length === 0) return;

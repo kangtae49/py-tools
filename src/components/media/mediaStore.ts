@@ -26,7 +26,6 @@ export interface MediaStore<T extends HTMLMediaElement> {
   currentTime: number
   extensions: string[]
   fullscreen: boolean
-  ready: boolean
   subs: Sub[]
   setting: MediaSetting
 
@@ -37,7 +36,6 @@ export interface MediaStore<T extends HTMLMediaElement> {
   setSetting: (setting: MediaSetting | ((prev: MediaSetting) => MediaSetting)) => void;
   setExtensions: (filter: string[]) => void;
   setFullscreen: (fullscreen: boolean) => void;
-  setReady: (ready: boolean) => void;
   setSubs: (subs: Sub[]) => void;
 
   changeVolume: (volume: number | null | undefined) => void;
@@ -74,7 +72,6 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
       playList: []
     },
     fullscreen: false,
-    ready: false,
     subs: [],
     ...mediaDefault,
 
@@ -94,7 +91,6 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
     },
     setExtensions: (filter) => set({extensions: filter}),
     setFullscreen: (fullscreen) => set({fullscreen}),
-    setReady: (ready) => set({ready}),
     setSubs: (subs) => set({subs}),
 
     changeVolume: (volume) => {

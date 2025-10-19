@@ -44,7 +44,6 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     // setPlayListRef,
     setting, setSetting,
     filter,
-    setReady,
   } = usePictureStore();
 
   const {
@@ -63,9 +62,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
   useEffect(() => {
     containerRef?.focus();
-    onMount().then(() => {
-      setReady(true);
-    });
+    onMount().then();
 
     return () => {
       onUnMount().then()
@@ -141,17 +138,14 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   }
 
   const onUnMount = async () => {
-    const ready = usePictureStore.getState().ready;
-    console.log('onUnMount', ready)
-    if (ready) {
-      commands.appRead(PLAYER_SETTING).then((result) => {
-        if (result.status === 'ok') {
-          commands.appWriteFile(PLAYER_SETTING, "{}").then((result) => {
-            console.log(result.status, 'appWriteFile', PLAYER_SETTING);
-          })
-        }
-      })
-    }
+    console.log('onUnMount')
+    commands.appRead(PLAYER_SETTING).then((result) => {
+      if (result.status === 'ok') {
+        commands.appWriteFile(PLAYER_SETTING, "{}").then((result) => {
+          console.log(result.status, 'appWriteFile', PLAYER_SETTING);
+        })
+      }
+    })
   }
 
 

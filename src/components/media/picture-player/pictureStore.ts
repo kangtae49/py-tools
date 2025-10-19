@@ -15,7 +15,6 @@ interface PictureStore {
   containerRef: HTMLDivElement | null
   filter: string[]
   fullscreen: boolean
-  ready: boolean
   setting: PictureSetting
 
   setPictureRef: (pictureRef: HTMLDivElement | null) => void;
@@ -23,7 +22,6 @@ interface PictureStore {
   setSetting: (setting: PictureSetting | ((prev: PictureSetting) => PictureSetting)) => void;
   setFilter: (filter: string[]) => void;
   setFullscreen: (fullscreen: boolean) => void;
-  setReady: (ready: boolean) => void;
 
   togglePlay: () => void;
   toggleRepeat: () => void;
@@ -38,7 +36,6 @@ function createPictureStore(pictureDefault?: PictureDefault) {
     containerRef: null,
     filter: ["jpg", "png", "svg", "bmp"],
     fullscreen: false,
-    ready: false,
     setting: {
       paused: true,
       shuffle: true,
@@ -60,7 +57,6 @@ function createPictureStore(pictureDefault?: PictureDefault) {
     },
     setFilter: (filter) => set({filter}),
     setFullscreen: (fullscreen) => set({fullscreen}),
-    setReady: (ready) => set({ready}),
 
     togglePlay: () => {
       // const setting = get().setting;

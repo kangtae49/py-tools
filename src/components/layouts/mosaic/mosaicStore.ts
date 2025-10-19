@@ -62,11 +62,9 @@ interface MosaicStore {
   viewRefs: Partial<Record<WinKey, HTMLDivElement | null>>
   mosaicValue: MosaicNode<WinKey> | null;
   maxScreenView: WinKey | null;
-  ready: boolean;
 
   setMosaicValue: (value: MosaicNode<WinKey> | null) => void;
   setMaxScreenView: (value: WinKey | null) => void;
-  setReady: (value: boolean) => void;
 
   updateViewRef: (id: WinKey, el: HTMLDivElement | null) => void;
   addView: (id: WinKey) => void;
@@ -84,14 +82,12 @@ const setViewRef = (id: WinKey, el: HTMLDivElement | null) => {
  */
 
 export const useMosaicStore = create<MosaicStore>((set, get) => ({
-  ready: false,
   mosaicValue: null,
   viewRefs: {},
   maxScreenView: null,
 
   setMosaicValue: (value) => set({ mosaicValue: value }),
   setMaxScreenView: (value) => set({ maxScreenView: value }),
-  setReady: (value) => set({ ready: value }),
 
   updateViewRef: (id, el) => {
     if (el === null) return;

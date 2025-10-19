@@ -45,7 +45,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     ended, setEnded,
     setting, setSetting,
     changePlaybackRate,
-    ready, setReady,
     subs, setSubs, changeAllTrackMode,
   } = useMediaStore();
   const {
@@ -64,43 +63,36 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   useEffect(() => {
     containerRef?.focus();
-    onMount().then(() => {
-      setReady(true);
-    });
+    onMount().then();
 
     return () => {
       onUnMount().then()
     }
   }, [])
 
-  useEffect(() => {
-    console.log('ready', ready)
-  }, [ready])
+  // useEffect(() => {
+  //   console.log('ready', ready)
+  // }, [ready])
 
   useEffect(() => {
-    if(!ready) return;
     if(setting.paused !== undefined) {
       setPlaying(!setting.paused)
     }
   }, [setting.paused])
 
   useEffect(() => {
-    if(!ready) return;
     setSetting((setting) => ({...setting, caller: "useEffect [currentTime]", currentTime: Math.floor(currentTime)}))
   }, [currentTime])
 
   useEffect(() => {
-    if(!ready) return;
     setSetting((setting) => ({...setting, caller: "useEffect [playList]", paused: !playing}))
   }, [playing]);
 
   useEffect(() => {
-    if(!ready) return;
     setSetting((setting) => ({...setting, caller: "useEffect [playList]", playList}))
   }, [playList])
 
   useEffect(() => {
-    if(!ready) return;
     setSetting((setting) => ({...setting, caller: "useEffect [playList]", shuffle}))
   }, [shuffle])
 
@@ -111,7 +103,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }, [setting.volume])
 
   useEffect(() => {
-    if(!ready) return;
+    // if(!ready) return;
     if (playPath === undefined) return;
     setSetting((setting) => ({...setting, caller: "useEffect [playPath]", mediaPath: playPath}))
     console.log('fetch HEAD');
@@ -201,7 +193,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const onUnMount = async () => {
-    console.log('onUnMount', ready)
+    console.log('onUnMount') //, ready)
   }
 
 

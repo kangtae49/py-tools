@@ -1,11 +1,9 @@
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 import {useAudioStore as useMediaStore} from "../mediaStore.ts";
 import {srcLocal} from "@/components/utils.ts";
 
 
 function AudioView() {
-  const [ready, setReady] = useState(false);
-
   const {
     mediaRef, setMediaRef,
     setCurrentTime, changeCurrentTime,
@@ -16,20 +14,9 @@ function AudioView() {
     setting, setSetting,
   } = useMediaStore();
 
-
-
   useEffect(() => {
-    return () => {
-      removeListener();
-    }
+    onMount();
   }, []);
-
-  useEffect(() => {
-    if(mediaRef) {
-      setReady(true);
-      onMount();
-    }
-  }, [mediaRef])
 
   useEffect(() => {
     if (mediaRef) {
@@ -55,12 +42,10 @@ function AudioView() {
   }, [mediaRef])
 
   useEffect(() => {
-    if (!ready) return;
     loadSrc()
-  }, [ready, setting?.mediaPath])
+  }, [setting?.mediaPath])
 
   useEffect(() => {
-    if (!ready) return;
     if(mediaRef === null) return;
 
     const {setting, currentTime} = useMediaStore.getState();
@@ -82,7 +67,7 @@ function AudioView() {
         mediaRef.play().then();
       }
     }
-  }, [ready, setting.paused])
+  }, [setting.paused])
 
   const isNullPlaying = () => {
     const state = useMediaStore.getState();

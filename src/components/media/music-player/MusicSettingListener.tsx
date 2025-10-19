@@ -1,11 +1,11 @@
+import {useEffect} from "react";
+import {commands} from "@/bindings.ts";
 import {
   type MediaSetting,
   useAudioStore as useMediaStore,
   audioDefault as mediaDefault
 } from "@/components/media/mediaStore.ts";
-import {commands} from "@/bindings.ts";
 import {PLAYER_SETTING} from "./MusicPlayerView.tsx";
-import {useEffect} from "react";
 import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
 
 function MusicSettingListener() {
@@ -23,10 +23,8 @@ function MusicSettingListener() {
   }, [])
 
   useEffect(() => {
-    const {ready} = useMediaStore.getState();
     const setting = useMediaStore.getState().setting;
     if(setting === null) return;
-    if(!ready) return;
     commands.appWrite(PLAYER_SETTING, JSON.stringify(setting, null, 2)).then()
   }, [setting])
 
@@ -98,12 +96,10 @@ export const mountSetting = async () => {
 }
 
 export const unMountSetting = async () => {
-  const {ready, setting} = useMediaStore.getState();
-  if (ready) {
-    const result = await commands.appWrite(PLAYER_SETTING, JSON.stringify(setting, null, 2))
-    if (result.status === 'ok') {
-      await commands.appWriteFile(PLAYER_SETTING, "{}")
-    }
+  const {setting} = useMediaStore.getState();
+  const result = await commands.appWrite(PLAYER_SETTING, JSON.stringify(setting, null, 2))
+  if (result.status === 'ok') {
+    await commands.appWriteFile(PLAYER_SETTING, "{}")
   }
 }
 

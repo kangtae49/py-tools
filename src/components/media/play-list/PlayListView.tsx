@@ -84,7 +84,7 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
   const readFiles = (files: string[]) => {
     console.log('readFiles')
     const {
-      playList, shuffle,
+      playList, shuffle, playPath, setPlayPath
     } = usePlayListStore.getState();
     const newPlayList = appendPlayList(playList, files);
     const shuffledPlayList = shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
@@ -94,6 +94,9 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
       setSelectionBegin(newPlayPath)
     }
     setPlayList(shuffledPlayList);
+    if (playPath === undefined && shuffledPlayList.length > 0) {
+      setPlayPath(shuffledPlayList[0])
+    }
   }
 
 

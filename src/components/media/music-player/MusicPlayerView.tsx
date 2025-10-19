@@ -52,11 +52,18 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   } = useReceivedDropFilesStore();
 
   useEffect(() => {
+    let active = true;
+
     containerRef?.focus();
-    onMount().then();
+    if (active) {
+      onMount().then();
+    }
 
     return () => {
-      onUnMount().then()
+      if(active) {
+        active = false;
+        onUnMount().then()
+      }
     }
   }, [])
 

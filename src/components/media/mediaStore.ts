@@ -28,6 +28,7 @@ export interface MediaStore<T extends HTMLMediaElement> {
   fullscreen: boolean
   subs: Sub[]
   setting: MediaSetting
+  settingName?: string
   defaultSetting: MediaDefault | undefined
 
   setMediaRef: (mediaRef: T | null) => void
@@ -72,6 +73,7 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
       repeat: "repeat_all",
       playList: []
     },
+    settingName: undefined,
     defaultSetting: mediaDefault,
     fullscreen: false,
     subs: [],
@@ -165,9 +167,9 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
 }
 
 interface MediaDefault {
-  settingName?: string
   shuffle?: boolean
   extensions?: string[]
+  settingName: string,
   setting: MediaSetting
 }
 

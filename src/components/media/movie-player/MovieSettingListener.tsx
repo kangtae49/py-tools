@@ -1,4 +1,4 @@
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {commands} from "@/bindings.ts";
 import {
   type MediaSetting,
@@ -7,20 +7,26 @@ import {
 import {useMoviePlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
 
 function MovieSettingListener() {
+  const [ready, setReady] = useState(false);
   const {
     setting,
     defaultSetting
   } = useMediaStore();
 
   useEffect(() => {
-    onMount().then();
+    onMount().then(() => {
+      setReady(true);
+    });
 
     return () => {
-      onUnMount().then()
+      if (ready) {
+        onUnMount().then()
+      }
     }
   }, [])
 
   useEffect(() => {
+    if(!ready) return;
     if(defaultSetting?.settingName === undefined) return;
     commands.appWrite(defaultSetting.settingName, JSON.stringify(setting, null, 2)).then()
   }, [setting])
@@ -40,6 +46,7 @@ function MovieSettingListener() {
 
 
 export const mountSetting = async () => {
+  console.log('MovieSetting mountSetting');
   const {
     setSetting,
     setCurrentTime,
@@ -55,24 +62,26 @@ export const mountSetting = async () => {
   if(defaultSetting?.settingName === undefined) return;
   let newSetting: MediaSetting | null = null;
 
-  const result = await commands.appReadFile(defaultSetting.settingName);
-  if(result.status === 'ok') {
-    newSetting = JSON.parse(result.data);
-    if (result.data === "null") {
-      newSetting = defaultSetting;
-    }
-    await commands.appWrite(defaultSetting.settingName, JSON.stringify(newSetting, null, 2))
-  } else {
-    newSetting = defaultSetting;
-    await commands.appWrite(defaultSetting.settingName, JSON.stringify(newSetting, null, 2))
-    await commands.appWriteFile(defaultSetting.settingName, JSON.stringify(newSetting, null, 2))
+  const res = await commands.appRead(defaultSetting.settingName);
+  if (res.status === 'ok') {
+    newSetting = JSON.parse(res.data);
   }
 
-  const newPlayList = newSetting?.playList ?? []
-  const newPlayPath = newSetting?.mediaPath ?? newPlayList[0];
-  const newCurrenTime = newSetting?.currentTime ?? 0;
-  const newShuffle = newSetting?.shuffle ?? false;
-  const newPaused = newSetting?.paused ?? false;
+  if (newSetting === null) {
+    const result = await commands.appReadFile(defaultSetting.settingName);
+    if(result.status === 'ok') {
+      newSetting = JSON.parse(result.data);
+      await commands.appWrite(defaultSetting.settingName, JSON.stringify(newSetting, null, 2))
+    }
+  }
+
+  if (newSetting === null) return;
+
+  const newPlayList = newSetting.playList ?? []
+  const newPlayPath = newSetting.mediaPath ?? newPlayList[0];
+  const newCurrenTime = newSetting.currentTime ?? 0;
+  const newShuffle = newSetting.shuffle ?? false;
+  const newPaused = newSetting.paused ?? false;
 
   setSetting((_setting) => ({
     ...newSetting, caller: "onMount",

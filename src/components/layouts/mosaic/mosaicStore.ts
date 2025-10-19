@@ -18,10 +18,7 @@ export const defaultLayout: MosaicNode<WinKey> = {
   second: "help"
 }
 
-export interface MosaicDefault {
-  settingName: string
-  layout: MosaicNode<WinKey> | null
-}
+
 
 export type WinKey =
   | AboutKey
@@ -69,6 +66,7 @@ export function getWinType(key: WinKey): WinType {
 
 interface MosaicStore {
   setting: MosaicSetting
+  settingName?: string
   defaultSetting: MosaicDefault | undefined
 
   viewRefs: Partial<Record<WinKey, HTMLDivElement | null>>
@@ -94,159 +92,172 @@ const setViewRef = (id: WinKey, el: HTMLDivElement | null) => {
 
  */
 
-export const useMosaicStore = create<MosaicStore>((set, get) => ({
-  mosaicValue: null,
-  viewRefs: {},
-  maxScreenView: null,
-  setting: {
-    settingName: "mosaic-layout.setting.json",
-    layout: null
-  },
-  defaultSetting: {
-    settingName: "mosaic-layout.setting.json",
-    layout: null
-  },
+function createMosaicStore(mosaicDefault?: MosaicDefault) {
+  return create<MosaicStore>((set, get) => ({
+    mosaicValue: null,
+    viewRefs: {},
+    maxScreenView: null,
+    setting: {
+      layout: null
+    },
+    defaultSetting: mosaicDefault,
+    ...mosaicDefault,
 
-  setMosaicValue: (value) => set({ mosaicValue: value }),
-  setMaxScreenView: (value) => set({ maxScreenView: value }),
-  setSetting: (updater) => {
-    set((state) => ({
-      setting:
-        typeof updater === "function" ? updater(state.setting) : updater,
-    }))
-  },
+    setMosaicValue: (value) => set({ mosaicValue: value }),
+    setMaxScreenView: (value) => set({ maxScreenView: value }),
+    setSetting: (updater) => {
+      set((state) => ({
+        setting:
+          typeof updater === "function" ? updater(state.setting) : updater,
+      }))
+    },
 
-  updateViewRef: (id, el) => {
-    if (el === null) return;
-    if (get().viewRefs[id]) return;
-    console.log("updateViewRef", id, el);
-    set((state) => ({viewRefs: { ...state.viewRefs, [id]: el }}))
-  },
-  addView: (id: WinKey) => {
-    console.log("addView", id);
-    const current = get().mosaicValue;
-    if (!current) {
-      set({ mosaicValue: id });
-      return;
-    }
+    updateViewRef: (id, el) => {
+      if (el === null) return;
+      if (get().viewRefs[id]) return;
+      console.log("updateViewRef", id, el);
+      set((state) => ({viewRefs: { ...state.viewRefs, [id]: el }}))
+    },
+    addView: (id: WinKey) => {
+      console.log("addView", id);
+      const current = get().mosaicValue;
+      if (!current) {
+        set({ mosaicValue: id });
+        return;
+      }
 
-    const collectIds = (node: MosaicNode<WinKey> | null): WinKey[] => {
-      if (!node) return [];
-      if (typeof node === 'string') return [node];
-      return [...collectIds(node.first), ...collectIds(node.second)];
-    };
-    const existingIds = collectIds(current);
+      const collectIds = (node: MosaicNode<WinKey> | null): WinKey[] => {
+        if (!node) return [];
+        if (typeof node === 'string') return [node];
+        return [...collectIds(node.first), ...collectIds(node.second)];
+      };
+      const existingIds = collectIds(current);
 
-    if (!existingIds.includes(id)) {
-      // get().mosaicValue;
+      if (!existingIds.includes(id)) {
+        // get().mosaicValue;
 
-      set({
-        mosaicValue: {
-          direction: 'row',
-          first: id,
-          second: current
+        set({
+          mosaicValue: {
+            direction: 'row',
+            first: id,
+            second: current
+          }
+        });
+        return;
+      }
+
+      const updateSplit = (node: MosaicNode<WinKey> | null): MosaicNode<WinKey> | null => {
+        if (!node) return null;
+        console.log("updateSplit", node);
+
+        if (typeof node === "string") {
+          return node;
         }
-      });
-      return;
-    }
 
-    const updateSplit = (node: MosaicNode<WinKey> | null): MosaicNode<WinKey> | null => {
-      if (!node) return null;
-      console.log("updateSplit", node);
+        const first = updateSplit(node.first);
+        const second = updateSplit(node.second);
+        if (first === null || second === null) return node;
 
-      if (typeof node === "string") {
-        return node;
+        if ((node.splitPercentage === 0 && first === id) || (node.splitPercentage === 100 && second === id)) {
+          return { ...node, splitPercentage: 50, first, second };
+        }
+
+        return {...node, first, second}
+      };
+      set({ mosaicValue: updateSplit(current) });
+      if ((document as any).webkitFullscreenElement) {
+        get().viewRefs[id]?.closest(".mosaic-window")?.requestFullscreen();
       }
 
-      const first = updateSplit(node.first);
-      const second = updateSplit(node.second);
-      if (first === null || second === null) return node;
+    },
+    removeView: (id: WinKey) => {
+      const removeNode = (node: MosaicNode<WinKey> | null): MosaicNode<WinKey> | null => {
+        if (!node) return null;
+        if (typeof node === 'string') {
+          return node === id ? null : node;
+        }
+        const first = removeNode(node.first);
+        const second = removeNode(node.second);
 
-      if ((node.splitPercentage === 0 && first === id) || (node.splitPercentage === 100 && second === id)) {
-        return { ...node, splitPercentage: 50, first, second };
-      }
+        if (!first && !second) return null;
+        if (!first) return second;
+        if (!second) return first;
 
-      return {...node, first, second}
-    };
-    set({ mosaicValue: updateSplit(current) });
-    if ((document as any).webkitFullscreenElement) {
-      get().viewRefs[id]?.closest(".mosaic-window")?.requestFullscreen();
-    }
+        return { ...node, first, second };
+      };
 
-  },
-  removeView: (id: WinKey) => {
-    const removeNode = (node: MosaicNode<WinKey> | null): MosaicNode<WinKey> | null => {
-      if (!node) return null;
-      if (typeof node === 'string') {
-        return node === id ? null : node;
-      }
-      const first = removeNode(node.first);
-      const second = removeNode(node.second);
+      const newValue = removeNode(get().mosaicValue);
+      set({ mosaicValue: newValue });
+    },
+    maximizeView: (id: WinKey) => {
+      const updateSplit = (node: MosaicNode<WinKey> | null): MosaicNode<WinKey> | null => {
+        if (!node) return null;
 
-      if (!first && !second) return null;
-      if (!first) return second;
-      if (!second) return first;
+        if (typeof node === "string") {
+          return node;
+        }
 
-      return { ...node, first, second };
-    };
+        const first = updateSplit(node.first);
+        const second = updateSplit(node.second);
 
-    const newValue = removeNode(get().mosaicValue);
-    set({ mosaicValue: newValue });
-  },
-  maximizeView: (id: WinKey) => {
-    const updateSplit = (node: MosaicNode<WinKey> | null): MosaicNode<WinKey> | null => {
-      if (!node) return null;
+        if (!first && !second) return null;
+        if (!first) return second;
+        if (!second) return first;
 
-      if (typeof node === "string") {
-        return node;
-      }
+        if (first === id) {
+          return { ...node, splitPercentage: 95, first, second };
+        } else if(second === id) {
+          return { ...node, splitPercentage: 5, first, second };
+        }
 
-      const first = updateSplit(node.first);
-      const second = updateSplit(node.second);
+        return { ...node, first, second };
+      };
 
-      if (!first && !second) return null;
-      if (!first) return second;
-      if (!second) return first;
+      set({ mosaicValue: updateSplit(get().mosaicValue) });
+    },
 
-      if (first === id) {
-        return { ...node, splitPercentage: 95, first, second };
-      } else if(second === id) {
-        return { ...node, splitPercentage: 5, first, second };
-      }
+    minimizeView: (id: WinKey) => {
+      const updateSplit = (node: MosaicNode<WinKey> | null): MosaicNode<WinKey> | null => {
+        if (!node) return null;
 
-      return { ...node, first, second };
-    };
+        if (typeof node === "string") {
+          return node;
+        }
 
-    set({ mosaicValue: updateSplit(get().mosaicValue) });
-  },
+        const first = updateSplit(node.first);
+        const second = updateSplit(node.second);
 
-  minimizeView: (id: WinKey) => {
-    const updateSplit = (node: MosaicNode<WinKey> | null): MosaicNode<WinKey> | null => {
-      if (!node) return null;
+        if (!first && !second) return null;
+        if (!first) return second;
+        if (!second) return first;
 
-      if (typeof node === "string") {
-        return node;
-      }
+        if (first === id) {
+          return { ...node, splitPercentage: 5, first, second };
+        } else if(second === id) {
+          return { ...node, splitPercentage: 95, first, second };
+        }
 
-      const first = updateSplit(node.first);
-      const second = updateSplit(node.second);
+        return { ...node, first, second };
+      };
 
-      if (!first && !second) return null;
-      if (!first) return second;
-      if (!second) return first;
+      set({ mosaicValue: updateSplit(get().mosaicValue) });
+    },
 
-      if (first === id) {
-        return { ...node, splitPercentage: 5, first, second };
-      } else if(second === id) {
-        return { ...node, splitPercentage: 95, first, second };
-      }
+  }))
+}
 
-      return { ...node, first, second };
-    };
+interface MosaicDefault {
+  settingName?: string
+  setting: MosaicSetting
+}
 
-    set({ mosaicValue: updateSplit(get().mosaicValue) });
-  },
+export const mosaicDefault: MosaicDefault = {
+  settingName: "mosaic-layout.setting.json",
+  setting: {
+    layout: null
+  }
+}
 
-}));
+export const useMosaicStore = createMosaicStore(mosaicDefault);
 
 

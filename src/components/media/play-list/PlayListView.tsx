@@ -21,7 +21,6 @@ interface Prop {
 export default function PlayListView({usePlayListStore, icon}: Prop) {
   const {
     shuffle,
-    playing,
     playPath,
     playList, setPlayList, appendPlayList,
     setPlayListRef,
@@ -35,8 +34,11 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
 
 
   useEffect(() => {
-    console.log('PlayListView', playing, playList, playPath)
   }, [])
+
+  useEffect(() => {
+    console.log('PlayListView', playList, filter[0])
+  }, [playList])
 
   useEffect(() => {
     if (playList.length === 0) return;
@@ -122,9 +124,9 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
       <div className="head">
         <div className="dialog">
           <div><input type="checkbox" onChange={(e) => toggleAllChecked(e.target.checked)}/></div>
-          <div className="icon" onClick={openDialogPlayList} title="Open Audio Files"><Icon icon={faFolderPlus}/></div>
-          <div className="icon" onClick={openDialogOpenJson} title="Open Audio Book"><Icon icon={faBookMedical}/></div>
-          <div className="icon" onClick={openDialogSaveAsJson} title="Save Audio Book"><Icon icon={faFloppyDisk}/></div>
+          <div className="icon" onClick={openDialogPlayList} title="Open Media Files"><Icon icon={faFolderPlus}/></div>
+          <div className="icon" onClick={openDialogOpenJson} title="Open Media Book"><Icon icon={faBookMedical}/></div>
+          <div className="icon" onClick={openDialogSaveAsJson} title="Save Media Book"><Icon icon={faFloppyDisk}/></div>
           <div className="icon badge-wrap"
                onClick={() => {
                  setPlayList(playList.filter((path)=> !checkedPlayList.includes(path)))

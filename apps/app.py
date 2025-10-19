@@ -61,3 +61,4 @@ def run():
     WindowEventListener(window, api)
 
     webview.start(debug=debug)
+    # webview.start(debug=False)

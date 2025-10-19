@@ -1,3 +1,5 @@
+import os
+import sys
 import json
 import string
 
@@ -32,6 +34,13 @@ class WindowEventListener:
         print('on_loaded')
         DropFilesListener(self.window)
         # add_dnd_listener(self.window)
+        # if not hasattr(sys, "_MEIPASS"):
+        #     js_code = """
+        #     const s = document.createElement('script');
+        #     s.src = "http://localhost:8097";
+        #     document.head.appendChild(s);
+        #     """
+        #     self.window.evaluate_js(js_code)
 
     def on_closing(self):
         print('closing')

@@ -6,7 +6,6 @@ import type {Sub} from "@/types/models";
 
 
 function VideoView() {
-  const [initialized, setInitialized] = useState(false);
   const [ready, setReady] = useState(false);
 
   const {
@@ -22,6 +21,18 @@ function VideoView() {
     subs,
   } = useMediaStore();
 
+  useEffect(() => {
+    return () => {
+      removeListener();
+    }
+  }, []);
+
+  useEffect(() => {
+    if(mediaRef) {
+      setReady(true);
+      onMount();
+    }
+  }, [mediaRef])
 
   useEffect(() => {
     if (!ready) return;
@@ -53,6 +64,46 @@ function VideoView() {
     }
   }, [ready, setting.paused]);
 
+
+  useEffect(() => {
+    if (mediaRef) {
+      // refresh start
+      console.log('Video View', mediaRef)
+      console.log('Video View add listener')
+      mediaRef.addEventListener("loadeddata", onloadedData);
+      mediaRef.addEventListener("loadedmetadata", onloadedMetaData);
+      mediaRef.addEventListener("timeupdate", onTimeUpdate);
+      mediaRef.addEventListener("volumechange", onVolumeChange);
+      mediaRef.addEventListener("ratechange", onRateChange);
+      mediaRef.addEventListener("play", onPlay);
+      mediaRef.addEventListener("pause", onPause);
+      mediaRef.addEventListener("ended", onEnded);
+      mediaRef.addEventListener("error", onError);
+      mediaRef.addEventListener("fullscreenchange", onFullscreenChange)
+
+    }
+
+    return () => {
+      removeListener();
+    };
+
+  }, [mediaRef])
+
+
+  useEffect(() => {
+    if (subs.length === 0) return;
+    if (setting.subType == undefined) return;
+    if (mediaRef === null) return;
+    const tracks = mediaRef?.textTracks;
+
+    for (const track of tracks) {
+      if (track.label === setting?.subType) {
+        track.mode = 'showing';
+      } else {
+        track.mode = 'hidden';
+      }
+    }
+  }, [setting.subType])
 
   const isNullPlaying = () => {
     const state = useMediaStore.getState();
@@ -160,30 +211,6 @@ function VideoView() {
     }
   }
 
-  useEffect(() => {
-    if (mediaRef) {
-      // refresh start
-      console.log('Video View', mediaRef)
-      console.log('Video View add listener')
-      mediaRef.addEventListener("loadeddata", onloadedData);
-      mediaRef.addEventListener("loadedmetadata", onloadedMetaData);
-      mediaRef.addEventListener("timeupdate", onTimeUpdate);
-      mediaRef.addEventListener("volumechange", onVolumeChange);
-      mediaRef.addEventListener("ratechange", onRateChange);
-      mediaRef.addEventListener("play", onPlay);
-      mediaRef.addEventListener("pause", onPause);
-      mediaRef.addEventListener("ended", onEnded);
-      mediaRef.addEventListener("error", onError);
-      mediaRef.addEventListener("fullscreenchange", onFullscreenChange)
-
-    }
-
-    return () => {
-      removeListener();
-    };
-
-  }, [mediaRef])
-
 
   const removeListener = () => {
     if (mediaRef) {
@@ -205,21 +232,7 @@ function VideoView() {
     loadSrc();
   }
 
-  useEffect(() => {
-    if(initialized && mediaRef) {
-        setReady(true);
-        onMount();
-    }
-  }, [initialized, mediaRef])
 
-  useEffect(() => {
-    if (!initialized) {
-      setInitialized(true);
-    }
-    return () => {
-      removeListener();
-    }
-  }, []);
 
   const isDefaultSub = (sub: Sub) => {
     if (subs.length == 0) return false;
@@ -227,20 +240,6 @@ function VideoView() {
     return state.setting?.subType == sub.subtype;
   }
 
-  useEffect(() => {
-    if (subs.length === 0) return;
-    if (setting.subType == undefined) return;
-    if (mediaRef === null) return;
-    const tracks = mediaRef?.textTracks;
-
-    for (const track of tracks) {
-      if (track.label === setting?.subType) {
-        track.mode = 'showing';
-      } else {
-        track.mode = 'hidden';
-      }
-    }
-  }, [setting.subType])
 
   return (
     <video

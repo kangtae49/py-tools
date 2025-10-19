@@ -5,15 +5,22 @@ import {
 } from "@/components/media/mediaStore.ts";
 import {commands} from "@/bindings.ts";
 import {PLAYER_SETTING} from "./MusicPlayerView.tsx";
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
 
 function MusicSettingListener() {
-  const [initialized, setInitialized] = useState(false);
 
   const {
     setting,
   } = useMediaStore();
+
+  useEffect(() => {
+    onMount().then();
+
+    return () => {
+      onUnMount().then()
+    }
+  }, [])
 
   useEffect(() => {
     const {ready} = useMediaStore.getState();
@@ -29,20 +36,9 @@ function MusicSettingListener() {
   }
 
   const onUnMount = async () => {
-    console.log('onUnMount', initialized)
+    console.log('onUnMount')
     await unMountSetting()
   }
-
-  useEffect(() => {
-    if (!initialized) {
-      setInitialized(true);
-      onMount().then();
-    }
-
-    return () => {
-      onUnMount().then()
-    }
-  }, [])
 
   return null
 }

@@ -16,7 +16,7 @@ import {
   faShuffle,
 } from "@fortawesome/free-solid-svg-icons";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
-import React, {useEffect, useState} from "react";
+import React, {useEffect} from "react";
 import {commands} from "@/bindings.ts";
 import {
   type PictureSetting,
@@ -34,7 +34,6 @@ interface Prop {
 }
 
 export default function PicturePlayerView({winKey: _}: Prop) {
-  const [initialized, setInitialized] = useState(false);
 
   const {
     pictureRef, setPictureRef,
@@ -62,6 +61,98 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     dropRef,
   } = useReceivedDropFilesStore();
 
+  useEffect(() => {
+    containerRef?.focus();
+    onMount().then(() => {
+      setReady(true);
+    });
+
+    return () => {
+      onUnMount().then()
+    }
+  }, [])
+
+  useEffect(() => {
+    const onDropFullPathHandler = (e: CustomEvent) => {
+      setDropRef(null);
+      console.log('onDropFullPathHandler', dropRef);
+      const newDropFiles = e.detail as DropFile[];
+      let files = newDropFiles
+        .filter((file) => file.type.startsWith("image/"))
+      if (filter.length > 0) {
+        files = files.filter((file) => filter.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
+      }
+      const fullpathFiles = files.map((file) => file.pywebview_full_path);
+      if (fullpathFiles.length == 0) {
+        return;
+      }
+      if (dropRef?.classList.contains('drop-top')){
+        console.log('drop-top');
+        if (fullpathFiles.length == 1) {
+          onDropPlayPath(fullpathFiles[0])
+        } else {
+          onDropPlayList(fullpathFiles)
+        }
+      } else if (dropRef?.classList.contains('drop-list')) {
+        console.log('drop-list');
+        onDropPlayList(fullpathFiles);
+      }
+    }
+    dropRef?.addEventListener("drop-files", onDropFullPathHandler as EventListener)
+    return () => {
+      console.log('remove onDropTopHandler', dropRef);
+      dropRef?.removeEventListener("drop-files", onDropFullPathHandler as EventListener)
+    }
+  }, [dropRef])
+
+
+  const onMount = async () => {
+    console.log('onMount')
+    const result = await commands.appReadFile(PLAYER_SETTING);
+    let newSetting: PictureSetting | null;
+
+    if(result.status === 'ok') {
+      newSetting = JSON.parse(result.data);
+      if (result.data === "null") {
+        newSetting = pictureDefault.setting ?? null;
+      }
+      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
+        console.log(result.status, 'appWrite', PLAYER_SETTING);
+      })
+    } else {
+      newSetting = pictureDefault.setting ?? null;
+      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
+        console.log(result.status, 'appWrite', PLAYER_SETTING);
+      })
+      commands.appWriteFile(PLAYER_SETTING, "null").then((result) => {
+        console.log(result.status, 'appWriteFile', PLAYER_SETTING);
+      })
+    }
+    if (newSetting !== null) {
+      const newPlayList = newSetting.playList ?? []
+      const newPlayPath = newSetting.playPath ?? newPlayList[0];
+      const newPaused  = newSetting.paused ?? false
+      setSetting((_setting) => ({...newSetting, caller: "onMount", playPath: newPlayPath}))
+      setPlayList(newPlayList)
+      setPlaying(!newPaused)
+      setSelectionBegin(newPlayPath)
+    }
+
+  }
+
+  const onUnMount = async () => {
+    const ready = usePictureStore.getState().ready;
+    console.log('onUnMount', ready)
+    if (ready) {
+      commands.appRead(PLAYER_SETTING).then((result) => {
+        if (result.status === 'ok') {
+          commands.appWriteFile(PLAYER_SETTING, "{}").then((result) => {
+            console.log(result.status, 'appWriteFile', PLAYER_SETTING);
+          })
+        }
+      })
+    }
+  }
 
 
   const clickTogglePlay = async () => {
@@ -124,102 +215,6 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     console.log('setSetting onDropPlayList')
     setSetting((setting) => ({...setting, caller: "onDropPlayList", playList: newPlayList}))
   }
-
-  useEffect(() => {
-    const onDropFullPathHandler = (e: CustomEvent) => {
-      setDropRef(null);
-      console.log('onDropFullPathHandler', dropRef);
-      const newDropFiles = e.detail as DropFile[];
-      let files = newDropFiles
-        .filter((file) => file.type.startsWith("image/"))
-      if (filter.length > 0) {
-        files = files.filter((file) => filter.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
-      }
-      const fullpathFiles = files.map((file) => file.pywebview_full_path);
-      if (fullpathFiles.length == 0) {
-        return;
-      }
-      if (dropRef?.classList.contains('drop-top')){
-        console.log('drop-top');
-        if (fullpathFiles.length == 1) {
-          onDropPlayPath(fullpathFiles[0])
-        } else {
-          onDropPlayList(fullpathFiles)
-        }
-      } else if (dropRef?.classList.contains('drop-list')) {
-        console.log('drop-list');
-        onDropPlayList(fullpathFiles);
-      }
-    }
-    dropRef?.addEventListener("drop-files", onDropFullPathHandler as EventListener)
-    return () => {
-      console.log('remove onDropTopHandler', dropRef);
-      dropRef?.removeEventListener("drop-files", onDropFullPathHandler as EventListener)
-    }
-  }, [dropRef])
-
-  const onMount = async () => {
-    console.log('onMount')
-    const result = await commands.appReadFile(PLAYER_SETTING);
-    let newSetting: PictureSetting | null;
-
-    if(result.status === 'ok') {
-      newSetting = JSON.parse(result.data);
-      if (result.data === "null") {
-        newSetting = pictureDefault.setting ?? null;
-      }
-      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-        console.log(result.status, 'appWrite', PLAYER_SETTING);
-      })
-    } else {
-      newSetting = pictureDefault.setting ?? null;
-      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-        console.log(result.status, 'appWrite', PLAYER_SETTING);
-      })
-      commands.appWriteFile(PLAYER_SETTING, "null").then((result) => {
-        console.log(result.status, 'appWriteFile', PLAYER_SETTING);
-      })
-    }
-    if (newSetting !== null) {
-      const newPlayList = newSetting.playList ?? []
-      const newPlayPath = newSetting.playPath ?? newPlayList[0];
-      const newPaused  = newSetting.paused ?? false
-      setSetting((_setting) => ({...newSetting, caller: "onMount", playPath: newPlayPath}))
-      setPlayList(newPlayList)
-      setPlaying(!newPaused)
-      setSelectionBegin(newPlayPath)
-    }
-
-  }
-
-  const onUnMount = async () => {
-    const ready = usePictureStore.getState().ready;
-    console.log('onUnMount', ready)
-    if (ready) {
-      commands.appRead(PLAYER_SETTING).then((result) => {
-        if (result.status === 'ok') {
-          commands.appWriteFile(PLAYER_SETTING, "{}").then((result) => {
-            console.log(result.status, 'appWriteFile', PLAYER_SETTING);
-          })
-        }
-      })
-    }
-  }
-
-
-  useEffect(() => {
-    if (!initialized) {
-      setInitialized(true);
-      containerRef?.focus();
-      onMount().then(() => {
-        setReady(true);
-      });
-    }
-
-    return () => {
-      onUnMount().then()
-    }
-  }, [])
 
   return (
     <div className={`widget picture-player`}

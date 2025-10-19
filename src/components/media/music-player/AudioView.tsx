@@ -4,7 +4,6 @@ import {srcLocal} from "@/components/utils.ts";
 
 
 function AudioView() {
-  const [initialized, setInitialized] = useState(false);
   const [ready, setReady] = useState(false);
 
   const {
@@ -17,6 +16,43 @@ function AudioView() {
     setting, setSetting,
   } = useMediaStore();
 
+
+
+  useEffect(() => {
+    return () => {
+      removeListener();
+    }
+  }, []);
+
+  useEffect(() => {
+    if(mediaRef) {
+      setReady(true);
+      onMount();
+    }
+  }, [mediaRef])
+
+  useEffect(() => {
+    if (mediaRef) {
+      // refresh start
+      console.log('Audio View', mediaRef)
+      console.log('Audio View add listener')
+      mediaRef.addEventListener("loadeddata", onloadedData);
+      mediaRef.addEventListener("loadedmetadata", onloadedMetaData);
+      mediaRef.addEventListener("timeupdate", onTimeUpdate);
+      mediaRef.addEventListener("volumechange", onVolumeChange);
+      mediaRef.addEventListener("ratechange", onRateChange);
+      mediaRef.addEventListener("play", onPlay);
+      mediaRef.addEventListener("pause", onPause);
+      mediaRef.addEventListener("ended", onEnded);
+      mediaRef.addEventListener("error", onError);
+
+    }
+
+    return () => {
+      removeListener();
+    };
+
+  }, [mediaRef])
 
   useEffect(() => {
     if (!ready) return;
@@ -46,8 +82,7 @@ function AudioView() {
         mediaRef.play().then();
       }
     }
-  }, [ready, setting.paused]);
-
+  }, [ready, setting.paused])
 
   const isNullPlaying = () => {
     const state = useMediaStore.getState();
@@ -134,29 +169,6 @@ function AudioView() {
   const onPlay = () => {}
   const onPause = () => {}
   const onError = () => {}
-  useEffect(() => {
-    if (mediaRef) {
-      // refresh start
-      console.log('Audio View', mediaRef)
-      console.log('Audio View add listener')
-      mediaRef.addEventListener("loadeddata", onloadedData);
-      mediaRef.addEventListener("loadedmetadata", onloadedMetaData);
-      mediaRef.addEventListener("timeupdate", onTimeUpdate);
-      mediaRef.addEventListener("volumechange", onVolumeChange);
-      mediaRef.addEventListener("ratechange", onRateChange);
-      mediaRef.addEventListener("play", onPlay);
-      mediaRef.addEventListener("pause", onPause);
-      mediaRef.addEventListener("ended", onEnded);
-      mediaRef.addEventListener("error", onError);
-
-    }
-
-    return () => {
-      removeListener();
-    };
-
-  }, [mediaRef])
-
 
   const removeListener = () => {
     if (mediaRef) {
@@ -176,22 +188,6 @@ function AudioView() {
   const onMount = () => {
     loadSrc();
   }
-
-  useEffect(() => {
-    if(initialized && mediaRef) {
-        setReady(true);
-        onMount();
-    }
-  }, [initialized, mediaRef])
-
-  useEffect(() => {
-    if (!initialized) {
-      setInitialized(true);
-    }
-    return () => {
-      removeListener();
-    }
-  }, []);
 
   return (
     <audio

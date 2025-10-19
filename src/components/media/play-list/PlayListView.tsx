@@ -33,6 +33,18 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     filter,
   } = usePlayListStore();
 
+
+  useEffect(() => {
+    console.log('PlayListView', playing, playList, playPath)
+  }, [])
+
+  useEffect(() => {
+    if (playList.length === 0) return;
+    const shuffledPlayList = shuffle ? shufflePlayList(playList) : natsortPlayList(playList);
+    setPlayList(shuffledPlayList);
+  }, [shuffle])
+
+
   const openDialogPlayList = async () => {
     const filter_ext = filter.map((ext)=> `*.${ext}`).join(";") // *.mp3;*.wav;*.ogg;*.m4a;*.opus;*.webm
     commands.dialogOpen({
@@ -104,20 +116,6 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
       }
     })
   }
-
-
-
-
-  useEffect(() => {
-    if (playList.length === 0) return;
-    const shuffledPlayList = shuffle ? shufflePlayList(playList) : natsortPlayList(playList);
-    setPlayList(shuffledPlayList);
-  }, [shuffle])
-
-  useEffect(() => {
-    console.log('PlayListView', playing, playList, playPath)
-  }, [])
-
 
   return (
     <div className="play-list">

@@ -1,5 +1,5 @@
 import "./MoviePlayerView.css"
-import React, {useEffect, useState} from "react";
+import React, {useEffect} from "react";
 import {formatSeconds, srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts"
 import toast from "react-hot-toast";
@@ -35,8 +35,6 @@ interface Prop {
 }
 
 export default function MoviePlayerView({winKey: _}: Prop) {
-  const [initialized, setInitialized] = useState(false);
-
   const {
     mediaRef,
     containerRef, setContainerRef,
@@ -64,88 +62,20 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     setDropRef,
   } = useReceivedDropFilesStore();
 
-  const clickVideo = (e: React.MouseEvent) => {
-    const state = useMediaStore.getState();
-    if (!state.fullscreen) {
-      const newPaused = !setting.paused;
-      setSetting((setting) => ({...setting, caller: "clickVideo", paused: newPaused}))
+  useEffect(() => {
+    containerRef?.focus();
+    onMount().then(() => {
+      setReady(true);
+    });
+
+    return () => {
+      onUnMount().then()
     }
-    console.log('clickVideo', e);
-  }
+  }, [])
 
-  const onChangeSub = (e: ClickEvent) => {
-    const subType = e.value;
-    changeAllTrackMode('disabled');
-    let newSubType = undefined;
-    if (subType !== '') newSubType = subType;
-    setSetting((setting) => ({...setting, caller: "clickSubType", subType: newSubType}))
-  }
-
-  const clickTogglePlay = async () => {
-    const newPaused = !setting.paused
-    setSetting((setting) => ({...setting, caller: "clickTogglePlay", paused: newPaused}))
-  }
-
-  const playPrev = () => {
-    const setting = useMediaStore.getState().setting;
-    const newPlayPath = getPrevPlayPath(setting.mediaPath);
-    console.log('setSetting playPrev')
-    setPlayPath(newPlayPath)
-    setCurrentTime(0)
-  }
-
-  const playNext = () => {
-    const setting = useMediaStore.getState().setting;
-    const newPlayPath = getNextPlayPath(setting.mediaPath);
-    console.log('setSetting playNext')
-    setPlayPath(newPlayPath)
-    setCurrentTime(0)
-  }
-
-  const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    if (e.key === "F11") {
-      console.log('F11')
-      toggleFullscreen().then()
-    }
-    const onKeyDownPlayList = usePlayListStore.getState().onKeyDownPlayList
-    onKeyDownPlayList(e);
-
-  }
-
-  const toggleFullscreen = async () => {
-    const fullscreen = useMediaStore.getState().fullscreen;
-    if (fullscreen) {
-      await document.exitFullscreen();
-    } else {
-      await mediaRef?.requestFullscreen()
-    }
-  }
-
-  const toggleMute= (_e: React.MouseEvent ) => {
-    const { setting } = useMediaStore.getState()
-    const newMuted = !setting.muted;
-    let newVolume = setting.volume ?? 0;
-    if(!newMuted && setting.volume === 0) {
-      newVolume = 0.5;
-    }
-    setSetting((setting) => ({...setting, caller: "mute click", muted: newMuted, volume: newVolume}))
-    changeMuted(newMuted)
-    changeVolume(newVolume)
-  }
-
-  const onChangeSpeed = (value: string) => {
-    const v = Number(value)
-    setSetting((setting) => ({...setting, caller: "clickSpeed", playbackRate: v}))
-    changePlaybackRate(v);
-  }
-
-  const onChangeVolume= (value: string) => {
-    let v = Number(value);
-    console.log('change volume', v);
-    setSetting((setting) => ({...setting, caller: "input range", volume: v}));
-    changeVolume(v);
-  }
+  useEffect(() => {
+    console.log('ready', ready)
+  }, [ready])
 
   useEffect(() => {
     if(!ready) return;
@@ -265,9 +195,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     }
   }, [ended])
 
-  useEffect(() => {
-    console.log('ready', ready)
-  }, [ready])
 
   const onMount = async () => {
     console.log('onMount')
@@ -277,19 +204,92 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     console.log('onUnMount', ready)
   }
 
-  useEffect(() => {
-    if (!initialized) {
-      setInitialized(true);
-      containerRef?.focus();
-      onMount().then(() => {
-        setReady(true);
-      });
-    }
 
-    return () => {
-      onUnMount().then()
+  const clickTogglePlay = async () => {
+    const newPaused = !setting.paused
+    setSetting((setting) => ({...setting, caller: "clickTogglePlay", paused: newPaused}))
+  }
+
+  const playPrev = () => {
+    const setting = useMediaStore.getState().setting;
+    const newPlayPath = getPrevPlayPath(setting.mediaPath);
+    console.log('setSetting playPrev')
+    setPlayPath(newPlayPath)
+    setCurrentTime(0)
+  }
+
+  const playNext = () => {
+    const setting = useMediaStore.getState().setting;
+    const newPlayPath = getNextPlayPath(setting.mediaPath);
+    console.log('setSetting playNext')
+    setPlayPath(newPlayPath)
+    setCurrentTime(0)
+  }
+
+  const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    if (e.key === "F11") {
+      console.log('F11')
+      toggleFullscreen().then()
     }
-  }, [])
+    const onKeyDownPlayList = usePlayListStore.getState().onKeyDownPlayList
+    onKeyDownPlayList(e);
+
+  }
+
+  const toggleFullscreen = async () => {
+    const fullscreen = useMediaStore.getState().fullscreen;
+    if (fullscreen) {
+      await document.exitFullscreen();
+    } else {
+      await mediaRef?.requestFullscreen()
+    }
+  }
+
+  const toggleMute= (_e: React.MouseEvent ) => {
+    const { setting } = useMediaStore.getState()
+    const newMuted = !setting.muted;
+    let newVolume = setting.volume ?? 0;
+    if(!newMuted && setting.volume === 0) {
+      newVolume = 0.5;
+    }
+    setSetting((setting) => ({...setting, caller: "mute click", muted: newMuted, volume: newVolume}))
+    changeMuted(newMuted)
+    changeVolume(newVolume)
+  }
+
+  const onChangeSpeed = (value: string) => {
+    const v = Number(value)
+    setSetting((setting) => ({...setting, caller: "clickSpeed", playbackRate: v}))
+    changePlaybackRate(v);
+  }
+
+  const onChangeVolume= (value: string) => {
+    let v = Number(value);
+    console.log('change volume', v);
+    setSetting((setting) => ({...setting, caller: "input range", volume: v}));
+    changeVolume(v);
+  }
+
+  const clickVideo = (e: React.MouseEvent) => {
+    const state = useMediaStore.getState();
+    if (!state.fullscreen) {
+      const newPaused = !setting.paused;
+      setSetting((setting) => ({...setting, caller: "clickVideo", paused: newPaused}))
+    }
+    console.log('clickVideo', e);
+  }
+
+  const onChangeSub = (e: ClickEvent) => {
+    const subType = e.value;
+    changeAllTrackMode('disabled');
+    let newSubType = undefined;
+    if (subType !== '') newSubType = subType;
+    setSetting((setting) => ({...setting, caller: "clickSubType", subType: newSubType}))
+  }
+
+
+
   return (
     <div className={`widget movie-player`}
          ref={setContainerRef}

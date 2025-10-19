@@ -1,5 +1,5 @@
 import './MosaicLayoutView.css'
-import React, {type JSX, useEffect, useState} from "react";
+import React, {type JSX, useEffect} from "react";
 import AboutView from "@/components/about/AboutView.tsx";
 import HelpView from "@/components/help/HelpView.tsx";
 import {DefaultToolbarButton, Mosaic, MosaicWindow} from "react-mosaic-component";
@@ -28,7 +28,6 @@ interface TitleInfo {
 
 
 function MosaicLayoutView() {
-  const [initialized, setInitialized] = useState(false);
   const ELEMENT_MAP: Record<WinType, TitleInfo> = {
     "about": {
       title: "About",
@@ -80,6 +79,22 @@ function MosaicLayoutView() {
     setReady,
   } = useMosaicStore();
 
+  useEffect(() => {
+    onMount().then(() => {
+      setReady(true);
+    });
+    return () => {
+      onUnMount().then();
+    }
+  }, [])
+
+  useEffect(() => {
+    console.log('mosaicValue', mosaicValue);
+    commands.appWrite(MOSAIC_LAYOUT_SETTING, JSON.stringify(mosaicValue, null, 2)).then((result) => {
+      console.log(result.status, 'appWrite', MOSAIC_LAYOUT_SETTING);
+    })
+  }, [mosaicValue])
+
   const toggleMaximizeView = async (e: React.MouseEvent, id: WinKey) => {
     if (document.fullscreenElement) {
       document.exitFullscreen().then(()=>{
@@ -130,18 +145,6 @@ function MosaicLayoutView() {
     })
   }, [mosaicValue])
 
-
-  useEffect(() => {
-    if (!initialized) {
-      setInitialized(true);
-      onMount().then(() => {
-        setReady(true);
-      });
-    }
-    return () => {
-      onUnMount().then();
-    }
-  }, [])
 
   return (
     <Mosaic<WinKey>

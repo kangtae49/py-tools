@@ -26,7 +26,7 @@ function PlayListRowView({
   const {
     playPath, setPlayPath,
     playing,
-    playList, removePlayList,
+    playList, removePlayList, setPlayList,
     selectionBegin, setSelectionBegin,
     checkedPlayList,
     appendCheckedPlayList, removeCheckedPlayList,
@@ -39,7 +39,8 @@ function PlayListRowView({
     setSelectionBegin(path)
   }
   const clickRemovePlayPath = (path: string) => {
-    removePlayList(playList, [path]);
+    const newPlayList = removePlayList(playList, [path]);
+    setPlayList(newPlayList);
     removeCheckedPlayList([path]);
   }
 

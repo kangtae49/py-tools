@@ -7,7 +7,7 @@ import type {StoreApi} from "zustand/vanilla";
 import {
   type PlayListStore,
 } from "@/components/media/play-list/playListStore.ts";
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {getFilename} from "@/components/utils.ts";
 import {FontAwesomeIcon as Icon} from "@fortawesome/react-fontawesome";
 import {faBookMedical, faFloppyDisk, faFolderPlus, faTrashCan} from "@fortawesome/free-solid-svg-icons";
@@ -19,6 +19,7 @@ interface Prop {
   icon?: React.ReactElement,
 }
 export default function PlayListView({usePlayListStore, icon}: Prop) {
+  const [isInitialized, setIsInitialized] = useState(false);
   const {
     shuffle,
     playPath,
@@ -32,9 +33,37 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     filter,
   } = usePlayListStore();
 
-
   useEffect(() => {
+    let active = false;
+    const controller = new AbortController();
+    onMount(controller.signal, () => {active = true;})
+
+    return () => {
+      controller.abort();
+      if (active) {
+        onUnMount().then()
+      }
+    }
   }, [])
+
+  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
+    console.log('onMount', signal)
+    await Promise.resolve();
+
+    if(signal?.aborted) {
+      console.log('onMount Aborted')
+      return;
+    }
+
+    // do something
+    onComplete();
+    setIsInitialized(true)
+    console.log('onMount Completed')
+  }
+
+  const onUnMount = async () => {
+    console.log('onUnMount')
+  }
 
   useEffect(() => {
     console.log('PlayListView', playList, filter[0])
@@ -122,6 +151,7 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     })
   }
 
+  if (!isInitialized) return null;
   return (
     <div className="play-list">
       <div className="head">

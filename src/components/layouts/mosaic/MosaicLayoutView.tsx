@@ -1,5 +1,5 @@
 import './MosaicLayoutView.css'
-import React, {type JSX, useEffect} from "react";
+import React, {type JSX, useEffect, useState} from "react";
 import AboutView from "@/components/about/AboutView.tsx";
 import HelpView from "@/components/help/HelpView.tsx";
 import {DefaultToolbarButton, Mosaic, MosaicWindow} from "react-mosaic-component";
@@ -25,6 +25,8 @@ interface TitleInfo {
 
 
 function MosaicLayoutView() {
+  const [isInitialized, setIsInitialized] = useState(false);
+
   const ELEMENT_MAP: Record<WinType, TitleInfo> = {
     "about": {
       title: "About",
@@ -77,11 +79,41 @@ function MosaicLayoutView() {
   } = useMosaicStore();
 
   useEffect(() => {
+    let active = false;
+    const controller = new AbortController();
+    onMount(controller.signal, () => {active = true;})
+
+    return () => {
+      controller.abort();
+      if (active) {
+        onUnMount().then()
+      }
+    }
   }, [])
 
   useEffect(() => {
     setSetting((setting) => ({...setting, layout: mosaicValue}))
   }, [mosaicValue])
+
+  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
+    console.log('onMount', signal)
+    await Promise.resolve();
+
+    if(signal?.aborted) {
+      console.log('onMount Aborted')
+      return;
+    }
+
+    // do something
+    onComplete();
+    setIsInitialized(true)
+    console.log('onMount Completed')
+  }
+
+  const onUnMount = async () => {
+    console.log('onUnMount')
+  }
+
 
   const toggleMaximizeView = async (e: React.MouseEvent, id: WinKey) => {
     if (document.fullscreenElement) {
@@ -93,7 +125,7 @@ function MosaicLayoutView() {
       setMaxScreenView(id)
     }
   }
-
+  if (!isInitialized) return null;
   return (
     <>
       <MosaicSettingListener />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faCircleXmark,
@@ -23,6 +23,7 @@ function PlayListRowView({
   usePlayListStore,
   icon,
 }: RowComponentProps<Prop>) {
+  const [isInitialized, setIsInitialized] = useState(false);
   const {
     playPath, setPlayPath,
     playing,
@@ -31,6 +32,38 @@ function PlayListRowView({
     checkedPlayList,
     appendCheckedPlayList, removeCheckedPlayList,
   } = usePlayListStore();
+
+  useEffect(() => {
+    let active = false;
+    const controller = new AbortController();
+    onMount(controller.signal, () => {active = true;})
+
+    return () => {
+      controller.abort();
+      if (active) {
+        onUnMount().then()
+      }
+    }
+  }, [])
+
+  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
+    console.log('onMount', signal)
+    await Promise.resolve();
+
+    if(signal?.aborted) {
+      console.log('onMount Aborted')
+      return;
+    }
+
+    // do something
+    onComplete();
+    setIsInitialized(true)
+    console.log('onMount Completed')
+  }
+
+  const onUnMount = async () => {
+    console.log('onUnMount')
+  }
 
   const clickPlayPath = (path: string) => {
     console.log('clickPlayPath', path)
@@ -55,6 +88,7 @@ function PlayListRowView({
   const isChecked = checkedPlayList.includes(playList[index]);
   const isSelected = playList[index] === selectionBegin;
 
+  if (!isInitialized) return null;
   return (
     <div className={`row ${isSelected ? 'selected': ''} ${isPlayPath ? 'playing' : ''}`} style={style}>
       <div className={`title  ${(playing && isPlayPath) ? 'playing' : ''}`}

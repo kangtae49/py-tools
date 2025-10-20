@@ -1,6 +1,6 @@
 import "./PictureGridView.css"
-import {Grid} from "react-window";
 import React, {useEffect, useState} from "react";
+import {Grid} from "react-window";
 import type {UseBoundStore} from "zustand";
 import type {StoreApi} from "zustand/vanilla";
 import {
@@ -24,7 +24,7 @@ function PictureGridView({
   width,
   height,
 }: Prop) {
-  const [ready, setReady] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const {setting, setSetting} = usePictureStore();
   const {playList} = usePlayListStore()
 
@@ -36,20 +36,33 @@ function PictureGridView({
   const gridHeight = height - SLIDER_SIZE;
 
   useEffect(() => {
-    onMount().then(() => {
-      setReady(true);
-    });
+    let active = false;
+    const controller = new AbortController();
+    onMount(controller.signal, () => {active = true;})
 
     return () => {
-      if (ready) {
+      controller.abort();
+      if (active) {
         onUnMount().then()
       }
     }
   }, [])
 
-  const onMount = async () => {
-    console.log('onMount')
+  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
+    console.log('onMount', signal)
+    await Promise.resolve();
+
+    if(signal?.aborted) {
+      console.log('onMount Aborted')
+      return;
+    }
+
+    // do something
+    onComplete();
+    setIsInitialized(true)
+    console.log('onMount Completed')
   }
+
   const onUnMount = async () => {
     console.log('onUnMount')
   }
@@ -101,8 +114,9 @@ function PictureGridView({
 
   const columnCount = getColumnCount();
   const rowCount = getRowCount();
-  console.log('checked', setting, setting.sliderCheck)
   // console.log('size', width, height, gridWidth, gridHeight, setting.sliderWidth, setting.sliderHeight, getColumnCount(), getRowCount())
+  // console.log('checked', setting, setting.sliderCheck)
+  if (!isInitialized) return null;
   return (
   <div className="picture-grid" style={{width: width, height: height}}>
     <div className="slider-wrap-w">

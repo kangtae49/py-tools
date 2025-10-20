@@ -29,3 +29,6 @@ export function mergeRefs<T>(...refs: (Ref<T> | undefined)[]): RefCallback<T> {
   };
 }
 
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

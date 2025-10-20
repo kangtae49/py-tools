@@ -1,9 +1,10 @@
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {useAudioStore as useMediaStore} from "../mediaStore.ts";
 import {srcLocal} from "@/components/utils.ts";
 
 
 function AudioView() {
+  const [isInitialized, setIsInitialized] = useState(false);
   const {
     mediaRef, setMediaRef,
     setCurrentTime, changeCurrentTime,
@@ -15,8 +16,17 @@ function AudioView() {
   } = useMediaStore();
 
   useEffect(() => {
-    onMount();
-  }, []);
+    let active = false;
+    const controller = new AbortController();
+    onMount(controller.signal, () => {active = true;})
+
+    return () => {
+      controller.abort();
+      if (active) {
+        onUnMount().then()
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (mediaRef) {
@@ -68,6 +78,27 @@ function AudioView() {
       }
     }
   }, [setting.paused])
+
+  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
+    console.log('onMount', signal)
+    await Promise.resolve();
+
+    if(signal?.aborted) {
+      console.log('onMount Aborted')
+      return;
+    }
+
+    // do something
+    loadSrc();
+
+    onComplete();
+    setIsInitialized(true)
+    console.log('onMount Completed')
+  }
+
+  const onUnMount = async () => {
+    console.log('onUnMount')
+  }
 
   const isNullPlaying = () => {
     const state = useMediaStore.getState();
@@ -170,10 +201,7 @@ function AudioView() {
 
   }
 
-  const onMount = () => {
-    loadSrc();
-  }
-
+  if (!isInitialized) return null;
   return (
     <audio
       ref={setMediaRef}

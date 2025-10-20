@@ -31,7 +31,7 @@ interface Prop {
 }
 
 export default function MoviePlayerView({winKey: _}: Prop) {
-  const [ready, setReady] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const {
     mediaRef,
     containerRef, setContainerRef,
@@ -59,13 +59,14 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   } = useReceivedDropFilesStore();
 
   useEffect(() => {
+    let active = false;
+    const controller = new AbortController();
     containerRef?.focus();
-    onMount().then(() => {
-      setReady(true);
-    });
+    onMount(controller.signal, () => {active = true;})
 
     return () => {
-      if (ready) {
+      controller.abort();
+      if (active) {
         onUnMount().then()
       }
     }
@@ -185,8 +186,20 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }, [ended])
 
 
-  const onMount = async () => {
-    console.log('onMount')
+  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
+    console.log('onMount', signal)
+    await Promise.resolve();
+
+    if(signal?.aborted) {
+      console.log('onMount Aborted')
+      return;
+    }
+
+    // do something
+
+    onComplete();
+    setIsInitialized(true)
+    console.log('onMount Completed')
   }
 
   const onUnMount = async () => {
@@ -278,7 +291,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
 
-
+  if (!isInitialized) return null;
   return (
     <>
       <MovieDropListener/>

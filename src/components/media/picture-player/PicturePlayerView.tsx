@@ -1,4 +1,5 @@
 import "./PicturePlayerView.css"
+import React, {useEffect, useState} from "react";
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 import {SplitPane} from "@rexxars/react-split-pane";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -16,7 +17,7 @@ import {
   faShuffle,
 } from "@fortawesome/free-solid-svg-icons";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
-import React, {useEffect, useState} from "react";
+
 import {
   usePictureStore,
 } from "./pictureStore.ts";
@@ -28,7 +29,7 @@ interface Prop {
 }
 
 export default function PicturePlayerView({winKey: _}: Prop) {
-  const [ready, setReady] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const {
     pictureRef, setPictureRef,
     // setting,
@@ -47,13 +48,14 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   } = useReceivedDropFilesStore();
 
   useEffect(() => {
+    let active = false;
+    const controller = new AbortController();
     containerRef?.focus();
-    onMount().then(() => {
-      setReady(true);
-    });
+    onMount(controller.signal, () => {active = true;})
 
     return () => {
-      if (ready) {
+      controller.abort();
+      if (active) {
         onUnMount().then()
       }
     }
@@ -61,8 +63,20 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
 
 
-  const onMount = async () => {
-    console.log('onMount')
+  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
+    console.log('onMount', signal)
+    await Promise.resolve();
+
+    if(signal?.aborted) {
+      console.log('onMount Aborted')
+      return;
+    }
+
+    // do something
+
+    onComplete();
+    setIsInitialized(true)
+    console.log('onMount Completed')
   }
 
   const onUnMount = async () => {
@@ -110,7 +124,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   }
 
 
-
+  if (!isInitialized) return null;
   return (
     <div className={`widget picture-player`}
          ref={setContainerRef}

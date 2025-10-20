@@ -1,4 +1,4 @@
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {useVideoStore as useMediaStore} from "../mediaStore.ts";
 import {srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts";
@@ -6,7 +6,7 @@ import type {Sub} from "@/types/models";
 
 
 function VideoView() {
-
+  const [isInitialized, setIsInitialized] = useState(false);
   const {
     mediaRef, setMediaRef,
     containerRef,
@@ -21,8 +21,18 @@ function VideoView() {
   } = useMediaStore();
 
   useEffect(() => {
-    onMount();
-  }, []);
+    let active = false;
+    const controller = new AbortController();
+    containerRef?.focus();
+    onMount(controller.signal, () => {active = true;})
+
+    return () => {
+      controller.abort();
+      if (active) {
+        onUnMount().then()
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (mediaRef) {
@@ -90,6 +100,27 @@ function VideoView() {
       }
     }
   }, [setting.subType])
+
+  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
+    console.log('onMount', signal)
+    await Promise.resolve();
+
+    if(signal?.aborted) {
+      console.log('onMount Aborted')
+      return;
+    }
+
+    // do something
+    loadSrc();
+
+    onComplete();
+    setIsInitialized(true)
+    console.log('onMount Completed')
+  }
+
+  const onUnMount = async () => {
+    console.log('onUnMount')
+  }
 
   const isNullPlaying = () => {
     const state = useMediaStore.getState();
@@ -214,9 +245,7 @@ function VideoView() {
 
   }
 
-  const onMount = () => {
-    loadSrc();
-  }
+
 
 
 
@@ -226,7 +255,7 @@ function VideoView() {
     return state.setting?.subType == sub.subtype;
   }
 
-
+  if (!isInitialized) return null;
   return (
     <video
       ref={setMediaRef}

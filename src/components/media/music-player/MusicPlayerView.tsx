@@ -1,5 +1,5 @@
 import "./MusicPlayerView.css"
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {formatSeconds, srcLocal} from "@/components/utils.ts";
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
@@ -26,6 +26,7 @@ interface Prop {
 }
 
 export default function MusicPlayerView({winKey: _}: Prop) {
+  const [ready, setReady] = useState(false);
   const {
     mediaRef,
     containerRef, setContainerRef,
@@ -52,16 +53,13 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   } = useReceivedDropFilesStore();
 
   useEffect(() => {
-    let active = true;
-
     containerRef?.focus();
-    if (active) {
-      onMount().then();
-    }
+    onMount().then(() => {
+      setReady(true);
+    });
 
     return () => {
-      if(active) {
-        active = false;
+      if (ready) {
         onUnMount().then()
       }
     }

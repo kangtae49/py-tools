@@ -16,136 +16,57 @@ import {
   faShuffle,
 } from "@fortawesome/free-solid-svg-icons";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
-import React, {useEffect} from "react";
-import {commands} from "@/bindings.ts";
+import React, {useEffect, useState} from "react";
 import {
-  type PictureSetting,
   usePictureStore,
-  pictureDefault
 } from "./pictureStore.ts";
-import type {DropFile} from "@/types/models";
 import PictureGridView from "@/components/media/picture-grid/PictureGridView.tsx";
 
-export const PLAYER_SETTING = 'picture-player.setting.json'
 
 interface Prop {
   winKey: WinKey
-
 }
 
 export default function PicturePlayerView({winKey: _}: Prop) {
-
+  const [ready, setReady] = useState(false);
   const {
     pictureRef, setPictureRef,
     // setting,
     containerRef, setContainerRef,
     toggleRepeat,
     toggleShuffle,
-    // setPlayListRef,
     setting, setSetting,
-    extensions,
   } = usePictureStore();
 
   const {
-    setPlaying,
-    setPlayList,
-    appendPlayList,
+    setPlayPath,
     getPrevPlayPath, getNextPlayPath,
-    appendCheckedPlayList,
-    setSelectionBegin,
   } = usePlayListStore();
-
   const {
     setDropRef,
-    dropRef,
   } = useReceivedDropFilesStore();
 
   useEffect(() => {
     containerRef?.focus();
-    onMount().then();
+    onMount().then(() => {
+      setReady(true);
+    });
 
     return () => {
-      onUnMount().then()
+      if (ready) {
+        onUnMount().then()
+      }
     }
   }, [])
 
-  useEffect(() => {
-    const onDropFullPathHandler = (e: CustomEvent) => {
-      setDropRef(null);
-      console.log('onDropFullPathHandler', dropRef);
-      const newDropFiles = e.detail as DropFile[];
-      let files = newDropFiles
-        .filter((file) => file.type.startsWith("image/"))
-      if (extensions.length > 0) {
-        files = files.filter((file) => extensions.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
-      }
-      const fullpathFiles = files.map((file) => file.pywebview_full_path);
-      if (fullpathFiles.length == 0) {
-        return;
-      }
-      if (dropRef?.classList.contains('drop-top')){
-        console.log('drop-top');
-        if (fullpathFiles.length == 1) {
-          onDropPlayPath(fullpathFiles[0])
-        } else {
-          onDropPlayList(fullpathFiles)
-        }
-      } else if (dropRef?.classList.contains('drop-list')) {
-        console.log('drop-list');
-        onDropPlayList(fullpathFiles);
-      }
-    }
-    dropRef?.addEventListener("drop-files", onDropFullPathHandler as EventListener)
-    return () => {
-      console.log('remove onDropTopHandler', dropRef);
-      dropRef?.removeEventListener("drop-files", onDropFullPathHandler as EventListener)
-    }
-  }, [dropRef])
 
 
   const onMount = async () => {
     console.log('onMount')
-    const result = await commands.appReadFile(PLAYER_SETTING);
-    let newSetting: PictureSetting | null;
-
-    if(result.status === 'ok') {
-      newSetting = JSON.parse(result.data);
-      if (result.data === "null") {
-        newSetting = pictureDefault.setting ?? null;
-      }
-      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-        console.log(result.status, 'appWrite', PLAYER_SETTING);
-      })
-    } else {
-      newSetting = pictureDefault.setting ?? null;
-      commands.appWrite(PLAYER_SETTING, JSON.stringify(newSetting, null, 2)).then((result) => {
-        console.log(result.status, 'appWrite', PLAYER_SETTING);
-      })
-      commands.appWriteFile(PLAYER_SETTING, "null").then((result) => {
-        console.log(result.status, 'appWriteFile', PLAYER_SETTING);
-      })
-    }
-    if (newSetting !== null) {
-      const newPlayList = newSetting.playList ?? []
-      const newPlayPath = newSetting.mediaPath ?? newPlayList[0];
-      const newPaused  = newSetting.paused ?? false
-      setSetting((_setting) => ({...newSetting, caller: "onMount", playPath: newPlayPath}))
-      setPlayList(newPlayList)
-      setPlaying(!newPaused)
-      setSelectionBegin(newPlayPath)
-    }
-
   }
 
   const onUnMount = async () => {
     console.log('onUnMount')
-    commands.appRead(PLAYER_SETTING).then((result) => {
-      if (result.status === 'ok') {
-        commands.appWriteFile(PLAYER_SETTING, "{}").then((result) => {
-          console.log(result.status, 'appWriteFile', PLAYER_SETTING);
-        })
-      }
-    })
   }
 
 
@@ -158,14 +79,14 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     const setting = usePictureStore.getState().setting;
     const newPlayPath = getPrevPlayPath(setting.mediaPath);
     console.log('setSetting playPrev')
-    setSetting((setting) => ({...setting, caller: "playPrev", playPath: newPlayPath, currentTime: 0}))
+    setPlayPath(newPlayPath)
   }
 
   const playNext = () => {
     const setting = usePictureStore.getState().setting;
     const newPlayPath = getNextPlayPath(setting.mediaPath);
     console.log('setSetting playNext')
-    setSetting((setting) => ({...setting, caller: "playNext", playPath: newPlayPath, currentTime: 0}))
+    setPlayPath(newPlayPath)
   }
 
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -188,27 +109,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     }
   }
 
-  const onDropPlayPath = (file: string) => {
-    const setting = usePictureStore.getState().setting;
-    if (setting.playList === undefined) return;
-    console.log('setSetting onDropPlayPath')
-    if(setting.playList.indexOf(file) < 0) {
-      appendCheckedPlayList([file]);
-    }
-    const newPlayList = appendPlayList(setting.playList, [file]);
-    setSetting((setting) => ({...setting, caller: "onDropPlayPath", playPath: file, paused: false, playList: newPlayList}))
-  };
 
-  const onDropPlayList = (files: string[]) => {
-    if(files.length === 0) return;
-    const setting = usePictureStore.getState().setting;
-    const playList = setting.playList ?? [];
-    const addPlayList = files.filter((file) => playList.indexOf(file) < 0);
-    const newPlayList = appendPlayList(playList, addPlayList);
-    appendCheckedPlayList(addPlayList);
-    console.log('setSetting onDropPlayList')
-    setSetting((setting) => ({...setting, caller: "onDropPlayList", playList: newPlayList}))
-  }
 
   return (
     <div className={`widget picture-player`}

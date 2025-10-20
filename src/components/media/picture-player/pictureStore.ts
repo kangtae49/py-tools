@@ -35,7 +35,7 @@ interface PictureStore {
 }
 
 
-function createPictureStore(pictureDefault?: PictureDefault) {
+function createPictureStore(pictureDefault: PictureDefault) {
 
   return create<PictureStore>((set, _get) => ({
     pictureRef: null,
@@ -43,17 +43,6 @@ function createPictureStore(pictureDefault?: PictureDefault) {
     fullscreen: false,
 
     settingName: undefined,
-    extensions: [],
-    setting: {
-      mediaPath: undefined,
-      sliderWidth: 100,
-      sliderHeight: 100,
-      sliderCheck: true,
-      paused: true,
-      shuffle: true,
-      repeat: "repeat_all",
-      playList: []
-    },
     defaultSetting: pictureDefault,
     ...pictureDefault,
 
@@ -105,11 +94,9 @@ function createPictureStore(pictureDefault?: PictureDefault) {
 }
 
 interface PictureDefault {
-  settingName: string,
-  extensions?: string[]
+  settingName?: string,
+  extensions: string[]
   setting: PictureSetting
-
-  shuffle?: boolean
 }
 
 
@@ -119,7 +106,7 @@ export const pictureDefault: PictureDefault = {
   setting: {
     mediaPath: undefined,
     sliderWidth: 200,
-    sliderHeight: 100,
+    sliderHeight: 200,
     sliderCheck: true,
     shuffle: true,
     repeat: "repeat_all",

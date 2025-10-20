@@ -1,5 +1,5 @@
 import "./MoviePlayerView.css"
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {commands} from "@/bindings.ts"
 import {SplitPane} from "@rexxars/react-split-pane";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -31,6 +31,7 @@ interface Prop {
 }
 
 export default function MoviePlayerView({winKey: _}: Prop) {
+  const [ready, setReady] = useState(false);
   const {
     mediaRef,
     containerRef, setContainerRef,
@@ -58,16 +59,13 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   } = useReceivedDropFilesStore();
 
   useEffect(() => {
-    let active = true;
-
     containerRef?.focus();
-    if (active) {
-      onMount().then();
-    }
+    onMount().then(() => {
+      setReady(true);
+    });
 
     return () => {
-      if(active) {
-        active = false;
+      if (ready) {
         onUnMount().then()
       }
     }

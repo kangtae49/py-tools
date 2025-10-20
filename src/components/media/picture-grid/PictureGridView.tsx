@@ -1,6 +1,6 @@
 import "./PictureGridView.css"
 import {Grid} from "react-window";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import type {UseBoundStore} from "zustand";
 import type {StoreApi} from "zustand/vanilla";
 import {
@@ -24,13 +24,35 @@ function PictureGridView({
   width,
   height,
 }: Prop) {
-  const {setting} = usePictureStore();
+  const [ready, setReady] = useState(false);
+  const {setting, setSetting} = usePictureStore();
+  const {playList} = usePlayListStore()
+
   const SLIDER_SIZE = 25;
   const SCROLL_SIZE = 15;
   const SLIDER_STEP = 32;
 
   const gridWidth = width - SLIDER_SIZE - SCROLL_SIZE;
   const gridHeight = height - SLIDER_SIZE;
+
+  useEffect(() => {
+    onMount().then(() => {
+      setReady(true);
+    });
+
+    return () => {
+      if (ready) {
+        onUnMount().then()
+      }
+    }
+  }, [])
+
+  const onMount = async () => {
+    console.log('onMount')
+  }
+  const onUnMount = async () => {
+    console.log('onUnMount')
+  }
 
   const getColumnCount = () => {
     const {setting} = usePictureStore.getState();
@@ -52,43 +74,46 @@ function PictureGridView({
   }
 
   const onChangeSliderCheck = (value: boolean) => {
-    const {setSetting} = usePictureStore.getState()
-    setSetting((setting) => ({...setting, sliderCheck: !value}))
+    // const {setSetting} = usePictureStore.getState()
+    console.log('onChangeSliderCheck', value)
+    setSetting((setting) => ({...setting, sliderCheck: value}))
   }
   const onChangeSliderWidth = (value: string) => {
-    const {setting, setSetting} = usePictureStore.getState()
+    const {setting} = usePictureStore.getState()
     const val = Number(value)
+    console.log('onChange checked', setting.sliderCheck)
     if (setting.sliderCheck) {
-      setSetting((setting) => ({...setting, sliderWidth: val}))
-    } else {
       setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
+    } else {
+      setSetting((setting) => ({...setting, sliderWidth: val}))
     }
   }
   const onChangeSliderHeight = (value: string) => {
-    const {setSetting} = usePictureStore.getState()
+    const {setting} = usePictureStore.getState()
     const val = Number(value)
+    console.log('onChange checked', setting.sliderCheck)
     if (setting.sliderCheck) {
-      setSetting((setting) => ({...setting, sliderHeight: val}))
-    } else {
       setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
+    } else {
+      setSetting((setting) => ({...setting, sliderHeight: val}))
     }
   }
 
   const columnCount = getColumnCount();
   const rowCount = getRowCount();
-
-  console.log('size', width, height, gridWidth, gridHeight, setting.sliderWidth, setting.sliderHeight, getColumnCount(), getRowCount())
+  console.log('checked', setting, setting.sliderCheck)
+  // console.log('size', width, height, gridWidth, gridHeight, setting.sliderWidth, setting.sliderHeight, getColumnCount(), getRowCount())
   return (
   <div className="picture-grid" style={{width: width, height: height}}>
     <div className="slider-wrap-w">
       <input type="checkbox"
-             // checked={setting.sliderCheck}
+             checked={setting.sliderCheck}
              onChange={(e) => onChangeSliderCheck(e.target.checked)}/>
       <div className="slider-w">
         <input type="range" min={0} max={gridWidth - SLIDER_SIZE}
                step={SLIDER_STEP}
-               value={setting.sliderWidth}
-               onChange={(e) => {onChangeSliderWidth(e.target.value)}}
+               value={Math.min(setting.sliderWidth, gridWidth - SLIDER_SIZE)}
+               onChange={(e) => onChangeSliderWidth(e.target.value)}
         />
       </div>
     </div>
@@ -97,19 +122,20 @@ function PictureGridView({
         <input type="range"
                min={0} max={gridHeight - SLIDER_SIZE}
                step={SLIDER_STEP}
-               value={setting.sliderHeight}
-               onChange={(e) => {onChangeSliderHeight(e.target.value)}}
+               value={Math.min(setting.sliderHeight, gridHeight - SLIDER_SIZE)}
+               onChange={(e) => onChangeSliderHeight(e.target.value)}
         />
       </div>
       <Grid className="picture-grid"
             cellComponent={PictureGridCellView}
             cellProps={{
-              usePlayListStore,
+              // usePlayListStore,
+              playList: playList,
               columnCount: columnCount,
               // icon: <Icon icon={faImage} />,
               // rowCount: getRowCount(),
             }}
-            columnWidth={setting.sliderWidth}
+            columnWidth={(_x) => setting.sliderWidth}
             rowHeight={setting.sliderHeight}
             columnCount={columnCount}
             rowCount={rowCount}
@@ -117,7 +143,6 @@ function PictureGridView({
       />
       </div>
     </div>
-
 
 )
 }

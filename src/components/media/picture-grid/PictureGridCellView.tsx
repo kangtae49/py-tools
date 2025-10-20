@@ -1,29 +1,38 @@
-import {srcLocal} from "@/components/utils.ts";
+import {getFilename, srcLocal} from "@/components/utils.ts";
 import type {UseBoundStore} from "zustand";
 import type {StoreApi} from "zustand/vanilla";
 import type {PlayListStore} from "@/components/media/play-list/playListStore.ts";
-import React from "react";
 import type {CellComponentProps} from "react-window";
 
 interface Prop {
   usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
-  icon?: React.ReactElement
+  columnCount: number
+  // icon?: React.ReactElement
+  // rowCount: number
 }
 
 function PictureGridCellView({
-                               columnIndex: _columnIndex,
-                               rowIndex,
-                               style,
-                               usePlayListStore,
-                               icon: _,
-                             }: CellComponentProps<Prop>) {
+  columnIndex: columnIndex,
+  rowIndex,
+  style,
+  usePlayListStore,
+  // icon,
+  columnCount,
+  // rowCount,
+}: CellComponentProps<Prop>) {
   const {playList} = usePlayListStore();
-
+  const idx = rowIndex * columnCount + columnIndex;
+  let imgSrc: string | null = null;
+  if (idx < playList.length) {
+    imgSrc = playList[idx]
+  }
   return (
-      <div className="cell" style={style}>
-        {/*<img src={srcLocal("C:\\Users\\kkt\\Downloads\\pictures\\20150723_122809.jpg")} alt={`image`} />*/}
-        <img src={srcLocal(playList[rowIndex])} alt={`image`} />
-      </div>
+    <div className="cell" style={style}>
+      {imgSrc && <img src={srcLocal(imgSrc)}
+            loading="lazy"
+            alt={getFilename(imgSrc)}
+      />}
+    </div>
   )
 }
 

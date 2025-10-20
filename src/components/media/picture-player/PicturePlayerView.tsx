@@ -43,7 +43,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     toggleShuffle,
     // setPlayListRef,
     setting, setSetting,
-    filter,
+    extensions,
   } = usePictureStore();
 
   const {
@@ -76,8 +76,8 @@ export default function PicturePlayerView({winKey: _}: Prop) {
       const newDropFiles = e.detail as DropFile[];
       let files = newDropFiles
         .filter((file) => file.type.startsWith("image/"))
-      if (filter.length > 0) {
-        files = files.filter((file) => filter.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
+      if (extensions.length > 0) {
+        files = files.filter((file) => extensions.some((ext) => file.pywebview_full_path.endsWith(`.${ext}`)))
       }
       const fullpathFiles = files.map((file) => file.pywebview_full_path);
       if (fullpathFiles.length == 0) {
@@ -127,7 +127,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     }
     if (newSetting !== null) {
       const newPlayList = newSetting.playList ?? []
-      const newPlayPath = newSetting.playPath ?? newPlayList[0];
+      const newPlayPath = newSetting.mediaPath ?? newPlayList[0];
       const newPaused  = newSetting.paused ?? false
       setSetting((_setting) => ({...newSetting, caller: "onMount", playPath: newPlayPath}))
       setPlayList(newPlayList)
@@ -156,14 +156,14 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
   const playPrev = () => {
     const setting = usePictureStore.getState().setting;
-    const newPlayPath = getPrevPlayPath(setting.playPath);
+    const newPlayPath = getPrevPlayPath(setting.mediaPath);
     console.log('setSetting playPrev')
     setSetting((setting) => ({...setting, caller: "playPrev", playPath: newPlayPath, currentTime: 0}))
   }
 
   const playNext = () => {
     const setting = usePictureStore.getState().setting;
-    const newPlayPath = getNextPlayPath(setting.playPath);
+    const newPlayPath = getNextPlayPath(setting.mediaPath);
     console.log('setSetting playNext')
     setSetting((setting) => ({...setting, caller: "playNext", playPath: newPlayPath, currentTime: 0}))
   }
@@ -231,6 +231,8 @@ export default function PicturePlayerView({winKey: _}: Prop) {
               <PictureGridView
                 usePlayListStore={usePlayListStore}
                 icon={<Icon icon={faImage} />}
+                width={width}
+                height={height}
               />
 
               {/*<ImageView  />*/}
@@ -243,7 +245,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
               <div className="top drop-top"
                    onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
               >
-                <div className={`row time-line ${(!setting.paused && setting.playPath) ? 'playing' : ''}`}>
+                <div className={`row time-line ${(!setting.paused && setting.mediaPath) ? 'playing' : ''}`}>
                 </div>
                 <div className="row first">
                   <div className="center">

@@ -6,14 +6,14 @@ export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
 export interface MediaSetting {
   caller?: string
   mediaPath?: string
-  currentTime?: number
-  volume?: number
-  playbackRate?: number
-  muted?: boolean
-  paused?: boolean
-  shuffle?: boolean
-  repeat?: RepeatType
-  playList?: string []
+  currentTime: number
+  volume: number
+  playbackRate: number
+  muted: boolean
+  paused: boolean
+  shuffle: boolean
+  repeat: RepeatType
+  playList: string []
   subType?: string
 }
 
@@ -61,6 +61,10 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
     containerRef: null,
     ended: false,
     currentTime: 0,
+    fullscreen: false,
+    subs: [],
+
+    settingName: undefined,
     extensions: [],
     setting: {
       mediaPath: undefined,
@@ -73,11 +77,9 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
       repeat: "repeat_all",
       playList: []
     },
-    settingName: undefined,
     defaultSetting: mediaDefault,
-    fullscreen: false,
-    subs: [],
     ...mediaDefault,
+
 
     setMediaRef: (mediaRef) => {
       set({mediaRef})
@@ -167,10 +169,11 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
 }
 
 interface MediaDefault {
-  shuffle?: boolean
-  extensions?: string[]
   settingName: string,
   setting: MediaSetting
+  extensions?: string[]
+
+  shuffle?: boolean
 }
 
 export const audioDefault: MediaDefault = {

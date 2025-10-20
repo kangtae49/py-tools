@@ -4,6 +4,8 @@ import viteTsconfigPaths from 'vite-tsconfig-paths'
 import type {IncomingMessage, ServerResponse} from "node:http";
 import * as url from "node:url";
 import * as fs from "node:fs";
+import path from "node:path";
+import mime from "mime-types";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -29,7 +31,11 @@ export default defineConfig({
 
           const stat = fs.statSync(filePath);
           const range = req.headers.range;
-
+          const mimeType = mime.lookup(filePath)
+          let contentType = 'application/octet-stream';
+          if (mimeType) {
+            contentType = mimeType;
+          }
           if (range) {
             const parts = range.replace(/bytes=/, '').split('-');
             const start = parseInt(parts[0], 10);
@@ -41,14 +47,16 @@ export default defineConfig({
               'Content-Range': `bytes ${start}-${end}/${stat.size}`,
               'Accept-Ranges': 'bytes',
               'Content-Length': chunkSize,
-              'Content-Type': 'audio/mpeg', // 필요에 따라 파일 종류에 맞게 변경
+              'Content-Disposition': `inline; filename=${encodeURIComponent(path.basename(filePath))}`,
+              'Content-Type': contentType,
             });
             stream.pipe(res);
           } else {
             const stream = fs.createReadStream(filePath);
             res.writeHead(200, {
               'Content-Length': stat.size,
-              'Content-Type': 'audio/mpeg',
+              'Content-Disposition': `inline; filename=${encodeURIComponent(path.basename(filePath))}`,
+              'Content-Type': contentType,
             });
             stream.pipe(res);
           }

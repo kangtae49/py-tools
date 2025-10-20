@@ -77,11 +77,11 @@ export const mountSetting = async () => {
 
   if (newSetting === null) return;
 
-  const newPlayList = newSetting.playList ?? []
+  const newPlayList = newSetting.playList
   const newPlayPath = newSetting.mediaPath ?? newPlayList[0];
-  const newCurrenTime = newSetting.currentTime ?? 0;
-  const newShuffle = newSetting.shuffle ?? false;
-  const newPaused = newSetting.paused ?? false;
+  const newCurrenTime = newSetting.currentTime;
+  const newShuffle = newSetting.shuffle;
+  const newPaused = newSetting.paused;
 
   setSetting((_setting) => ({
     ...newSetting, caller: "onMount",

@@ -1,7 +1,7 @@
 import './App.css'
 import {RouterProvider} from "react-router-dom";
 import {router} from "./components/layouts/AppLayout.tsx";
-import {useEffect, useState} from "react";
+import {Activity, useEffect, useState} from "react";
 import {Toaster} from "react-hot-toast";
 
 function App() {
@@ -22,11 +22,12 @@ function App() {
   return (
     <>
       <Toaster />
-      {ready ? (
+      <Activity mode={ready ? "visible" : "hidden"}>
         <RouterProvider router={router} />
-      ) : (
+      </Activity>
+      <Activity mode={!ready ? "visible" : "hidden"}>
         <div>loading...</div>
-      )}
+      </Activity>
     </>
   )
 }

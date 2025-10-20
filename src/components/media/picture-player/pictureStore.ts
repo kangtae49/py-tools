@@ -4,23 +4,29 @@ export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
 
 export interface PictureSetting {
   caller?: string
-  playPath?: string
-  paused?: boolean
-  shuffle?: boolean
-  repeat?: RepeatType
-  playList?: string[]
+  mediaPath?: string
+  sliderWidth: number
+  sliderHeight: number
+  sliderCheck: boolean
+  paused: boolean
+  shuffle: boolean
+  repeat: RepeatType
+  playList: string[]
 }
 interface PictureStore {
+  extensions: string[]
+  settingName?: string
+  setting: PictureSetting
+  defaultSetting: PictureDefault | undefined
+
   pictureRef: HTMLDivElement | null
   containerRef: HTMLDivElement | null
-  filter: string[]
   fullscreen: boolean
-  setting: PictureSetting
 
   setPictureRef: (pictureRef: HTMLDivElement | null) => void;
   setContainerRef: (containerRef: HTMLDivElement | null) => void
   setSetting: (setting: PictureSetting | ((prev: PictureSetting) => PictureSetting)) => void;
-  setFilter: (filter: string[]) => void;
+  setExtensions: (filter: string[]) => void;
   setFullscreen: (fullscreen: boolean) => void;
 
   togglePlay: () => void;
@@ -34,16 +40,21 @@ function createPictureStore(pictureDefault?: PictureDefault) {
   return create<PictureStore>((set, _get) => ({
     pictureRef: null,
     containerRef: null,
-    filter: ["jpg", "png", "svg", "bmp"],
     fullscreen: false,
+
+    settingName: undefined,
+    extensions: [],
     setting: {
+      mediaPath: undefined,
+      sliderWidth: 100,
+      sliderHeight: 100,
+      sliderCheck: true,
       paused: true,
       shuffle: true,
       repeat: "repeat_all",
       playList: []
     },
-    selectedPlayList: [],
-    selectionBegin: undefined,
+    defaultSetting: pictureDefault,
     ...pictureDefault,
 
     setPictureRef: (pictureRef) => set({pictureRef}),
@@ -55,7 +66,7 @@ function createPictureStore(pictureDefault?: PictureDefault) {
           typeof updater === "function" ? updater(state.setting) : updater,
       }))
     },
-    setFilter: (filter) => set({filter}),
+    setExtensions: (extensions) => set({extensions}),
     setFullscreen: (fullscreen) => set({fullscreen}),
 
     togglePlay: () => {
@@ -94,21 +105,27 @@ function createPictureStore(pictureDefault?: PictureDefault) {
 }
 
 interface PictureDefault {
-  shuffle?: boolean
-  filter?: string[]
+  settingName: string,
+  extensions?: string[]
   setting: PictureSetting
+
+  shuffle?: boolean
 }
 
 
 export const pictureDefault: PictureDefault = {
-  filter: ["jpg", "png", "svg", "bmp"],
+  settingName: 'picture-player.setting.json',
+  extensions: ["jpg", "png", "svg", "bmp"],
   setting: {
-    playPath: undefined,
+    mediaPath: undefined,
+    sliderWidth: 200,
+    sliderHeight: 100,
+    sliderCheck: true,
     shuffle: true,
     repeat: "repeat_all",
-    playList: []
-  }
-
+    playList: [],
+    paused: true
+  },
 };
 
 export const usePictureStore = createPictureStore(pictureDefault);

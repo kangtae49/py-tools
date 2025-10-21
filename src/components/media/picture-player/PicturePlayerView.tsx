@@ -21,7 +21,8 @@ import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import {
   usePictureStore,
 } from "./pictureStore.ts";
-import PictureGridView from "@/components/media/picture-grid/PictureGridView.tsx";
+// import PictureGridView from "@/components/media/picture-grid/PictureGridView.tsx";
+import PictureListView from "@/components/media/picture-list/PictureListView.tsx";
 
 
 interface Prop {
@@ -143,13 +144,18 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                  ref={setPictureRef}
                  style={{width, height}}
             >
-              <PictureGridView
+              {/*<PictureGridView*/}
+              {/*  usePlayListStore={usePlayListStore}*/}
+              {/*  icon={<Icon icon={faImage} />}*/}
+              {/*  width={width}*/}
+              {/*  height={height}*/}
+              {/*/>*/}
+              <PictureListView
                 usePlayListStore={usePlayListStore}
                 icon={<Icon icon={faImage} />}
                 width={width}
                 height={height}
               />
-
               {/*<ImageView  />*/}
             </div>
           )}

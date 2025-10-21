@@ -1,12 +1,12 @@
-import "./PictureGridView.css"
+import "./PictureListView.css"
 import React, {useEffect, useState} from "react";
-import {Grid} from "react-window";
+import {List} from "react-window";
 import type {UseBoundStore} from "zustand";
 import type {StoreApi} from "zustand/vanilla";
 import {
   type PlayListStore,
 } from "@/components/media/play-list/playListStore.ts";
-import PictureGridCellView from "@/components/media/picture-grid/PictureGridCellView.tsx";
+import PictureListRowView from "@/components/media/picture-list/PictureListRowView.tsx";
 import {usePictureStore} from "@/components/media/picture-player/pictureStore.ts";
 
 export type Direction = "row" | "column";
@@ -18,19 +18,20 @@ interface Prop {
   height: number
 }
 
-function PictureGridView({
-  usePlayListStore,
-  icon: _,
-  width,
-  height,
-}: Prop) {
+function PictureListView({
+                           usePlayListStore,
+                           icon: _,
+                           width,
+                           height,
+                         }: Prop) {
   const [isInitialized, setIsInitialized] = useState(false);
   const {setting, setSetting} = usePictureStore();
-  const {playList} = usePlayListStore()
+  // const {playList} = usePlayListStore()
 
-  const SLIDER_SIZE = 25;
   const SCROLL_SIZE = 15;
-  const SLIDER_STEP = 32;
+  const SLIDER_SIZE = 25;
+  const SLIDER_STEP = 64;
+  const SLIDER_MIN = 64;
 
   const gridWidth = width - SLIDER_SIZE - SCROLL_SIZE;
   const gridHeight = height - SLIDER_SIZE;
@@ -94,7 +95,7 @@ function PictureGridView({
   const onChangeSliderWidth = (value: string) => {
     const {setting} = usePictureStore.getState()
     let val = Number(value)
-    val = Math.max(val, 100)
+    val = Math.max(val, SLIDER_MIN)
     console.log('onChange checked', setting.sliderCheck)
     if (setting.sliderCheck) {
       setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
@@ -105,7 +106,7 @@ function PictureGridView({
   const onChangeSliderHeight = (value: string) => {
     const {setting} = usePictureStore.getState()
     let val = Number(value)
-    val = Math.max(val, 100)
+    val = Math.max(val, SLIDER_MIN)
     console.log('onChange checked', setting.sliderCheck)
     if (setting.sliderCheck) {
       setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
@@ -118,53 +119,52 @@ function PictureGridView({
   const rowCount = getRowCount();
   // console.log('checked', setting, setting.sliderCheck)
   if (!isInitialized) return null;
-  console.log('size', width, height, gridWidth, gridHeight, setting.sliderWidth, setting.sliderHeight, getColumnCount(), getRowCount())
+  console.log('rowCount', rowCount)
+  // console.log('size', width, height, gridWidth, gridHeight, setting.sliderWidth, setting.sliderHeight, getColumnCount(), getRowCount())
   return (
-  <div className="picture-grid" style={{width: width, height: height}}>
-    <div className="slider-wrap-w">
-      <div className="check">
-        <input type="checkbox"
-               checked={setting.sliderCheck}
-               onChange={(e) => onChangeSliderCheck(e.target.checked)}/>
+    <div className="picture-list" style={{width: width, height: height}}>
+      <div className="slider-wrap-w">
+        <div className="check">
+          <input type="checkbox"
+                 checked={setting.sliderCheck}
+                 onChange={(e) => onChangeSliderCheck(e.target.checked)}/>
+        </div>
+        <div className="slider-w">
+          <input type="range" min={0} max={width - SLIDER_SIZE}
+                 step={SLIDER_STEP}
+                 value={Math.min(setting.sliderWidth, gridWidth - SLIDER_SIZE)}
+                 onChange={(e) => onChangeSliderWidth(e.target.value)}
+                 style={{width: width - SLIDER_SIZE}}
+          />
+        </div>
       </div>
-      <div className="slider-w">
-        <input type="range" min={0} max={width - SLIDER_SIZE}
-               step={SLIDER_STEP}
-               value={Math.min(setting.sliderWidth, gridWidth - SLIDER_SIZE)}
-               onChange={(e) => onChangeSliderWidth(e.target.value)}
-               style={{width: width - SLIDER_SIZE}}
+      <div className="slider-wrap-h">
+        <div className="slider-h">
+          <input type="range"
+                 min={0} max={height - SLIDER_SIZE}
+                 step={SLIDER_STEP}
+                 value={Math.min(setting.sliderHeight, gridHeight - SLIDER_SIZE)}
+                 onChange={(e) => onChangeSliderHeight(e.target.value)}
+                 style={{height: height - SLIDER_SIZE}}
+          />
+        </div>
+        <List
+
+              rowComponent={PictureListRowView}
+              rowCount={rowCount}
+              rowHeight={setting.sliderHeight}
+              rowProps={{
+                // playList: playList,
+                usePlayListStore,
+                columnCount: columnCount,
+                columnWidth: setting.sliderWidth,
+              }}
+              style={{height: height - SLIDER_SIZE, }}
         />
-      </div>
-    </div>
-    <div className="slider-wrap-h">
-      <div className="slider-h">
-        <input type="range"
-               min={0} max={height - SLIDER_SIZE}
-               step={SLIDER_STEP}
-               value={Math.min(setting.sliderHeight, gridHeight - SLIDER_SIZE)}
-               onChange={(e) => onChangeSliderHeight(e.target.value)}
-               style={{height: height - SLIDER_SIZE}}
-        />
-      </div>
-      <Grid className="picture-grid"
-            cellComponent={PictureGridCellView}
-            cellProps={{
-              // usePlayListStore,
-              playList: playList,
-              columnCount: columnCount,
-              // icon: <Icon icon={faImage} />,
-              // rowCount: getRowCount(),
-            }}
-            columnCount={columnCount}
-            columnWidth={(_x) => setting.sliderWidth}
-            rowCount={rowCount}
-            rowHeight={setting.sliderHeight}
-            style={{width: width - SLIDER_SIZE, height: height - SLIDER_SIZE}}
-      />
       </div>
     </div>
 
-)
+  )
 }
 
-export default PictureGridView;
+export default PictureListView;

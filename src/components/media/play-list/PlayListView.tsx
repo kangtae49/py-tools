@@ -182,9 +182,9 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
       </div>
       <List
             listRef={setPlayListRef}
-            rowHeight={22}
-            rowCount={playList?.length ?? 0}
             rowComponent={PlayListRowView}
+            rowCount={playList?.length ?? 0}
+            rowHeight={22}
             rowProps={{
               usePlayListStore,
               icon,

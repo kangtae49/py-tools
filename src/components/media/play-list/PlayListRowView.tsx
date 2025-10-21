@@ -114,4 +114,4 @@ function PlayListRowView({
     </div>
   );
 }
-export default React.memo(PlayListRowView);
+export default PlayListRowView;

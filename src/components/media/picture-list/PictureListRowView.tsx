@@ -1,6 +1,4 @@
 import {getFilename, srcLocal} from "@/components/utils.ts";
-// import type {UseBoundStore} from "zustand";
-// import type {StoreApi} from "zustand/vanilla";
 import type {PlayListStore} from "@/components/media/play-list/playListStore.ts";
 import type {RowComponentProps} from "react-window";
 import {useEffect, useState} from "react";
@@ -60,7 +58,6 @@ function PictureListRowView({
   const idx = index * columnCount;
 
   if (!isInitialized) return null;
-  console.log(style)
   return (
     <div className="row" style={style}>
     {playList.slice(idx, idx+columnCount).map((playPath: string, idxCol) => (

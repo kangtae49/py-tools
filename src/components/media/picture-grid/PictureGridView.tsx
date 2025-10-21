@@ -9,8 +9,6 @@ import {
 import PictureGridCellView from "@/components/media/picture-grid/PictureGridCellView.tsx";
 import {usePictureStore} from "@/components/media/picture-player/pictureStore.ts";
 
-export type Direction = "row" | "column";
-
 interface Prop {
   usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
   icon?: React.ReactElement
@@ -26,11 +24,11 @@ function PictureGridView({
 }: Prop) {
   const [isInitialized, setIsInitialized] = useState(false);
   const {setting, setSetting} = usePictureStore();
-  const {playList} = usePlayListStore()
 
-  const SLIDER_SIZE = 25;
   const SCROLL_SIZE = 15;
-  const SLIDER_STEP = 32;
+  const SLIDER_SIZE = 25;
+  const SLIDER_STEP = 64;
+  const SLIDER_MIN = 64;
 
   const gridWidth = width - SLIDER_SIZE - SCROLL_SIZE;
   const gridHeight = height - SLIDER_SIZE;
@@ -94,7 +92,7 @@ function PictureGridView({
   const onChangeSliderWidth = (value: string) => {
     const {setting} = usePictureStore.getState()
     let val = Number(value)
-    val = Math.max(val, 100)
+    val = Math.max(val, SLIDER_MIN)
     console.log('onChange checked', setting.sliderCheck)
     if (setting.sliderCheck) {
       setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
@@ -105,7 +103,7 @@ function PictureGridView({
   const onChangeSliderHeight = (value: string) => {
     const {setting} = usePictureStore.getState()
     let val = Number(value)
-    val = Math.max(val, 100)
+    val = Math.max(val, SLIDER_MIN)
     console.log('onChange checked', setting.sliderCheck)
     if (setting.sliderCheck) {
       setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
@@ -116,9 +114,8 @@ function PictureGridView({
 
   const columnCount = getColumnCount();
   const rowCount = getRowCount();
-  // console.log('checked', setting, setting.sliderCheck)
+
   if (!isInitialized) return null;
-  console.log('size', width, height, gridWidth, gridHeight, setting.sliderWidth, setting.sliderHeight, getColumnCount(), getRowCount())
   return (
   <div className="picture-grid" style={{width: width, height: height}}>
     <div className="slider-wrap-w">
@@ -146,25 +143,23 @@ function PictureGridView({
                style={{height: height - SLIDER_SIZE}}
         />
       </div>
-      <Grid className="picture-grid"
+      <Grid
             cellComponent={PictureGridCellView}
-            cellProps={{
-              // usePlayListStore,
-              playList: playList,
-              columnCount: columnCount,
-              // icon: <Icon icon={faImage} />,
-              // rowCount: getRowCount(),
-            }}
             columnCount={columnCount}
-            columnWidth={(_x) => setting.sliderWidth}
+            columnWidth={setting.sliderWidth}
             rowCount={rowCount}
             rowHeight={setting.sliderHeight}
-            style={{width: width - SLIDER_SIZE, height: height - SLIDER_SIZE}}
+            cellProps={{
+              // playList: playList,
+              usePlayListStore,
+              columnCount: columnCount,
+              columnWidth: setting.sliderWidth,
+            }}
+            style={{height: height - SLIDER_SIZE,}}
       />
       </div>
     </div>
-
-)
+  )
 }
 
 export default PictureGridView;

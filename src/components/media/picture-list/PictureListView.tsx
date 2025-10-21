@@ -9,8 +9,6 @@ import {
 import PictureListRowView from "@/components/media/picture-list/PictureListRowView.tsx";
 import {usePictureStore} from "@/components/media/picture-player/pictureStore.ts";
 
-export type Direction = "row" | "column";
-
 interface Prop {
   usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
   icon?: React.ReactElement
@@ -19,14 +17,13 @@ interface Prop {
 }
 
 function PictureListView({
-                           usePlayListStore,
-                           icon: _,
-                           width,
-                           height,
-                         }: Prop) {
+  usePlayListStore,
+  icon: _,
+  width,
+  height,
+}: Prop) {
   const [isInitialized, setIsInitialized] = useState(false);
   const {setting, setSetting} = usePictureStore();
-  // const {playList} = usePlayListStore()
 
   const SCROLL_SIZE = 15;
   const SLIDER_SIZE = 25;
@@ -117,10 +114,8 @@ function PictureListView({
 
   const columnCount = getColumnCount();
   const rowCount = getRowCount();
-  // console.log('checked', setting, setting.sliderCheck)
+
   if (!isInitialized) return null;
-  console.log('rowCount', rowCount)
-  // console.log('size', width, height, gridWidth, gridHeight, setting.sliderWidth, setting.sliderHeight, getColumnCount(), getRowCount())
   return (
     <div className="picture-list" style={{width: width, height: height}}>
       <div className="slider-wrap-w">
@@ -149,7 +144,6 @@ function PictureListView({
           />
         </div>
         <List
-
               rowComponent={PictureListRowView}
               rowCount={rowCount}
               rowHeight={setting.sliderHeight}
@@ -163,7 +157,6 @@ function PictureListView({
         />
       </div>
     </div>
-
   )
 }
 

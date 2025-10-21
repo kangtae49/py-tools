@@ -1,30 +1,29 @@
 import {getFilename, srcLocal} from "@/components/utils.ts";
-// import type {UseBoundStore} from "zustand";
-// import type {StoreApi} from "zustand/vanilla";
-// import type {PlayListStore} from "@/components/media/play-list/playListStore.ts";
+import type {PlayListStore} from "@/components/media/play-list/playListStore.ts";
 import type {CellComponentProps} from "react-window";
 import {useEffect, useState} from "react";
+import type {UseBoundStore} from "zustand";
+import type {StoreApi} from "zustand/vanilla";
 
 interface Prop {
-  // usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
-  playList: string[]
+  usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
+  // playList: string[]
   columnCount: number
-  // icon?: React.ReactElement
-  // rowCount: number
+  columnWidth: number
 }
 
 function PictureGridCellView({
   columnIndex: columnIndex,
   rowIndex,
   style,
-  // usePlayListStore,
-  playList,
-  // icon,
+  // playList,
+  usePlayListStore,
   columnCount,
   // rowCount,
 }: CellComponentProps<Prop>) {
   const [isInitialized, setIsInitialized] = useState(false);
-
+  const {playList} = usePlayListStore();
+  // console.log(playList)
   useEffect(() => {
     let active = false;
     const controller = new AbortController();
@@ -57,7 +56,6 @@ function PictureGridCellView({
     console.log('onUnMount')
   }
 
-  // const {playList} = usePlayListStore();
   const idx = rowIndex * columnCount + columnIndex;
   let imgSrc: string | null = null;
   if (idx < playList.length) {

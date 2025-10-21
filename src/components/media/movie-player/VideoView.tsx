@@ -16,6 +16,7 @@ function VideoView() {
     setEnded,
     changePlaybackRate,
     setting, setSetting,
+    loadSrc,
     setFullscreen,
     subs,
   } = useMediaStore();
@@ -35,32 +36,19 @@ function VideoView() {
   }, [])
 
   useEffect(() => {
-    if (mediaRef) {
-      // refresh start
-      console.log('Video View', mediaRef)
-      console.log('Video View add listener')
-      mediaRef.addEventListener("loadeddata", onloadedData);
-      mediaRef.addEventListener("loadedmetadata", onloadedMetaData);
-      mediaRef.addEventListener("timeupdate", onTimeUpdate);
-      mediaRef.addEventListener("volumechange", onVolumeChange);
-      mediaRef.addEventListener("ratechange", onRateChange);
-      mediaRef.addEventListener("play", onPlay);
-      mediaRef.addEventListener("pause", onPause);
-      mediaRef.addEventListener("ended", onEnded);
-      mediaRef.addEventListener("error", onError);
-      mediaRef.addEventListener("fullscreenchange", onFullscreenChange)
-
+    const ref = addListener();
+    if (ref !== null) {
+      const {setting} = useMediaStore.getState();
+      loadSrc(setting.mediaPath)
     }
-
     return () => {
-      removeListener();
-    };
-
-  }, [mediaRef])
+      removeListener(ref);
+    }
+  },[mediaRef])
 
   useEffect(() => {
-    loadSrc()
-  }, [setting?.mediaPath])
+    loadSrc(setting.mediaPath)
+  }, [setting.mediaPath])
 
   useEffect(() => {
     if(mediaRef === null) return;
@@ -111,8 +99,6 @@ function VideoView() {
     }
 
     // do something
-    loadSrc();
-
     onComplete();
     setIsInitialized(true)
     console.log('onMount Completed')
@@ -139,16 +125,6 @@ function VideoView() {
       settingSrc = srcLocal(state.setting?.mediaPath ?? '')
     }
     return !!state.mediaRef?.currentSrc.endsWith(settingSrc);
-  }
-
-  const loadSrc = () => {
-    const state = useMediaStore.getState();
-    state.changeAllTrackMode('disabled');
-    if(state.setting.mediaPath == undefined) return;
-    if (state.mediaRef === null) return;
-    console.log('playPath', state.setting.mediaPath);
-    state.mediaRef.src = srcLocal(state.setting.mediaPath);
-    state.mediaRef.load();
   }
 
   const onloadedMetaData = async () => {
@@ -228,8 +204,25 @@ function VideoView() {
     }
   }
 
+  const addListener = () => {
+    if (mediaRef) {
+      console.log('Video View add listener')
+      mediaRef.addEventListener("loadeddata", onloadedData);
+      mediaRef.addEventListener("loadedmetadata", onloadedMetaData);
+      mediaRef.addEventListener("timeupdate", onTimeUpdate);
+      mediaRef.addEventListener("volumechange", onVolumeChange);
+      mediaRef.addEventListener("ratechange", onRateChange);
+      mediaRef.addEventListener("play", onPlay);
+      mediaRef.addEventListener("pause", onPause);
+      mediaRef.addEventListener("ended", onEnded);
+      mediaRef.addEventListener("error", onError);
+      mediaRef.addEventListener("fullscreenchange", onFullscreenChange)
+      return mediaRef;
+    }
+    return null
+  }
 
-  const removeListener = () => {
+  const removeListener = (mediaRef: HTMLAudioElement | null) => {
     if (mediaRef) {
       console.log('Video View remove listener')
       mediaRef?.removeEventListener("loadedmetadata", onloadedMetaData);
@@ -242,12 +235,7 @@ function VideoView() {
       mediaRef?.removeEventListener("error", onError);
       mediaRef?.removeEventListener("fullscreenchange", onFullscreenChange);
     }
-
   }
-
-
-
-
 
   const isDefaultSub = (sub: Sub) => {
     if (subs.length == 0) return false;

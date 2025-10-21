@@ -196,7 +196,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     }
 
     // do something
-
     onComplete();
     setIsInitialized(true)
     console.log('onMount Completed')

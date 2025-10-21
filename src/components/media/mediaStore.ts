@@ -1,5 +1,6 @@
 import {create} from 'zustand';
 import type {Sub} from "@/types/models";
+import {srcLocal} from "@/components/utils.ts";
 
 export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
 
@@ -49,6 +50,7 @@ export interface MediaStore<T extends HTMLMediaElement> {
 
   togglePlay: () => Promise<void>;
   toggleRepeat: () => void;
+  loadSrc: (mediaPath: string | undefined) => Promise<void>;
 
 }
 
@@ -155,6 +157,15 @@ function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefaul
         }
       });
     },
+    loadSrc: async (mediaPath) => {
+      if (mediaPath === undefined) return;
+      const {mediaRef, changeAllTrackMode} = get();
+      if (mediaRef !== null) {
+        changeAllTrackMode('disabled');  // video only
+        mediaRef.src = srcLocal(mediaPath);
+        mediaRef.load();
+      }
+    }
     // toggleShuffle: () => {
     //   set((state) => {
     //     const newShuffle = state.setting.shuffle ?? true;

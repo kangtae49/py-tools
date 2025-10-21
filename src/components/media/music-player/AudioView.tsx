@@ -13,6 +13,7 @@ function AudioView() {
     setEnded,
     changePlaybackRate,
     setting, setSetting,
+    loadSrc,
   } = useMediaStore();
 
   useEffect(() => {
@@ -29,31 +30,19 @@ function AudioView() {
   }, [])
 
   useEffect(() => {
-    if (mediaRef) {
-      // refresh start
-      console.log('Audio View', mediaRef)
-      console.log('Audio View add listener')
-      mediaRef.addEventListener("loadeddata", onloadedData);
-      mediaRef.addEventListener("loadedmetadata", onloadedMetaData);
-      mediaRef.addEventListener("timeupdate", onTimeUpdate);
-      mediaRef.addEventListener("volumechange", onVolumeChange);
-      mediaRef.addEventListener("ratechange", onRateChange);
-      mediaRef.addEventListener("play", onPlay);
-      mediaRef.addEventListener("pause", onPause);
-      mediaRef.addEventListener("ended", onEnded);
-      mediaRef.addEventListener("error", onError);
-
+    const ref = addListener();
+    if (ref !== null) {
+      const {setting} = useMediaStore.getState();
+      loadSrc(setting.mediaPath)
     }
-
     return () => {
-      removeListener();
-    };
-
-  }, [mediaRef])
+      removeListener(ref);
+    }
+  },[mediaRef])
 
   useEffect(() => {
-    loadSrc()
-  }, [setting?.mediaPath])
+    loadSrc(setting.mediaPath)
+  }, [setting.mediaPath])
 
   useEffect(() => {
     if(mediaRef === null) return;
@@ -89,8 +78,6 @@ function AudioView() {
     }
 
     // do something
-    loadSrc();
-
     onComplete();
     setIsInitialized(true)
     console.log('onMount Completed')
@@ -117,15 +104,6 @@ function AudioView() {
       settingSrc = srcLocal(state.setting?.mediaPath ?? '')
     }
     return !!state.mediaRef?.currentSrc.endsWith(settingSrc);
-  }
-
-  const loadSrc = () => {
-    const state = useMediaStore.getState();
-    if(state.setting.mediaPath == undefined) return;
-    if (state.mediaRef === null) return;
-    console.log('playPath', state.setting.mediaPath);
-    state.mediaRef.src = srcLocal(state.setting.mediaPath);
-    state.mediaRef.load();
   }
 
   const onloadedMetaData = async () => {
@@ -186,7 +164,24 @@ function AudioView() {
   const onPause = () => {}
   const onError = () => {}
 
-  const removeListener = () => {
+  const addListener = () => {
+    if (mediaRef) {
+      console.log('Audio View add listener')
+      mediaRef.addEventListener("loadeddata", onloadedData);
+      mediaRef.addEventListener("loadedmetadata", onloadedMetaData);
+      mediaRef.addEventListener("timeupdate", onTimeUpdate);
+      mediaRef.addEventListener("volumechange", onVolumeChange);
+      mediaRef.addEventListener("ratechange", onRateChange);
+      mediaRef.addEventListener("play", onPlay);
+      mediaRef.addEventListener("pause", onPause);
+      mediaRef.addEventListener("ended", onEnded);
+      mediaRef.addEventListener("error", onError);
+      return mediaRef;
+    }
+    return null
+  }
+
+  const removeListener = (mediaRef: HTMLAudioElement | null) => {
     if (mediaRef) {
       console.log('Audio View remove listener')
       mediaRef?.removeEventListener("loadedmetadata", onloadedMetaData);
@@ -198,7 +193,6 @@ function AudioView() {
       mediaRef?.removeEventListener("ended", onEnded);
       mediaRef?.removeEventListener("error", onError);
     }
-
   }
 
   if (!isInitialized) return null;

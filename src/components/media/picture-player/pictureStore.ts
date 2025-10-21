@@ -1,6 +1,7 @@
 import {create} from "zustand";
 
 export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
+export type ViewType = 'grid' | 'single'
 
 export interface PictureSetting {
   caller?: string
@@ -20,15 +21,17 @@ interface PictureStore {
   setting: PictureSetting
   defaultSetting: PictureDefault | undefined
 
-  pictureRef: HTMLDivElement | null
+  viewType: ViewType
+  mediaRef: HTMLDivElement | null
   containerRef: HTMLDivElement | null
   fullscreen: boolean
 
-  setPictureRef: (pictureRef: HTMLDivElement | null) => void;
+  setMediaRef: (pictureRef: HTMLDivElement | null) => void;
   setContainerRef: (containerRef: HTMLDivElement | null) => void
   setSetting: (setting: PictureSetting | ((prev: PictureSetting) => PictureSetting)) => void;
   setExtensions: (filter: string[]) => void;
   setFullscreen: (fullscreen: boolean) => void;
+  setViewType: (viewType: ViewType) => void;
 
   togglePlay: () => void;
   toggleRepeat: () => void;
@@ -39,15 +42,16 @@ interface PictureStore {
 function createPictureStore(pictureDefault: PictureDefault) {
 
   return create<PictureStore>((set, _get) => ({
-    pictureRef: null,
+    mediaRef: null,
     containerRef: null,
     fullscreen: false,
+    viewType: "grid",
 
     settingName: undefined,
     defaultSetting: pictureDefault,
     ...pictureDefault,
 
-    setPictureRef: (pictureRef) => set({pictureRef}),
+    setMediaRef: (pictureRef) => set({mediaRef: pictureRef}),
     setContainerRef: (containerRef) => set({containerRef}),
 
     setSetting: (updater) => {
@@ -58,6 +62,7 @@ function createPictureStore(pictureDefault: PictureDefault) {
     },
     setExtensions: (extensions) => set({extensions}),
     setFullscreen: (fullscreen) => set({fullscreen}),
+    setViewType: (viewType) => set({viewType}),
 
     togglePlay: () => {
       // const setting = get().setting;

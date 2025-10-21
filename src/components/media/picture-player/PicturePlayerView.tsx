@@ -1,5 +1,5 @@
 import "./PicturePlayerView.css"
-import React, {useEffect, useState} from "react";
+import React, {Activity, useEffect, useState} from "react";
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 import {SplitPane} from "@rexxars/react-split-pane";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -22,10 +22,11 @@ import {
   usePictureStore as useMediaStore,
 } from "./pictureStore.ts";
 import PictureGridView from "@/components/media/picture-grid/PictureGridView.tsx";
-import PictureSettingListener from "@/components/media/picture-player/PictureSettingListener.tsx";
+import PictureSettingListener from "./PictureSettingListener.tsx";
 import SpeedMenu from "@/components/media/menu/speed-menu/SpeedMenu.tsx";
 import {srcLocal} from "@/components/utils.ts";
 import toast from "react-hot-toast";
+import ImageView from "./ImageView.tsx";
 // import PictureListView from "@/components/media/picture-list/PictureListView.tsx";
 
 
@@ -36,12 +37,13 @@ interface Prop {
 export default function PicturePlayerView({winKey: _}: Prop) {
   const [isInitialized, setIsInitialized] = useState(false);
   const {
-    pictureRef, setPictureRef,
+    mediaRef, setMediaRef,
     // setting,
     containerRef, setContainerRef,
     toggleRepeat,
     toggleShuffle,
     setting, setSetting,
+    viewType,
   } = useMediaStore();
 
   const {
@@ -86,6 +88,10 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   useEffect(() => {
     setShuffle(setting.shuffle)
   }, [setting.shuffle])
+
+  useEffect(() => {
+    setPlayPath(setting.mediaPath)
+  }, [setting.mediaPath])
 
   useEffect(() => {
     if (playPath === undefined) return;
@@ -163,7 +169,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     if (fullscreen) {
       await document.exitFullscreen();
     } else {
-      await pictureRef?.requestFullscreen()
+      await mediaRef?.requestFullscreen()
     }
   }
 
@@ -190,16 +196,23 @@ export default function PicturePlayerView({winKey: _}: Prop) {
           <AutoSizer>
             {({height, width}) => (
               <div className="image-view drop-image"
-                   ref={setPictureRef}
+                   ref={setMediaRef}
                    style={{width, height}}
               >
-                <PictureGridView
-                  usePlayListStore={usePlayListStore}
-                  icon={<Icon icon={faImage} />}
-                  width={width}
-                  height={height}
-                />
-
+                <Activity mode={viewType === "grid" ? "visible": "hidden"}>
+                  <PictureGridView
+                    usePlayListStore={usePlayListStore}
+                    icon={<Icon icon={faImage} />}
+                    width={width}
+                    height={height}
+                  />
+                </Activity>
+                <Activity mode={viewType === "single" ? "visible": "hidden"}>
+                  <ImageView
+                    width={width}
+                    height={height}
+                  />
+                </Activity>
                 {/*<PictureListView*/}
                 {/*  usePlayListStore={usePlayListStore}*/}
                 {/*  icon={<Icon icon={faImage} />}*/}

@@ -24,7 +24,7 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     shuffle,
     playPath,
     playList, setPlayList, appendPlayList,
-    setPlayListRef,
+    playListRef, setPlayListRef,
     checkedPlayList, setCheckedPlayList,
     scrollPlayPath,
     shufflePlayList, natsortPlayList,
@@ -74,6 +74,10 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     const shuffledPlayList = shuffle ? shufflePlayList(playList) : natsortPlayList(playList);
     setPlayList(shuffledPlayList);
   }, [shuffle])
+
+  useEffect(() => {
+    console.log('playListRef', playListRef)
+  }, [playListRef])
 
 
   const openDialogPlayList = async () => {

@@ -59,7 +59,6 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
     ...defaultState,
 
     setPlayListRef: (value) => {
-      if (value === null) return;
       set({playListRef: value})
     },
     setPlayPath: (value) => set({playPath: value}),

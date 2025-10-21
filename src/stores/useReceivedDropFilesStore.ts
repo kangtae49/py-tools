@@ -8,7 +8,6 @@ export interface ReceivedDropFilesState {
 export const useReceivedDropFilesStore = create<ReceivedDropFilesState>((set, _get) => ({
   dropRef: null,
   setDropRef: (dropRef) => {
-    // if (dropRef === null) return;
     set(() => ({dropRef}))
   },
 }))

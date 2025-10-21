@@ -19,9 +19,13 @@ import {
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 
 import {
-  usePictureStore,
+  usePictureStore as useMediaStore,
 } from "./pictureStore.ts";
 import PictureGridView from "@/components/media/picture-grid/PictureGridView.tsx";
+import PictureSettingListener from "@/components/media/picture-player/PictureSettingListener.tsx";
+import SpeedMenu from "@/components/media/menu/speed-menu/SpeedMenu.tsx";
+import {srcLocal} from "@/components/utils.ts";
+import toast from "react-hot-toast";
 // import PictureListView from "@/components/media/picture-list/PictureListView.tsx";
 
 
@@ -38,12 +42,17 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     toggleRepeat,
     toggleShuffle,
     setting, setSetting,
-  } = usePictureStore();
+  } = useMediaStore();
 
   const {
-    setPlayPath,
+    setShuffle,
+    playing, setPlaying,
+    playPath, setPlayPath,
+    playList,
     getPrevPlayPath, getNextPlayPath,
+    setSelectionBegin, scrollPlayPath,
   } = usePlayListStore();
+
   const {
     setDropRef,
   } = useReceivedDropFilesStore();
@@ -62,6 +71,41 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     }
   }, [])
 
+  useEffect(() => {
+    setPlaying(!setting.paused)
+  }, [setting.paused])
+
+  useEffect(() => {
+    setSetting((setting) => ({...setting, caller: "useEffect [playList]", paused: !playing}))
+  }, [playing]);
+
+  useEffect(() => {
+    setSetting((setting) => ({...setting, caller: "useEffect [playList]", playList}))
+  }, [playList])
+
+  useEffect(() => {
+    setShuffle(setting.shuffle)
+  }, [setting.shuffle])
+
+  useEffect(() => {
+    if (playPath === undefined) return;
+    setSetting((setting) => ({...setting, caller: "useEffect [playPath]", mediaPath: playPath}))
+    console.log('fetch HEAD');
+    fetch(srcLocal(playPath), {method: "HEAD"})
+      .then( (res) => {
+        const {playList} = usePlayListStore.getState()
+        if (res.ok) {
+        } else {
+          toast.error( `Fail ${playPath}`);
+          console.log('fetch error', res.status);
+          const newPlayPath = getNextPlayPath(playPath)
+          setPlayPath(newPlayPath);
+          setSelectionBegin(newPlayPath);
+          scrollPlayPath(playList, newPlayPath)
+        }
+      })
+    ;
+  }, [playPath]);
 
 
   const onMount = async (signal: AbortSignal, onComplete: () => void) => {
@@ -74,7 +118,6 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     }
 
     // do something
-
     onComplete();
     setIsInitialized(true)
     console.log('onMount Completed')
@@ -91,16 +134,16 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   }
 
   const playPrev = () => {
-    const setting = usePictureStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     const newPlayPath = getPrevPlayPath(setting.mediaPath);
-    console.log('setSetting playPrev')
+    console.log('setSetting playPrev', newPlayPath)
     setPlayPath(newPlayPath)
   }
 
   const playNext = () => {
-    const setting = usePictureStore.getState().setting;
+    const setting = useMediaStore.getState().setting;
     const newPlayPath = getNextPlayPath(setting.mediaPath);
-    console.log('setSetting playNext')
+    console.log('setSetting playNext', newPlayPath)
     setPlayPath(newPlayPath)
   }
 
@@ -116,7 +159,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   }
 
   const toggleFullscreen = async () => {
-    const fullscreen = usePictureStore.getState().fullscreen;
+    const fullscreen = useMediaStore.getState().fullscreen;
     if (fullscreen) {
       await document.exitFullscreen();
     } else {
@@ -124,96 +167,108 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     }
   }
 
+  const onChangeSpeed = (value: string) => {
+    const v = Number(value)
+    setSetting((setting) => ({...setting, caller: "clickSpeed", playbackRate: v}))
+  }
 
   if (!isInitialized) return null;
   return (
-    <div className={`widget picture-player`}
-         ref={setContainerRef}
-         onKeyDown={onKeyDownHandler}
-         tabIndex={0}
-    >
-      <SplitPane
-        split="horizontal"
-        // minSize={80} primary="first"
-        minSize={0} primary="second"
-        defaultSize={200}
+    <>
+      <PictureSettingListener />
+      <div className={`widget picture-player`}
+           ref={setContainerRef}
+           onKeyDown={onKeyDownHandler}
+           tabIndex={0}
       >
-        <AutoSizer>
-          {({height, width}) => (
-            <div className="image-view drop-image"
-                 ref={setPictureRef}
-                 style={{width, height}}
-            >
-              <PictureGridView
-                usePlayListStore={usePlayListStore}
-                icon={<Icon icon={faImage} />}
-                width={width}
-                height={height}
-              />
-
-              {/*<PictureListView*/}
-              {/*  usePlayListStore={usePlayListStore}*/}
-              {/*  icon={<Icon icon={faImage} />}*/}
-              {/*  width={width}*/}
-              {/*  height={height}*/}
-              {/*/>*/}
-            </div>
-          )}
-        </AutoSizer>
-        <AutoSizer>
-          {({ height, width }) => (
-            <div className="controller" style={{width, height}}>
-              <div className="top drop-top"
-                   onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+        <SplitPane
+          split="horizontal"
+          // minSize={80} primary="first"
+          minSize={0} primary="second"
+          defaultSize={200}
+        >
+          <AutoSizer>
+            {({height, width}) => (
+              <div className="image-view drop-image"
+                   ref={setPictureRef}
+                   style={{width, height}}
               >
-                <div className={`row time-line ${(!setting.paused && setting.mediaPath) ? 'playing' : ''}`}>
-                </div>
-                <div className="row first">
-                  <div className="center">
-                    <div className="icon" onClick={() => toggleShuffle()}>
-                      <Icon icon={faShuffle} className={setting.shuffle ? '': 'inactive'}/>
-                    </div>
-                    <div className="icon" onClick={() => playPrev()}>
-                      <Icon icon={faBackwardStep}/>
-                    </div>
-                    <div className="icon middle"
-                         onClick={() => clickTogglePlay()}
-                    >
-                      <Icon icon={setting.paused ? faCirclePlay : faCirclePause } className={setting.paused ? 'blink': ''}/>
-                    </div>
-                    <div className="icon" onClick={() => playNext()}>
-                      <Icon icon={faForwardStep}/>
-                    </div>
-                    {setting.repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
-                    {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
-                    {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
-                  </div>
-
-                  <div className="speed" title="Speed">
-                  </div>
-                  <div className="slider">
-                  </div>
-                  <div className="icon">
-                  </div>
-                  <div className="icon" onClick={() => toggleFullscreen()} title="Fullscreen(F11)">
-                    <Icon icon={faExpand}/>
-                  </div>
-
-                </div>
-              </div>
-              <div className="drop-list"
-                   style={{ height: "calc(100% - 50px)", width }}
-                   onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
-              >
-                <PlayListView
+                <PictureGridView
                   usePlayListStore={usePlayListStore}
                   icon={<Icon icon={faImage} />}
+                  width={width}
+                  height={height}
                 />
+
+                {/*<PictureListView*/}
+                {/*  usePlayListStore={usePlayListStore}*/}
+                {/*  icon={<Icon icon={faImage} />}*/}
+                {/*  width={width}*/}
+                {/*  height={height}*/}
+                {/*/>*/}
               </div>
-            </div>
-          )}
-        </AutoSizer>
-      </SplitPane>
-    </div>
+            )}
+          </AutoSizer>
+          <AutoSizer>
+            {({ height, width }) => (
+              <div className="controller" style={{width, height}}>
+                <div className="top drop-top"
+                     onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+                >
+                  <div className={`row time-line ${(!setting.paused && setting.mediaPath) ? 'playing' : ''}`}>
+                  </div>
+                  <div className="row first">
+                    <SpeedMenu
+                      value={String(setting.playbackRate)}
+                      list={["1", "2", "3"]}
+                      defaultValue={"1"}
+                      onChange={onChangeSpeed} />
+                    <div className="center">
+                      <div className="icon" onClick={() => toggleShuffle()}>
+                        <Icon icon={faShuffle} className={setting.shuffle ? '': 'inactive'}/>
+                      </div>
+                      <div className="icon" onClick={() => playPrev()}>
+                        <Icon icon={faBackwardStep}/>
+                      </div>
+                      <div className="icon middle"
+                           onClick={() => clickTogglePlay()}
+                      >
+                        <Icon icon={setting.paused ? faCirclePlay : faCirclePause } className={setting.paused ? 'blink': ''}/>
+                      </div>
+                      <div className="icon" onClick={() => playNext()}>
+                        <Icon icon={faForwardStep}/>
+                      </div>
+                      {setting.repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
+                      {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
+                      {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
+                    </div>
+
+                    <div className="speed" title="Speed">
+                    </div>
+                    <div className="slider">
+                    </div>
+                    <div className="icon">
+                    </div>
+                    <div className="icon" onClick={() => toggleFullscreen()} title="Fullscreen(F11)">
+                      <Icon icon={faExpand}/>
+                    </div>
+
+                  </div>
+                </div>
+                <div className="drop-list"
+                     style={{ height: "calc(100% - 50px)", width }}
+                     onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
+                >
+                  <PlayListView
+                    usePlayListStore={usePlayListStore}
+                    icon={<Icon icon={faImage} />}
+                  />
+                </div>
+              </div>
+            )}
+          </AutoSizer>
+        </SplitPane>
+      </div>
+    </>
   )
 }

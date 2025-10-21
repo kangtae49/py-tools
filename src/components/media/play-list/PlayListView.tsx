@@ -46,6 +46,20 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     }
   }, [])
 
+  useEffect(() => {
+    console.log('PlayListView', playList, filter[0])
+  }, [playList])
+
+  useEffect(() => {
+    if (playList.length === 0) return;
+    const shuffledPlayList = shuffle ? shufflePlayList(playList) : natsortPlayList(playList);
+    setPlayList(shuffledPlayList);
+  }, [shuffle])
+
+  useEffect(() => {
+    console.log('playListRef', playListRef)
+  }, [playListRef])
+
   const onMount = async (signal: AbortSignal, onComplete: () => void) => {
     console.log('onMount', signal)
     await Promise.resolve();
@@ -65,19 +79,7 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     console.log('onUnMount')
   }
 
-  useEffect(() => {
-    console.log('PlayListView', playList, filter[0])
-  }, [playList])
 
-  useEffect(() => {
-    if (playList.length === 0) return;
-    const shuffledPlayList = shuffle ? shufflePlayList(playList) : natsortPlayList(playList);
-    setPlayList(shuffledPlayList);
-  }, [shuffle])
-
-  useEffect(() => {
-    console.log('playListRef', playListRef)
-  }, [playListRef])
 
 
   const openDialogPlayList = async () => {

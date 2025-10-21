@@ -47,27 +47,22 @@ function PlayListRowView({
   }, [])
 
   const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    console.log('onMount', signal)
     await Promise.resolve();
 
     if(signal?.aborted) {
-      console.log('onMount Aborted')
       return;
     }
 
     // do something
     onComplete();
     setIsInitialized(true)
-    console.log('onMount Completed')
   }
 
   const onUnMount = async () => {
-    console.log('onUnMount')
   }
 
   const clickPlayPath = (path: string) => {
     console.log('clickPlayPath', path)
-    console.log('setSetting clickPlayPath')
     setPlayPath(path)
     setSelectionBegin(path)
   }

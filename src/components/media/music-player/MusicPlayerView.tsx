@@ -95,7 +95,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
   }, [setting.volume])
 
   useEffect(() => {
-    // if(!ready) return;
     if (playPath === undefined) return;
     setSetting((setting) => ({...setting, caller: "useEffect [playPath]", mediaPath: playPath}))
     console.log('fetch HEAD');

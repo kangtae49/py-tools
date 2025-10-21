@@ -55,6 +55,7 @@ def run():
         draggable=True,
         zoomable=False,
         confirm_close=False,
+        width=840, height=600,
     )
 
     # events

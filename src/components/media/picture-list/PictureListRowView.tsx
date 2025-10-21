@@ -22,7 +22,6 @@ function PictureListRowView({
 }: RowComponentProps<Prop>) {
   const [isInitialized, setIsInitialized] = useState(false);
   const {playList} = usePlayListStore();
-  // console.log(playList)
   useEffect(() => {
     let active = false;
     const controller = new AbortController();
@@ -37,22 +36,18 @@ function PictureListRowView({
   }, [])
 
   const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    console.log('onMount', signal)
     await Promise.resolve();
 
     if(signal?.aborted) {
-      console.log('onMount Aborted')
       return;
     }
 
     // do something
     onComplete();
     setIsInitialized(true)
-    console.log('onMount Completed')
   }
 
   const onUnMount = async () => {
-    console.log('onUnMount')
   }
 
   const idx = index * columnCount;

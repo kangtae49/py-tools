@@ -8,6 +8,7 @@ export interface PictureSetting {
   sliderWidth: number
   sliderHeight: number
   sliderCheck: boolean
+  playbackRate: number
   paused: boolean
   shuffle: boolean
   repeat: RepeatType
@@ -105,12 +106,13 @@ export const pictureDefault: PictureDefault = {
   extensions: ["jpg", "png", "svg", "bmp"],
   setting: {
     mediaPath: undefined,
-    sliderWidth: 200,
-    sliderHeight: 200,
+    sliderWidth: 64*4,
+    sliderHeight: 64*4,
     sliderCheck: true,
-    shuffle: true,
+    shuffle: false,
     repeat: "repeat_all",
     playList: [],
+    playbackRate: 1.0,
     paused: true
   },
 };

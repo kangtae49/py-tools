@@ -44,6 +44,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     toggleShuffle,
     setting, setSetting,
     viewType,
+    scrollGrid,
   } = useMediaStore();
 
   const {
@@ -144,6 +145,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     const newPlayPath = getPrevPlayPath(setting.mediaPath);
     console.log('setSetting playPrev', newPlayPath)
     setPlayPath(newPlayPath)
+    scrollGrid(playList, newPlayPath)
   }
 
   const playNext = () => {
@@ -151,6 +153,8 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     const newPlayPath = getNextPlayPath(setting.mediaPath);
     console.log('setSetting playNext', newPlayPath)
     setPlayPath(newPlayPath)
+    scrollGrid(playList, newPlayPath)
+
   }
 
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {

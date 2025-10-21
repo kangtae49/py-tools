@@ -1,6 +1,6 @@
 import {usePictureStore} from "@/components/media/picture-player/pictureStore.ts";
 import {getFilename, srcLocal} from "@/components/utils.ts";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 
 interface Prop {
   width: number
@@ -8,15 +8,25 @@ interface Prop {
 }
 function ImageView({width, height}: Prop) {
   const [opacity, setOpacity] = useState(0);
+  const imageRef = useRef<HTMLImageElement>(null);
   const {
     setMediaRef,
     setViewType,
     setting,
+
   } = usePictureStore()
 
   useEffect(() => {
-    setOpacity(0);
+    if (setting.mediaPath) {
+      setOpacity(0);
+    }
   }, [setting.mediaPath])
+
+  useEffect(() => {
+    if(imageRef.current?.complete) {
+      setOpacity(1);
+    }
+  }, []);
 
   return (
     <div className="picture-image"
@@ -27,9 +37,11 @@ function ImageView({width, height}: Prop) {
          onLoad={() => setOpacity(1)}
          onClick={() => setViewType('grid')}
     >
-      {setting.mediaPath && <img src={srcLocal(setting.mediaPath)}
-           loading="lazy"
-           alt={getFilename(setting.mediaPath)}
+      {setting.mediaPath && <img
+          ref={imageRef}
+          src={srcLocal(setting.mediaPath)}
+          loading="lazy"
+          alt={getFilename(setting.mediaPath)}
       />}
     </div>
   )

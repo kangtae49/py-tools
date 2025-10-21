@@ -93,7 +93,8 @@ function PictureGridView({
   }
   const onChangeSliderWidth = (value: string) => {
     const {setting} = usePictureStore.getState()
-    const val = Number(value)
+    let val = Number(value)
+    val = Math.max(val, 100)
     console.log('onChange checked', setting.sliderCheck)
     if (setting.sliderCheck) {
       setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
@@ -103,7 +104,8 @@ function PictureGridView({
   }
   const onChangeSliderHeight = (value: string) => {
     const {setting} = usePictureStore.getState()
-    const val = Number(value)
+    let val = Number(value)
+    val = Math.max(val, 100)
     console.log('onChange checked', setting.sliderCheck)
     if (setting.sliderCheck) {
       setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
@@ -114,30 +116,34 @@ function PictureGridView({
 
   const columnCount = getColumnCount();
   const rowCount = getRowCount();
-  // console.log('size', width, height, gridWidth, gridHeight, setting.sliderWidth, setting.sliderHeight, getColumnCount(), getRowCount())
   // console.log('checked', setting, setting.sliderCheck)
   if (!isInitialized) return null;
+  console.log('size', width, height, gridWidth, gridHeight, setting.sliderWidth, setting.sliderHeight, getColumnCount(), getRowCount())
   return (
   <div className="picture-grid" style={{width: width, height: height}}>
     <div className="slider-wrap-w">
-      <input type="checkbox"
-             checked={setting.sliderCheck}
-             onChange={(e) => onChangeSliderCheck(e.target.checked)}/>
+      <div className="check">
+        <input type="checkbox"
+               checked={setting.sliderCheck}
+               onChange={(e) => onChangeSliderCheck(e.target.checked)}/>
+      </div>
       <div className="slider-w">
-        <input type="range" min={0} max={gridWidth - SLIDER_SIZE}
+        <input type="range" min={0} max={width - SLIDER_SIZE}
                step={SLIDER_STEP}
                value={Math.min(setting.sliderWidth, gridWidth - SLIDER_SIZE)}
                onChange={(e) => onChangeSliderWidth(e.target.value)}
+               style={{width: width - SLIDER_SIZE}}
         />
       </div>
     </div>
     <div className="slider-wrap-h">
       <div className="slider-h">
         <input type="range"
-               min={0} max={gridHeight - SLIDER_SIZE}
+               min={0} max={height - SLIDER_SIZE}
                step={SLIDER_STEP}
                value={Math.min(setting.sliderHeight, gridHeight - SLIDER_SIZE)}
                onChange={(e) => onChangeSliderHeight(e.target.value)}
+               style={{height: height - SLIDER_SIZE}}
         />
       </div>
       <Grid className="picture-grid"

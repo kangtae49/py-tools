@@ -344,6 +344,11 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                     subType={setting.subType}
                     onChangeSub={onChangeSub}
                   />
+                  <SpeedMenu
+                    value={String(setting.playbackRate)}
+                    list={["0.25", "0.5", "0.75", "1", "1.25", "1.5", "1.75", "2"]}
+                    defaultValue={"1"}
+                    onChange={onChangeSpeed} />
                   <div className="center">
                     <div className="icon" onClick={() => toggleShuffle()}>
                       <Icon icon={faShuffle} className={shuffle ? '': 'inactive'}/>
@@ -363,9 +368,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                     {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
                     {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
                   </div>
-                  <SpeedMenu
-                    playbackRate={setting.playbackRate}
-                    onChangeSpeed={onChangeSpeed} />
                   <VolumeMenu
                     muted={setting.muted} volume={setting.volume}
                     toggleMute={toggleMute}

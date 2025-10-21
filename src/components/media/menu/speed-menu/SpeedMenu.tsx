@@ -5,17 +5,19 @@ import {FontAwesomeIcon as Icon} from "@fortawesome/react-fontawesome";
 import {faPersonBiking} from "@fortawesome/free-solid-svg-icons";
 
 interface Prop {
-  playbackRate: number | undefined
-  onChangeSpeed: (value: string) => void
+  value: string | undefined
+  defaultValue: string
+  list: string[]
+  onChange: (value: string) => void
 }
 
-function SpeedMenu({playbackRate, onChangeSpeed}: Prop) {
+function SpeedMenu({value, defaultValue, list, onChange}: Prop) {
   const [isOpen, setOpen] = useState(false);
   const { anchorProps, hoverProps } = useHover(isOpen, setOpen);
   let ref = useRef<HTMLDivElement | null>(null);
 
   let speedNm;
-  let speed = playbackRate ?? 1;
+  let speed = Number(value ?? defaultValue);
   if (speed > 1) {
     speedNm = "up";
   } else if (speed < 1) {
@@ -23,10 +25,10 @@ function SpeedMenu({playbackRate, onChangeSpeed}: Prop) {
   } else {
     speedNm = "";
   }
-
+  // ["0.25", "0.5", "0.75", "1", "1.25", "1.5", "1.75", "2"]
   return (
     <div className="hover-menu">
-      <div className="target" ref={ref} {...anchorProps} onClick={() => onChangeSpeed("1")}>
+      <div className="target" ref={ref} {...anchorProps} onClick={() => onChange(defaultValue)}>
         <Icon icon={faPersonBiking} className={speedNm} />
       </div>
       <ControlledMenu
@@ -35,8 +37,8 @@ function SpeedMenu({playbackRate, onChangeSpeed}: Prop) {
         anchorRef={ref as React.RefObject<Element | RectElement>}
         onClose={() => setOpen(false)}
       >
-        { ["0.25", "0.5", "0.75", "1", "1.25", "1.5", "1.75", "2"].map((v, idx) => (
-          <MenuItem key={idx} className={`menu-item ${playbackRate == Number(v) ? 'selected': ''}`} value={v} onClick={(e) => onChangeSpeed(e.value)}>x{v}</MenuItem>
+        { list.map((v, idx) => (
+          <MenuItem key={idx} className={`menu-item ${(value ?? defaultValue) == v ? 'selected': ''}`} value={v} onClick={(e) => onChange(e.value)}>x{v}</MenuItem>
         ))}
       </ControlledMenu>
     </div>

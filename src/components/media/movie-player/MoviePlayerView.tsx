@@ -1,5 +1,5 @@
 import "./MoviePlayerView.css"
-import React, {useEffect, useState} from "react";
+import React from "react";
 import {commands} from "@/bindings.ts"
 import {SplitPane} from "@rexxars/react-split-pane";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -15,8 +15,8 @@ import {
   faArrowsSpin, faRotateRight, faMinus, faFilm, faExpand,
 } from '@fortawesome/free-solid-svg-icons'
 import VideoView from "./VideoView.tsx";
-import {useVideoStore as useMediaStore} from "../mediaStore.ts";
-import {useMoviePlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
+import {useVideoStore as useMediaStore} from "../useMediaStore.ts";
+import {useMoviePlayListStore as usePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
 import MovieDropListener from "./MovieDropListener.tsx";
 import MovieSettingListener from "./MovieSettingListener.tsx";
 import PlayListView from "@/components/media/play-list/PlayListView.tsx";
@@ -25,13 +25,15 @@ import SpeedMenu from "@/components/media/menu/speed-menu/SpeedMenu.tsx";
 
 import SubtitleMenu from "@/components/media/menu/subtitle-menu/SubtitleMenu.tsx";
 import {getSubs} from "@/components/media/media.ts";
+import useOnload from "@/stores/useOnload.ts";
 
 interface Prop {
   winKey: WinKey
 }
 
 export default function MoviePlayerView({winKey: _}: Prop) {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const {onLoad, useReadyEffect} = useOnload()
+
   const {
     mediaRef,
     containerRef, setContainerRef,
@@ -58,47 +60,37 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     setDropRef,
   } = useReceivedDropFilesStore();
 
-  useEffect(() => {
-    let active = false;
-    const controller = new AbortController();
+  onLoad(() => {
     containerRef?.focus();
-    onMount(controller.signal, () => {active = true;})
+  })
 
-    return () => {
-      controller.abort();
-      if (active) {
-        onUnMount().then()
-      }
-    }
-  }, [])
-
-  useEffect(() => {
+  useReadyEffect(() => {
     setPlaying(!setting.paused)
   }, [setting.paused])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     setSetting((setting) => ({...setting, caller: "useEffect [currentTime]", currentTime: Math.floor(currentTime)}))
   }, [currentTime])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     setSetting((setting) => ({...setting, caller: "useEffect [playing]", paused: !playing}))
   }, [playing]);
 
-  useEffect(() => {
+  useReadyEffect(() => {
     setSetting((setting) => ({...setting, caller: "useEffect [playList]", playList}))
   }, [playList])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     setSetting((setting) => ({...setting, caller: "useEffect [shuffle]", shuffle}))
   }, [shuffle])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     const newMuted = setting.volume == 0;
     changeMuted(newMuted);
     setSetting((setting) => ({...setting, caller: "useEffect[setting.volume]", muted: newMuted}))
   }, [setting.volume])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     if (playPath === undefined) return;
     setSetting((setting) => ({...setting, caller: "useEffect [playPath]", mediaPath: playPath}))
     console.log('fetch HEAD');
@@ -131,7 +123,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     ;
   }, [playPath]);
 
-  useEffect(() => {
+  useReadyEffect(() => {
     const setting = useMediaStore.getState().setting;
     const {
       shuffle,
@@ -181,27 +173,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
       }
     }
   }, [ended])
-
-
-  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    console.log('onMount', signal)
-    await Promise.resolve();
-
-    if(signal?.aborted) {
-      console.log('onMount Aborted')
-      return;
-    }
-
-    // do something
-    onComplete();
-    setIsInitialized(true)
-    console.log('onMount Completed')
-  }
-
-  const onUnMount = async () => {
-    console.log('onUnMount')
-  }
-
 
   const clickTogglePlay = async () => {
     const newPaused = !setting.paused
@@ -286,8 +257,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     setSetting((setting) => ({...setting, caller: "clickSubType", subType: newSubType}))
   }
 
-
-  if (!isInitialized) return null;
   return (
     <>
       <MovieDropListener/>

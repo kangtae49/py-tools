@@ -2,7 +2,7 @@ import {useEffect} from "react";
 import {commands} from "@/bindings.ts";
 // import {MUSIC_PLAYER_SETTING} from "@/components/media/music_player/MusicPlayerView.tsx";
 
-export function WindowEventListener() {
+export default function WindowEventListener() {
   useEffect(() => {
     const onWindowEventHandler = (e: CustomEvent) => {
       const event = e.detail;

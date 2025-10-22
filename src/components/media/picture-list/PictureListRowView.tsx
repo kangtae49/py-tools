@@ -1,12 +1,13 @@
 import {getFilename, srcLocal} from "@/components/utils.ts";
-import type {PlayListStore} from "@/components/media/play-list/playListStore.ts";
+import type {UsePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
 import type {RowComponentProps} from "react-window";
-import {useEffect, useState} from "react";
 import type {UseBoundStore} from "zustand";
 import type {StoreApi} from "zustand/vanilla";
+import useOnload from "@/stores/useOnload.ts";
+import {useState} from "react";
 
 interface Prop {
-  usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
+  usePlayListStore: UseBoundStore<StoreApi<UsePlayListStore>>
   // playList: string[]
   columnCount: number
   columnWidth: number
@@ -20,39 +21,14 @@ function PictureListRowView({
   columnCount,
   columnWidth,
 }: RowComponentProps<Prop>) {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [idx, setIdx] = useState(0);
+  const {useReadyEffect} = useOnload()
   const {playList} = usePlayListStore();
-  useEffect(() => {
-    let active = false;
-    const controller = new AbortController();
-    onMount(controller.signal, () => {active = true;})
 
-    return () => {
-      controller.abort();
-      if (active) {
-        onUnMount().then()
-      }
-    }
-  }, [])
+  useReadyEffect(() => {
+    setIdx(index * columnCount);
+  }, [index, columnCount, playList])
 
-  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    await Promise.resolve();
-
-    if(signal?.aborted) {
-      return;
-    }
-
-    // do something
-    onComplete();
-    setIsInitialized(true)
-  }
-
-  const onUnMount = async () => {
-  }
-
-  const idx = index * columnCount;
-
-  if (!isInitialized) return null;
   return (
     <div className="row" style={style}>
     {playList.slice(idx, idx+columnCount).map((playPath: string, idxCol) => (

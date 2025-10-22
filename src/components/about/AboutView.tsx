@@ -1,13 +1,22 @@
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 import logo from "../../assets/tr-tools.svg"
 import "./AboutView.css"
+import useOnload from "@/stores/useOnload.ts";
 interface Prop {
   winKey: WinKey
 }
 export default function AboutView({winKey: _}: Prop) {
+  const {onLoad, onUnload} = useOnload();
 
+  onLoad(() => {
+    console.log("AboutView")
+  })
+
+  onUnload(() => {
+  })
   return (
-    <div className="widget about" >
+    <div className="widget about"
+         tabIndex={0}>
       <div className="box">
         <div className="logo">
           <img src={logo} alt="logo" />

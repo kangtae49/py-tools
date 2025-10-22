@@ -20,7 +20,7 @@ export interface MediaSetting {
 
 
 
-export interface MediaStore<T extends HTMLMediaElement> {
+export interface UseMediaStore<T extends HTMLMediaElement> {
   mediaRef: T | null
   containerRef: HTMLDivElement | null
   ended: boolean
@@ -58,7 +58,7 @@ export interface MediaStore<T extends HTMLMediaElement> {
 
 function createMediaStore<T extends HTMLMediaElement>(mediaDefault?: MediaDefault) {
 
-  return create<MediaStore<T>>((set, get) => ({
+  return create<UseMediaStore<T>>((set, get) => ({
     mediaRef: null,
     containerRef: null,
     ended: false,

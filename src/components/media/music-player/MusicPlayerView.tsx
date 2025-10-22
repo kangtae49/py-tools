@@ -1,5 +1,5 @@
 import "./MusicPlayerView.css"
-import React, {useEffect, useState} from "react";
+import React from "react";
 import {formatSeconds, srcLocal} from "@/components/utils.ts";
 import toast from "react-hot-toast";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
@@ -12,13 +12,14 @@ import {
   faArrowsSpin, faRotateRight, faMinus, faMusic,
 } from '@fortawesome/free-solid-svg-icons'
 import AudioView from "./AudioView.tsx";
-import {useAudioStore as useMediaStore} from "../mediaStore.ts";
-import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
+import {useAudioStore as useMediaStore} from "../useMediaStore.ts";
+import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
 import MusicDropListener from "./MusicDropListener.tsx";
 import MusicSettingListener from "./MusicSettingListener.tsx";
 import PlayListView from "@/components/media/play-list/PlayListView.tsx";
 import VolumeMenu from "@/components/media/menu/volume-menu/VolumeMenu.tsx";
 import SpeedMenu from "@/components/media/menu/speed-menu/SpeedMenu.tsx";
+import useOnload from "@/stores/useOnload.ts";
 
 
 interface Prop {
@@ -26,7 +27,14 @@ interface Prop {
 }
 
 export default function MusicPlayerView({winKey: _}: Prop) {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const {onLoad, onUnload, useReadyEffect} = useOnload()
+  onLoad(() => {
+    containerRef?.focus();
+  });
+
+  onUnload(() => {
+  });
+
   const {
     mediaRef,
     containerRef, setContainerRef,
@@ -52,49 +60,35 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     setDropRef,
   } = useReceivedDropFilesStore();
 
-  useEffect(() => {
-    let active = false;
-    const controller = new AbortController();
-    containerRef?.focus();
-    onMount(controller.signal, () => {active = true;})
-
-    return () => {
-      controller.abort();
-      if (active) {
-        onUnMount().then()
-      }
-    }
-  }, [])
-
-  useEffect(() => {
+  useReadyEffect(() => {
     if(setting.paused !== undefined) {
       setPlaying(!setting.paused)
     }
   }, [setting.paused])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     setSetting((setting) => ({...setting, caller: "useEffect [currentTime]", currentTime: Math.floor(currentTime)}))
   }, [currentTime])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     setSetting((setting) => ({...setting, caller: "useEffect [playList]", paused: !playing}))
   }, [playing]);
 
-  useEffect(() => {
+  useReadyEffect(() => {
     setSetting((setting) => ({...setting, caller: "useEffect [playList]", playList}))
   }, [playList])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     setSetting((setting) => ({...setting, caller: "useEffect [playList]", shuffle}))
   }, [shuffle])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     const newMuted = setting.volume == 0;
     changeMuted(newMuted);
     setSetting((setting) => ({...setting, caller: "useEffect[setting.volume]", muted: newMuted}))
   }, [setting.volume])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     if (playPath === undefined) return;
     setSetting((setting) => ({...setting, caller: "useEffect [playPath]", mediaPath: playPath}))
     console.log('fetch HEAD');
@@ -114,7 +108,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     ;
   }, [playPath]);
 
-  useEffect(() => {
+  useReadyEffect(() => {
     const setting = useMediaStore.getState().setting;
     const {
       shuffle,
@@ -164,27 +158,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
       }
     }
   }, [ended])
-
-
-  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    console.log('onMount', signal)
-    await Promise.resolve();
-
-    if(signal?.aborted) {
-      console.log('onMount Aborted')
-      return;
-    }
-
-    // do something
-    onComplete();
-    setIsInitialized(true)
-    console.log('onMount Completed')
-  }
-
-  const onUnMount = async () => {
-    console.log('onUnMount')
-  }
-
 
   const clickTogglePlay = async () => {
     const newPaused = !setting.paused
@@ -252,7 +225,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     changeVolume(v);
   }
 
-  if (!isInitialized) return null;
   return (
     <>
       <MusicDropListener />

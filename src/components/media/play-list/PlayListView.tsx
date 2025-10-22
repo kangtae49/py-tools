@@ -1,25 +1,26 @@
 import "./PlayListView.css"
+import React from "react";
 import PlayListRowView from "./PlayListRowView.tsx";
 
 import {List} from "react-window";
 import type {UseBoundStore} from "zustand";
 import type {StoreApi} from "zustand/vanilla";
 import {
-  type PlayListStore,
-} from "@/components/media/play-list/playListStore.ts";
-import React, {useEffect, useState} from "react";
+  type UsePlayListStore,
+} from "@/components/media/play-list/usePlayListStore.ts";
 import {getFilename} from "@/components/utils.ts";
 import {FontAwesomeIcon as Icon} from "@fortawesome/react-fontawesome";
 import {faBookMedical, faFloppyDisk, faFolderPlus, faTrashCan} from "@fortawesome/free-solid-svg-icons";
 import {commands} from "@/bindings.ts";
 import toast from "react-hot-toast";
+import useOnload from "@/stores/useOnload.ts";
 
 interface Prop {
-  usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
+  usePlayListStore: UseBoundStore<StoreApi<UsePlayListStore>>
   icon?: React.ReactElement,
 }
 export default function PlayListView({usePlayListStore, icon}: Prop) {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const {useReadyEffect} = useOnload()
   const {
     shuffle,
     playPath,
@@ -33,51 +34,51 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     filter,
   } = usePlayListStore();
 
-  useEffect(() => {
-    let active = false;
-    const controller = new AbortController();
-    onMount(controller.signal, () => {active = true;})
+  // useEffect(() => {
+  //   let active = false;
+  //   const controller = new AbortController();
+  //   onMount(controller.signal, () => {active = true;})
+  //
+  //   return () => {
+  //     controller.abort();
+  //     if (active) {
+  //       onUnMount().then()
+  //     }
+  //   }
+  // }, [])
 
-    return () => {
-      controller.abort();
-      if (active) {
-        onUnMount().then()
-      }
-    }
-  }, [])
-
-  useEffect(() => {
+  useReadyEffect(() => {
     console.log('PlayListView', playList, filter[0])
   }, [playList])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     if (playList.length === 0) return;
     const shuffledPlayList = shuffle ? shufflePlayList(playList) : natsortPlayList(playList);
     setPlayList(shuffledPlayList);
   }, [shuffle])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     console.log('playListRef', playListRef)
   }, [playListRef])
 
-  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    console.log('onMount', signal)
-    await Promise.resolve();
-
-    if(signal?.aborted) {
-      console.log('onMount Aborted')
-      return;
-    }
-
-    // do something
-    onComplete();
-    setIsInitialized(true)
-    console.log('onMount Completed')
-  }
-
-  const onUnMount = async () => {
-    console.log('onUnMount')
-  }
+  // const onMount = async (signal: AbortSignal, onComplete: () => void) => {
+  //   console.log('onMount', signal)
+  //   await Promise.resolve();
+  //
+  //   if(signal?.aborted) {
+  //     console.log('onMount Aborted')
+  //     return;
+  //   }
+  //
+  //   // do something
+  //   onComplete();
+  //   setIsInitialized(true)
+  //   console.log('onMount Completed')
+  // }
+  //
+  // const onUnMount = async () => {
+  //   console.log('onUnMount')
+  // }
 
 
 
@@ -157,7 +158,7 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     })
   }
 
-  if (!isInitialized) return null;
+  // if (!isInitialized) return null;
   return (
     <div className="play-list">
       <div className="head">

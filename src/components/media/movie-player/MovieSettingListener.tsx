@@ -3,8 +3,8 @@ import {commands} from "@/bindings.ts";
 import {
   type MediaSetting,
   useVideoStore as useMediaStore,
-} from "@/components/media/mediaStore.ts";
-import {useMoviePlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
+} from "@/components/media/useMediaStore.ts";
+import {useMoviePlayListStore as usePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
 
 function MovieSettingListener() {
   const [ready, setReady] = useState(false);

@@ -51,7 +51,7 @@ export default function HelpView({winKey: _}: Prop) {
 
   return (
     <div className="widget help"
-         ref={containerRef}
+         tabIndex={0}
     >
       <div className="letter">
         <img src={logo} alt="logo" />

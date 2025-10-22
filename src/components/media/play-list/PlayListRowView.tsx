@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faCircleXmark,
@@ -7,13 +7,11 @@ import { type RowComponentProps } from "react-window";
 import {getFilename} from "@/components/utils.ts";
 import type {StoreApi} from "zustand/vanilla";
 import type { UseBoundStore } from "zustand";
-import type {PlayListStore} from "@/components/media/play-list/playListStore.ts";
-
-
+import type {UsePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
 
 
 interface Prop {
-  usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
+  usePlayListStore: UseBoundStore<StoreApi<UsePlayListStore>>
   icon?: React.ReactElement,
 }
 
@@ -23,7 +21,6 @@ function PlayListRowView({
   usePlayListStore,
   icon,
 }: RowComponentProps<Prop>) {
-  const [isInitialized, setIsInitialized] = useState(false);
   const {
     playPath, setPlayPath,
     playing,
@@ -33,33 +30,6 @@ function PlayListRowView({
     appendCheckedPlayList, removeCheckedPlayList,
   } = usePlayListStore();
 
-  useEffect(() => {
-    let active = false;
-    const controller = new AbortController();
-    onMount(controller.signal, () => {active = true;})
-
-    return () => {
-      controller.abort();
-      if (active) {
-        onUnMount().then()
-      }
-    }
-  }, [])
-
-  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    await Promise.resolve();
-
-    if(signal?.aborted) {
-      return;
-    }
-
-    // do something
-    onComplete();
-    setIsInitialized(true)
-  }
-
-  const onUnMount = async () => {
-  }
 
   const clickPlayPath = (path: string) => {
     console.log('clickPlayPath', path)
@@ -83,7 +53,6 @@ function PlayListRowView({
   const isChecked = checkedPlayList.includes(playList[index]);
   const isSelected = playList[index] === selectionBegin;
 
-  if (!isInitialized) return null;
   return (
     <div className={`row ${isSelected ? 'selected': ''} ${isPlayPath ? 'playing' : ''}`} style={style}>
       <div className={`title  ${(playing && isPlayPath) ? 'playing' : ''}`}

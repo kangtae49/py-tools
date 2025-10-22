@@ -1,12 +1,12 @@
 import "./PicturePlayerView.css"
-import React, {Activity, useEffect, useState} from "react";
+import React, {Activity} from "react";
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 import {SplitPane} from "@rexxars/react-split-pane";
 import AutoSizer from "react-virtualized-auto-sizer";
 import PlayListView from "@/components/media/play-list/PlayListView.tsx";
 import {
   usePicturePlayListStore as usePlayListStore
-} from "@/components/media/play-list/playListStore.ts";
+} from "@/components/media/play-list/usePlayListStore.ts";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faArrowsSpin,
@@ -20,14 +20,14 @@ import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 
 import {
   usePictureStore as useMediaStore,
-} from "./pictureStore.ts";
+} from "./usePictureStore.ts";
 import PictureGridView from "@/components/media/picture-grid/PictureGridView.tsx";
 import PictureSettingListener from "./PictureSettingListener.tsx";
 import SpeedMenu from "@/components/media/menu/speed-menu/SpeedMenu.tsx";
 import {srcLocal} from "@/components/utils.ts";
 import toast from "react-hot-toast";
 import ImageView from "./ImageView.tsx";
-// import PictureListView from "@/components/media/picture-list/PictureListView.tsx";
+import useOnload from "@/stores/useOnload.ts";
 
 
 interface Prop {
@@ -35,7 +35,7 @@ interface Prop {
 }
 
 export default function PicturePlayerView({winKey: _}: Prop) {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const {onLoad, useReadyEffect} = useOnload()
   const {
     mediaRef, setMediaRef,
     // setting,
@@ -60,41 +60,31 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     setDropRef,
   } = useReceivedDropFilesStore();
 
-  useEffect(() => {
-    let active = false;
-    const controller = new AbortController();
+  onLoad(() => {
     containerRef?.focus();
-    onMount(controller.signal, () => {active = true;})
+  })
 
-    return () => {
-      controller.abort();
-      if (active) {
-        onUnMount().then()
-      }
-    }
-  }, [])
-
-  useEffect(() => {
+  useReadyEffect(() => {
     setPlaying(!setting.paused)
   }, [setting.paused])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     setSetting((setting) => ({...setting, caller: "useEffect [playing]", paused: !playing}))
   }, [playing]);
 
-  useEffect(() => {
+  useReadyEffect(() => {
     setSetting((setting) => ({...setting, caller: "useEffect [playList]", playList}))
   }, [playList])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     setShuffle(setting.shuffle)
   }, [setting.shuffle])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     setPlayPath(setting.mediaPath)
   }, [setting.mediaPath])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     if (playPath === undefined) return;
     setSetting((setting) => ({...setting, caller: "useEffect [playPath]", mediaPath: playPath}))
     console.log('fetch HEAD');
@@ -113,26 +103,6 @@ export default function PicturePlayerView({winKey: _}: Prop) {
       })
     ;
   }, [playPath]);
-
-
-  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    console.log('onMount', signal)
-    await Promise.resolve();
-
-    if(signal?.aborted) {
-      console.log('onMount Aborted')
-      return;
-    }
-
-    // do something
-    onComplete();
-    setIsInitialized(true)
-    console.log('onMount Completed')
-  }
-
-  const onUnMount = async () => {
-    console.log('onUnMount')
-  }
 
 
   const clickTogglePlay = async () => {
@@ -183,7 +153,6 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     setSetting((setting) => ({...setting, caller: "clickSpeed", playbackRate: v}))
   }
 
-  if (!isInitialized) return null;
   return (
     <>
       <PictureSettingListener />

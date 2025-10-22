@@ -1,42 +1,29 @@
-import {useEffect, useState} from "react";
 import {commands} from "@/bindings.ts";
 import {type MosaicSetting, useMosaicStore} from "./mosaicStore.ts";
+import useOnload from "@/stores/useOnload.ts";
 
 function MosaicSettingListener() {
-  const [ready, setReady] = useState(false);
+  const {onLoad, onUnload, useReadyEffect} = useOnload()
+  // const [ready, setReady] = useState(false);
   const {
     setting,
     defaultSetting,
   } = useMosaicStore();
 
-  useEffect(() => {
-    onMount().then(() => {
-      setReady(true);
-    });
+  onLoad(() => {
+    mountSetting();
+  })
 
-    return () => {
-      if (ready) {
-        onUnMount().then()
-      }
-    }
-  }, [])
+  onUnload(() => {
+    unMountSetting()
+  })
 
-  useEffect(() => {
-    if(!ready) return;
+  useReadyEffect(() => {
+    // if(!ready) return;
     if (defaultSetting?.settingName === undefined) return;
     console.log('MosaicSetting', setting);
     commands.appWrite(defaultSetting.settingName, JSON.stringify(setting, null, 2)).then()
   }, [setting])
-
-  const onMount = async () => {
-    console.log('onMount')
-    await mountSetting();
-  }
-
-  const onUnMount = async () => {
-    console.log('onUnMount')
-    await unMountSetting()
-  }
 
   return null
 }
@@ -72,7 +59,6 @@ export const mountSetting = async () => {
   setSetting((_setting) => newSetting)
   console.log('MosaicSetting Layout', newSetting.layout);
   setMosaicValue(newSetting.layout);
-
 
 }
 

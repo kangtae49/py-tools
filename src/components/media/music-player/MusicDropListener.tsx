@@ -1,10 +1,11 @@
-import {useEffect} from "react";
 import type {DropFile} from "@/types/models";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
-import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
-import {useAudioStore as useMediaStore} from "@/components/media/mediaStore.ts";
+import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
+import {useAudioStore as useMediaStore} from "@/components/media/useMediaStore.ts";
+import useOnload from "@/stores/useOnload.ts";
 
 function MusicDropListener() {
+  const {useReadyEffect} = useOnload()
   const {
     setDropRef,
     dropRef,
@@ -41,7 +42,7 @@ function MusicDropListener() {
     console.log('setSetting onDropPlayList')
   }
 
-  useEffect(() => {
+  useReadyEffect(() => {
     const onDropFullPathHandler = (e: CustomEvent) => {
       setDropRef(null);
       const {extensions} = useMediaStore.getState();

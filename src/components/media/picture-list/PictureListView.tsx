@@ -1,16 +1,16 @@
 import "./PictureListView.css"
-import React, {useEffect, useState} from "react";
+import React from "react";
 import {List} from "react-window";
 import type {UseBoundStore} from "zustand";
 import type {StoreApi} from "zustand/vanilla";
 import {
-  type PlayListStore,
-} from "@/components/media/play-list/playListStore.ts";
+  type UsePlayListStore,
+} from "@/components/media/play-list/usePlayListStore.ts";
 import PictureListRowView from "@/components/media/picture-list/PictureListRowView.tsx";
-import {usePictureStore} from "@/components/media/picture-player/pictureStore.ts";
+import {usePictureStore} from "@/components/media/picture-player/usePictureStore.ts";
 
 interface Prop {
-  usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
+  usePlayListStore: UseBoundStore<StoreApi<UsePlayListStore>>
   icon?: React.ReactElement
   width: number
   height: number
@@ -22,7 +22,6 @@ function PictureListView({
   width,
   height,
 }: Prop) {
-  const [isInitialized, setIsInitialized] = useState(false);
   const {setting, setSetting} = usePictureStore();
 
   const SCROLL_SIZE = 15;
@@ -32,38 +31,6 @@ function PictureListView({
 
   const gridWidth = width - SLIDER_SIZE - SCROLL_SIZE;
   const gridHeight = height - SLIDER_SIZE;
-
-  useEffect(() => {
-    let active = false;
-    const controller = new AbortController();
-    onMount(controller.signal, () => {active = true;})
-
-    return () => {
-      controller.abort();
-      if (active) {
-        onUnMount().then()
-      }
-    }
-  }, [])
-
-  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    console.log('onMount', signal)
-    await Promise.resolve();
-
-    if(signal?.aborted) {
-      console.log('onMount Aborted')
-      return;
-    }
-
-    // do something
-    onComplete();
-    setIsInitialized(true)
-    console.log('onMount Completed')
-  }
-
-  const onUnMount = async () => {
-    console.log('onUnMount')
-  }
 
   const getColumnCount = () => {
     const {setting} = usePictureStore.getState();
@@ -115,7 +82,6 @@ function PictureListView({
   const columnCount = getColumnCount();
   const rowCount = getRowCount();
 
-  if (!isInitialized) return null;
   return (
     <div className="picture-list" style={{width: width, height: height}}>
       <div className="slider-wrap-w">

@@ -1,5 +1,4 @@
 import "./AppMenuView.css"
-import {useEffect, useState} from "react";
 import { Menu, MenuItem, MenuButton } from '@szhsin/react-menu';
 import '@szhsin/react-menu/dist/index.css';
 import '@szhsin/react-menu/dist/transitions/zoom.css';
@@ -11,41 +10,7 @@ import {
 import {useMosaicStore, type WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 
 function AppMenuView() {
-  const [isInitialized, setIsInitialized] = useState(false);
   const {addView, maxScreenView, setMaxScreenView} = useMosaicStore();
-
-  useEffect(() => {
-    let active = false;
-    const controller = new AbortController();
-    onMount(controller.signal, () => {active = true;})
-
-    return () => {
-      controller.abort();
-      if (active) {
-        onUnMount().then()
-      }
-    }
-  }, [])
-
-  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    console.log('onMount', signal)
-    await Promise.resolve();
-
-    if(signal?.aborted) {
-      console.log('onMount Aborted')
-      return;
-    }
-
-    // do something
-
-    onComplete();
-    setIsInitialized(true)
-    console.log('onMount Completed')
-  }
-
-  const onUnMount = async () => {
-    console.log('onUnMount')
-  }
 
   const clickMenu = (_e: any, menu: WinKey) => {
     console.log('clickMenu', menu)
@@ -56,7 +21,6 @@ function AppMenuView() {
     }
   }
 
-  if (!isInitialized) return null;
   return (
     <div className="app-menu">
       <Menu menuButton={<MenuButton>Media</MenuButton>} transition className="menu">

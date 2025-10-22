@@ -16,7 +16,7 @@ export interface PictureSetting {
   repeat: RepeatType
   playList: string[]
 }
-interface PictureStore {
+interface UsePictureStore {
   extensions: string[]
   settingName?: string
   setting: PictureSetting
@@ -50,7 +50,7 @@ interface PictureStore {
 
 function createPictureStore(pictureDefault: PictureDefault) {
 
-  return create<PictureStore>((set, get) => ({
+  return create<UsePictureStore>((set, get) => ({
     mediaRef: null,
     containerRef: null,
     gridRef: null,

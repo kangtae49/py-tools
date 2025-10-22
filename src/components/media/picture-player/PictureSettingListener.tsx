@@ -3,8 +3,8 @@ import {commands} from "@/bindings.ts";
 import {
   type PictureSetting as MediaSetting,
   usePictureStore as useMediaStore,
-} from "@/components/media/picture-player/pictureStore.ts";
-import {usePicturePlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
+} from "@/components/media/picture-player/usePictureStore.ts";
+import {usePicturePlayListStore as usePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
 
 function PictureSettingListener() {
   const [ready, setReady] = useState(false);

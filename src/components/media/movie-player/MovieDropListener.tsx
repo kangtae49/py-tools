@@ -1,8 +1,8 @@
 import {useEffect} from "react";
 import type {DropFile, Sub} from "@/types/models";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
-import {useMoviePlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
-import {useVideoStore as useMediaStore} from "@/components/media/mediaStore.ts";
+import {useMoviePlayListStore as usePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
+import {useVideoStore as useMediaStore} from "@/components/media/useMediaStore.ts";
 import {getFilename} from "@/components/utils.ts";
 import {getSubs} from "@/components/media/media.ts";
 

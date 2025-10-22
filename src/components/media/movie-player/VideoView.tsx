@@ -1,12 +1,12 @@
-import {useEffect, useState} from "react";
-import {useVideoStore as useMediaStore} from "../mediaStore.ts";
+import {useVideoStore as useMediaStore} from "../useMediaStore.ts";
 import {srcLocal} from "@/components/utils.ts";
 import {commands} from "@/bindings.ts";
 import type {Sub} from "@/types/models";
+import useOnload from "@/stores/useOnload.ts";
 
 
 function VideoView() {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const {onLoad, useReadyEffect} = useOnload()
   const {
     mediaRef, setMediaRef,
     containerRef,
@@ -21,21 +21,12 @@ function VideoView() {
     subs,
   } = useMediaStore();
 
-  useEffect(() => {
-    let active = false;
-    const controller = new AbortController();
+  onLoad(() => {
     containerRef?.focus();  // F11
-    onMount(controller.signal, () => {active = true;})
+    loadSrc(setting.mediaPath)
+  })
 
-    return () => {
-      controller.abort();
-      if (active) {
-        onUnMount().then()
-      }
-    }
-  }, [])
-
-  useEffect(() => {
+  useReadyEffect(() => {
     const ref = addListener();
     if (ref !== null) {
       const {setting} = useMediaStore.getState();
@@ -46,11 +37,11 @@ function VideoView() {
     }
   },[mediaRef])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     loadSrc(setting.mediaPath)
   }, [setting.mediaPath])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     if(mediaRef === null) return;
 
     const {setting, currentTime} = useMediaStore.getState();
@@ -74,7 +65,7 @@ function VideoView() {
     }
   }, [setting.paused])
 
-  useEffect(() => {
+  useReadyEffect(() => {
     if (subs.length === 0) return;
     if (setting.subType == undefined) return;
     if (mediaRef === null) return;
@@ -89,24 +80,6 @@ function VideoView() {
     }
   }, [setting.subType])
 
-  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    console.log('onMount', signal)
-    await Promise.resolve();
-
-    if(signal?.aborted) {
-      console.log('onMount Aborted')
-      return;
-    }
-
-    // do something
-    onComplete();
-    setIsInitialized(true)
-    console.log('onMount Completed')
-  }
-
-  const onUnMount = async () => {
-    console.log('onUnMount')
-  }
 
   const isNullPlaying = () => {
     const state = useMediaStore.getState();
@@ -243,7 +216,6 @@ function VideoView() {
     return state.setting?.subType == sub.subtype;
   }
 
-  if (!isInitialized) return null;
   return (
     <video
       ref={setMediaRef}

@@ -1,13 +1,12 @@
 import {getFilename, srcLocal} from "@/components/utils.ts";
-import type {PlayListStore} from "@/components/media/play-list/playListStore.ts";
+import type {UsePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
 import type {CellComponentProps} from "react-window";
-import {useEffect, useState} from "react";
 import type {UseBoundStore} from "zustand";
 import type {StoreApi} from "zustand/vanilla";
-import {usePictureStore} from "@/components/media/picture-player/pictureStore.ts";
+import {usePictureStore} from "@/components/media/picture-player/usePictureStore.ts";
 
 interface Prop {
-  usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
+  usePlayListStore: UseBoundStore<StoreApi<UsePlayListStore>>
   // playList: string[]
   columnCount: number
   columnWidth: number
@@ -22,36 +21,8 @@ function PictureGridCellView({
   columnCount,
   // rowCount,
 }: CellComponentProps<Prop>) {
-  const [isInitialized, setIsInitialized] = useState(false);
   const {setSetting, setViewType} = usePictureStore();
   const {playList} = usePlayListStore();
-  useEffect(() => {
-    let active = false;
-    const controller = new AbortController();
-    onMount(controller.signal, () => {active = true;})
-
-    return () => {
-      controller.abort();
-      if (active) {
-        onUnMount().then()
-      }
-    }
-  }, [])
-
-  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    await Promise.resolve();
-
-    if(signal?.aborted) {
-      return;
-    }
-
-    // do something
-    onComplete();
-    setIsInitialized(true)
-  }
-
-  const onUnMount = async () => {
-  }
 
   const onClickCell = async (imgSrc: string | null) => {
     if (imgSrc) {
@@ -66,7 +37,6 @@ function PictureGridCellView({
     imgSrc = playList[idx]
   }
 
-  if (!isInitialized) return null;
   return (
     <div className="cell" style={style} onClick={() => onClickCell(imgSrc)}>
       {imgSrc && <img src={srcLocal(imgSrc)}

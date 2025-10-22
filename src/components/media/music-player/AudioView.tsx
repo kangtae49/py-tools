@@ -1,10 +1,11 @@
-import {useEffect, useState} from "react";
-import {useAudioStore as useMediaStore} from "../mediaStore.ts";
+import {useEffect} from "react";
+import {useAudioStore as useMediaStore} from "../useMediaStore.ts";
 import {srcLocal} from "@/components/utils.ts";
+import useOnload from "@/stores/useOnload.ts";
 
 
 function AudioView() {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const {onLoad, onUnload} = useOnload()
   const {
     mediaRef, setMediaRef,
     setCurrentTime, changeCurrentTime,
@@ -16,24 +17,19 @@ function AudioView() {
     loadSrc,
   } = useMediaStore();
 
-  useEffect(() => {
-    let active = false;
-    const controller = new AbortController();
-    onMount(controller.signal, () => {active = true;})
+  onLoad(() => {
+    const {setting} = useMediaStore.getState();
+    loadSrc(setting.mediaPath)
+  })
+  onUnload(() => {
 
-    return () => {
-      controller.abort();
-      if (active) {
-        onUnMount().then()
-      }
-    }
-  }, [])
+  })
 
   useEffect(() => {
     const ref = addListener();
     if (ref !== null) {
-      const {setting} = useMediaStore.getState();
-      loadSrc(setting.mediaPath)
+      // const {setting} = useMediaStore.getState();
+      // loadSrc(setting.mediaPath)
     }
     return () => {
       removeListener(ref);
@@ -67,25 +63,6 @@ function AudioView() {
       }
     }
   }, [setting.paused])
-
-  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    console.log('onMount', signal)
-    await Promise.resolve();
-
-    if(signal?.aborted) {
-      console.log('onMount Aborted')
-      return;
-    }
-
-    // do something
-    onComplete();
-    setIsInitialized(true)
-    console.log('onMount Completed')
-  }
-
-  const onUnMount = async () => {
-    console.log('onUnMount')
-  }
 
   const isNullPlaying = () => {
     const state = useMediaStore.getState();
@@ -195,7 +172,6 @@ function AudioView() {
     }
   }
 
-  if (!isInitialized) return null;
   return (
     <audio
       ref={setMediaRef}

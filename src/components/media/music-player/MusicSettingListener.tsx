@@ -1,45 +1,29 @@
-import {useEffect, useState} from "react";
 import {commands} from "@/bindings.ts";
 import {
   type MediaSetting,
   useAudioStore as useMediaStore,
-} from "@/components/media/mediaStore.ts";
-import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/playListStore.ts";
+} from "@/components/media/useMediaStore.ts";
+import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
+import useOnload from "@/stores/useOnload.ts";
 
 function MusicSettingListener() {
-  const [ready, setReady] = useState(false);
+  const {onLoad, onUnload, useReadyEffect} = useOnload()
   const {
     setting,
     defaultSetting
   } = useMediaStore();
 
-  useEffect(() => {
-    onMount().then(() => {
-      setReady(true);
-    });
+  onLoad(() => {
+    mountSetting();
+  });
+  onUnload(() => {
+    unMountSetting()
+  });
 
-    return () => {
-      if (ready) {
-        onUnMount().then()
-      }
-    }
-  }, [])
-
-  useEffect(() => {
-    if(!ready) return;
+  useReadyEffect(() => {
     if(defaultSetting?.settingName === undefined) return;
     commands.appWrite(defaultSetting.settingName, JSON.stringify(setting, null, 2)).then()
   }, [setting])
-
-  const onMount = async () => {
-    console.log('onMount')
-    await mountSetting();
-  }
-
-  const onUnMount = async () => {
-    console.log('onUnMount')
-    await unMountSetting()
-  }
 
   return null
 }

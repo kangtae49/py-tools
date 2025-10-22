@@ -5,7 +5,7 @@ import React from "react";
 
 
 
-export interface PlayListStore {
+export interface UsePlayListStore {
   playListRef: ListImperativeAPI | null
   playPath: string | undefined
   playing: boolean
@@ -47,7 +47,7 @@ export interface PlayListStore {
 
 
 function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
-  return create<PlayListStore>((set, get) => ({
+  return create<UsePlayListStore>((set, get) => ({
     playListRef: null,
     playPath: undefined,
     playing: false,

@@ -1,17 +1,18 @@
 import "./PictureGridView.css"
-import React, {useEffect, useState} from "react";
+import React from "react";
 import {Grid} from "react-window";
 import type {UseBoundStore} from "zustand";
 import type {StoreApi} from "zustand/vanilla";
 import {
-  type PlayListStore,
-} from "@/components/media/play-list/playListStore.ts";
+  type UsePlayListStore,
+} from "@/components/media/play-list/usePlayListStore.ts";
 import PictureGridCellView from "@/components/media/picture-grid/PictureGridCellView.tsx";
-import {usePictureStore} from "@/components/media/picture-player/pictureStore.ts";
+import {usePictureStore} from "@/components/media/picture-player/usePictureStore.ts";
+import useOnload from "@/stores/useOnload.ts";
 // import {commands} from "@/bindings.ts";
 
 interface Prop {
-  usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
+  usePlayListStore: UseBoundStore<StoreApi<UsePlayListStore>>
   icon?: React.ReactElement
   width: number
   height: number
@@ -23,7 +24,7 @@ function PictureGridView({
   width,
   height,
 }: Prop) {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const {onLoad, useReadyEffect} = useOnload()
   const {
     containerRef,
     // pictureGridRef, setPictureGridRef,
@@ -40,86 +41,17 @@ function PictureGridView({
   const SLIDER_STEP = 64;
   const SLIDER_MIN = 64;
 
-  useEffect(() => {
-    let active = false;
-    const controller = new AbortController();
+  onLoad(() => {
     containerRef?.focus();  // F11
-    onMount(controller.signal, () => {active = true;})
+  })
 
-    return () => {
-      controller.abort();
-      if (active) {
-        onUnMount().then()
-      }
-    }
-  }, [])
-
-  // useEffect(() => {
-  //   const ref = addListener();
-  //   return () => {
-  //     removeListener(ref);
-  //   }
-  // },[pictureGridRef])
-
-  useEffect(() => {
+  useReadyEffect(() => {
     console.log('width', width, 'height', height)
     const columnCount = getColumnCount();
     const rowCount = getRowCount();
     setColumnCount(columnCount)
     setRowCount(rowCount)
-
   }, [width, height, playList])
-
-  const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-    console.log('onMount', signal)
-    await Promise.resolve();
-
-    if(signal?.aborted) {
-      console.log('onMount Aborted')
-      return;
-    }
-
-    // do something
-    onComplete();
-    setIsInitialized(true)
-    console.log('onMount Completed')
-  }
-
-  const onUnMount = async () => {
-    console.log('onUnMount')
-  }
-
-  // const onFullscreenChange = async () => {
-  //   const {pictureGridRef, containerRef} = usePictureStore.getState()
-  //   const fullscreen = document.fullscreenElement === pictureGridRef;
-  //   console.log('fullscreenchange', fullscreen);
-  //   await commands.toggleFullscreen();
-  //
-  //   setFullscreen(fullscreen)
-  //
-  //   if (fullscreen) {
-  //     pictureGridRef?.focus();
-  //   } else {
-  //     containerRef?.focus();
-  //   }
-  // }
-
-  // const addListener = () => {
-  //   const {pictureGridRef} = usePictureStore.getState()
-  //   if (pictureGridRef) {
-  //     console.log('Image View add listener')
-  //     pictureGridRef.addEventListener("fullscreenchange", onFullscreenChange)
-  //     return pictureGridRef;
-  //   }
-  //   return null
-  // }
-
-  // const removeListener = (pictureGridRef: HTMLDivElement | null) => {
-  //   if (pictureGridRef) {
-  //     console.log('Image View remove listener')
-  //     pictureGridRef?.removeEventListener("fullscreenchange", onFullscreenChange);
-  //   }
-  // }
 
   const getColumnCount = () => {
     const {setting} = usePictureStore.getState();
@@ -168,13 +100,8 @@ function PictureGridView({
     }
   }
 
-
-
-  if (!isInitialized) return null;
-
   return (
   <div className="picture-grid"
-    // ref={setPictureGridRef}
     style={{width: width, height: height}}
   >
     <div className="slider-wrap-w">

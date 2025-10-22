@@ -1,10 +1,11 @@
-import {useEffect} from "react";
 import {useReceivedDropFilesStore} from "../stores/useReceivedDropFilesStore.ts";
+import useOnload from "@/stores/useOnload.ts";
 
 export function DropFilesListener() {
+  const {useReadyEffect} = useOnload()
   const { dropRef } = useReceivedDropFilesStore();
 
-  useEffect(() => {
+  useReadyEffect(() => {
     if (dropRef === null) return;
     const onDropHandler = (e: CustomEvent) => {
       console.log("drop-files:", e.detail);

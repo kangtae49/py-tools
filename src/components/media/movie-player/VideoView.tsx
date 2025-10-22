@@ -24,7 +24,7 @@ function VideoView() {
   useEffect(() => {
     let active = false;
     const controller = new AbortController();
-    containerRef?.focus();
+    containerRef?.focus();  // F11
     onMount(controller.signal, () => {active = true;})
 
     return () => {
@@ -222,7 +222,7 @@ function VideoView() {
     return null
   }
 
-  const removeListener = (mediaRef: HTMLAudioElement | null) => {
+  const removeListener = (mediaRef: HTMLVideoElement | null) => {
     if (mediaRef) {
       console.log('Video View remove listener')
       mediaRef?.removeEventListener("loadedmetadata", onloadedMetaData);

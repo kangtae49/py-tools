@@ -73,9 +73,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }, [])
 
   useEffect(() => {
-    if(setting.paused !== undefined) {
-      setPlaying(!setting.paused)
-    }
+    setPlaying(!setting.paused)
   }, [setting.paused])
 
   useEffect(() => {
@@ -83,7 +81,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }, [currentTime])
 
   useEffect(() => {
-    setSetting((setting) => ({...setting, caller: "useEffect [playList]", paused: !playing}))
+    setSetting((setting) => ({...setting, caller: "useEffect [playing]", paused: !playing}))
   }, [playing]);
 
   useEffect(() => {
@@ -91,7 +89,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }, [playList])
 
   useEffect(() => {
-    setSetting((setting) => ({...setting, caller: "useEffect [playList]", shuffle}))
+    setSetting((setting) => ({...setting, caller: "useEffect [shuffle]", shuffle}))
   }, [shuffle])
 
   useEffect(() => {

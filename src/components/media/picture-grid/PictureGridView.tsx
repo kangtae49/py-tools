@@ -8,6 +8,7 @@ import {
 } from "@/components/media/play-list/playListStore.ts";
 import PictureGridCellView from "@/components/media/picture-grid/PictureGridCellView.tsx";
 import {usePictureStore} from "@/components/media/picture-player/pictureStore.ts";
+// import {commands} from "@/bindings.ts";
 
 interface Prop {
   usePlayListStore: UseBoundStore<StoreApi<PlayListStore>>
@@ -24,24 +25,25 @@ function PictureGridView({
 }: Prop) {
   const [isInitialized, setIsInitialized] = useState(false);
   const {
+    containerRef,
+    // pictureGridRef, setPictureGridRef,
     setGridRef,
     setting, setSetting,
     columnCount, setColumnCount,
     rowCount, setRowCount,
+    // setFullscreen,
   } = usePictureStore();
+  const {playList} = usePlayListStore();
 
   const SCROLL_SIZE = 15;
   const SLIDER_SIZE = 25;
   const SLIDER_STEP = 64;
   const SLIDER_MIN = 64;
 
-
-
-
-
   useEffect(() => {
     let active = false;
     const controller = new AbortController();
+    containerRef?.focus();  // F11
     onMount(controller.signal, () => {active = true;})
 
     return () => {
@@ -52,13 +54,21 @@ function PictureGridView({
     }
   }, [])
 
+  // useEffect(() => {
+  //   const ref = addListener();
+  //   return () => {
+  //     removeListener(ref);
+  //   }
+  // },[pictureGridRef])
+
   useEffect(() => {
+    console.log('width', width, 'height', height)
     const columnCount = getColumnCount();
     const rowCount = getRowCount();
     setColumnCount(columnCount)
     setRowCount(rowCount)
 
-  }, [width, height])
+  }, [width, height, playList])
 
   const onMount = async (signal: AbortSignal, onComplete: () => void) => {
     console.log('onMount', signal)
@@ -78,6 +88,38 @@ function PictureGridView({
   const onUnMount = async () => {
     console.log('onUnMount')
   }
+
+  // const onFullscreenChange = async () => {
+  //   const {pictureGridRef, containerRef} = usePictureStore.getState()
+  //   const fullscreen = document.fullscreenElement === pictureGridRef;
+  //   console.log('fullscreenchange', fullscreen);
+  //   await commands.toggleFullscreen();
+  //
+  //   setFullscreen(fullscreen)
+  //
+  //   if (fullscreen) {
+  //     pictureGridRef?.focus();
+  //   } else {
+  //     containerRef?.focus();
+  //   }
+  // }
+
+  // const addListener = () => {
+  //   const {pictureGridRef} = usePictureStore.getState()
+  //   if (pictureGridRef) {
+  //     console.log('Image View add listener')
+  //     pictureGridRef.addEventListener("fullscreenchange", onFullscreenChange)
+  //     return pictureGridRef;
+  //   }
+  //   return null
+  // }
+
+  // const removeListener = (pictureGridRef: HTMLDivElement | null) => {
+  //   if (pictureGridRef) {
+  //     console.log('Image View remove listener')
+  //     pictureGridRef?.removeEventListener("fullscreenchange", onFullscreenChange);
+  //   }
+  // }
 
   const getColumnCount = () => {
     const {setting} = usePictureStore.getState();
@@ -129,8 +171,12 @@ function PictureGridView({
 
 
   if (!isInitialized) return null;
+
   return (
-  <div className="picture-grid" style={{width: width, height: height}}>
+  <div className="picture-grid"
+    // ref={setPictureGridRef}
+    style={{width: width, height: height}}
+  >
     <div className="slider-wrap-w">
       <div className="check">
         <input type="checkbox"

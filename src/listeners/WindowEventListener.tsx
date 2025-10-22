@@ -15,11 +15,19 @@ export function WindowEventListener() {
       commands.unload().then(() => {
         console.log('appWriteFiles');
       })
-
     }
 
-    window?.addEventListener("window-event", onWindowEventHandler as EventListener);
+    // const onFocusIn = (e: FocusEvent) => {
+      // const target = e.target as HTMLElement;
+      // const widget = target.closest('.widget');
+
+      // target.closest('.widget')?.classList.add('focus');
+      // const widget = document.activeElement?.closest('.widget');
+    // }
+
+    window.addEventListener("window-event", onWindowEventHandler as EventListener);
     window.addEventListener('beforeunload', onBeforeUnload);
+    // window.addEventListener("focusin", onFocusIn);
 
     return () => {
 

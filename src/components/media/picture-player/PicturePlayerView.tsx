@@ -79,7 +79,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   }, [setting.paused])
 
   useEffect(() => {
-    setSetting((setting) => ({...setting, caller: "useEffect [playList]", paused: !playing}))
+    setSetting((setting) => ({...setting, caller: "useEffect [playing]", paused: !playing}))
   }, [playing]);
 
   useEffect(() => {
@@ -175,6 +175,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     } else {
       await mediaRef?.requestFullscreen()
     }
+    // setFullscreen(!fullscreen)
   }
 
   const onChangeSpeed = (value: string) => {
@@ -197,12 +198,13 @@ export default function PicturePlayerView({winKey: _}: Prop) {
           minSize={0} primary="second"
           defaultSize={200}
         >
+          <div className="image-view drop-image"
+               ref={setMediaRef}
+               // style={{width, height}}
+          >
           <AutoSizer>
             {({height, width}) => (
-              <div className="image-view drop-image"
-                   ref={setMediaRef}
-                   style={{width, height}}
-              >
+              <>
                 <Activity mode={viewType === "grid" ? "visible": "hidden"}>
                   <PictureGridView
                     usePlayListStore={usePlayListStore}
@@ -223,9 +225,10 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                 {/*  width={width}*/}
                 {/*  height={height}*/}
                 {/*/>*/}
-              </div>
+              </>
             )}
           </AutoSizer>
+          </div>
           <AutoSizer>
             {({ height, width }) => (
               <div className="controller" style={{width, height}}>

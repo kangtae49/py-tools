@@ -5,9 +5,12 @@
 }
 
 .app-menu button {
+    margin: 3px;
     padding: 3px;
     font-weight: normal;
-    border-radius: 5px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
 .fa-music { color: var(--icon-color); font-size: var(--icon-font-size);}

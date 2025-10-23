@@ -21,7 +21,7 @@ function PictureGridCellView({
   columnCount,
   // rowCount,
 }: CellComponentProps<Prop>) {
-  const {setSetting, setViewType} = usePictureStore();
+  const {setSetting, setViewType, setting} = usePictureStore();
   const {playList} = usePlayListStore();
 
   const onClickCell = async (imgSrc: string | null) => {
@@ -38,10 +38,13 @@ function PictureGridCellView({
   }
 
   return (
-    <div className="cell" style={style} onClick={() => onClickCell(imgSrc)}>
+    <div className={`cell ${setting.mediaPath === imgSrc ? 'selected' : ''}`}
+         style={style}
+         onClick={() => onClickCell(imgSrc)}>
       {imgSrc && <img src={srcLocal(imgSrc)}
             loading="lazy"
             alt={getFilename(imgSrc)}
+            title={getFilename(imgSrc)}
       />}
     </div>
   )

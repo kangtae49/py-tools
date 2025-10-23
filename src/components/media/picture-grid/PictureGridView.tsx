@@ -31,6 +31,7 @@ function PictureGridView({
     setting, setSetting,
     columnCount, setColumnCount,
     rowCount, setRowCount,
+    scrollGrid,
   } = usePictureStore();
   const {playList} = usePlayListStore();
 
@@ -49,6 +50,10 @@ function PictureGridView({
     setColumnCount(columnCount)
     setRowCount(rowCount)
   }, [width, height, playList, setting.sliderWidth, setting.sliderHeight, setting.sliderCheck])
+
+  useReadyEffect(() => {
+    scrollGrid(playList, setting.mediaPath)
+  }, [setting.mediaPath])
 
   const getColumnCount = () => {
     const {setting} = usePictureStore.getState();

@@ -53,7 +53,7 @@ function PictureGridView({
 
   useReadyEffect(() => {
     scrollGrid(playList, setting.mediaPath)
-  }, [setting.mediaPath])
+  }, [setting.mediaPath, playList])
 
   const getColumnCount = () => {
     const {setting} = usePictureStore.getState();
@@ -132,19 +132,20 @@ function PictureGridView({
         />
       </div>
       <Grid
-            gridRef={setGridRef}
-            cellComponent={PictureGridCellView}
-            columnCount={columnCount}
-            columnWidth={setting.sliderWidth}
-            rowCount={rowCount}
-            rowHeight={setting.sliderHeight}
-            cellProps={{
-              // playList: playList,
-              usePlayListStore,
-              columnCount: columnCount,
-              columnWidth: setting.sliderWidth,
-            }}
-            style={{height: height - SLIDER_SIZE,}}
+        gridRef={setGridRef}
+        cellComponent={PictureGridCellView}
+        columnCount={columnCount}
+        columnWidth={setting.sliderWidth}
+        rowCount={rowCount}
+        rowHeight={setting.sliderHeight}
+        cellProps={{
+          // playList: playList,
+          usePlayListStore,
+          columnCount: columnCount,
+          columnWidth: setting.sliderWidth,
+        }}
+        style={{height: height - SLIDER_SIZE,}}
+
       />
       </div>
     </div>

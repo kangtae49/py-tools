@@ -1,5 +1,5 @@
 import {create} from "zustand";
-import type {ListImperativeAPI} from "react-window";
+import type {GridImperativeAPI} from "react-window";
 
 export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
 export type ViewType = 'grid' | 'single'
@@ -25,14 +25,14 @@ interface UsePictureStore {
   viewType: ViewType
   mediaRef: HTMLDivElement | null
   containerRef: HTMLDivElement | null
-  gridRef: ListImperativeAPI | null
+  gridRef: GridImperativeAPI | null
   fullscreen: boolean
   columnCount: number
   rowCount: number
 
   setMediaRef: (pictureRef: HTMLDivElement | null) => void;
   setContainerRef: (containerRef: HTMLDivElement | null) => void
-  setGridRef: (gridRef: ListImperativeAPI | null) => void;
+  setGridRef: (gridRef: GridImperativeAPI | null) => void;
   setSetting: (setting: PictureSetting | ((prev: PictureSetting) => PictureSetting)) => void;
   setExtensions: (filter: string[]) => void;
   setFullscreen: (fullscreen: boolean) => void;
@@ -83,10 +83,14 @@ function createPictureStore(pictureDefault: PictureDefault) {
       if(value === undefined) return;
       const {gridRef, columnCount} = get();
       const idx = curPlayList.indexOf(value);
-      const rowIdx = Math.floor(idx / columnCount);
-      console.log("scrollGrid", idx, rowIdx);
-      if (rowIdx >= 0) {
-        gridRef?.scrollToRow({align:"auto", behavior: "auto", index: rowIdx});
+      const columnIndex = idx % columnCount;
+      const rowIndex = Math.floor(idx / columnCount);
+      console.log("scrollGrid", rowIndex, columnIndex);
+
+      try {
+        gridRef?.scrollToCell({rowAlign: "auto", columnAlign: "auto", behavior: "auto",
+          columnIndex: columnIndex, rowIndex: rowIndex});
+      } catch(e) {
       }
     },
 

@@ -27,12 +27,10 @@ function PictureGridView({
   const {onLoad, useReadyEffect} = useOnload()
   const {
     containerRef,
-    // pictureGridRef, setPictureGridRef,
     setGridRef,
     setting, setSetting,
     columnCount, setColumnCount,
     rowCount, setRowCount,
-    // setFullscreen,
   } = usePictureStore();
   const {playList} = usePlayListStore();
 
@@ -46,12 +44,11 @@ function PictureGridView({
   })
 
   useReadyEffect(() => {
-    console.log('width', width, 'height', height)
     const columnCount = getColumnCount();
     const rowCount = getRowCount();
     setColumnCount(columnCount)
     setRowCount(rowCount)
-  }, [width, height, playList])
+  }, [width, height, playList, setting.sliderWidth, setting.sliderHeight, setting.sliderCheck])
 
   const getColumnCount = () => {
     const {setting} = usePictureStore.getState();

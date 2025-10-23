@@ -157,7 +157,6 @@ export default function PicturePlayerView({winKey: _}: Prop) {
         >
           <div className="image-view drop-image fullscreen"
                ref={setMediaRef}
-               // style={{width, height}}
           >
           <AutoSizer>
             {({height, width}) => (

@@ -24,7 +24,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     commands.isFullscreen().then((res) => {
       if(res.status === "ok") {
         const isFullscreen = res.data;
-        commands.change_fullscreen(!isFullscreen);
+        // commands.change_fullscreen(!isFullscreen);
         if(isFullscreen) {
           if (document.hasFocus() && document.fullscreenElement) {
             document.exitFullscreen();

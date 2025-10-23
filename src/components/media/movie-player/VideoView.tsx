@@ -3,7 +3,7 @@ import {srcLocal} from "@/components/utils.ts";
 // import {commands} from "@/bindings.ts";
 import type {Sub} from "@/types/models";
 import useOnload from "@/stores/useOnload.ts";
-import {commands} from "@/bindings.ts";
+// import {commands} from "@/bindings.ts";
 
 
 function VideoView() {
@@ -169,7 +169,6 @@ function VideoView() {
       }
       containerRef?.focus();
     }
-    commands.change_fullscreen(document.fullscreenElement !== null && document.fullscreenElement === mediaRef)
   }
 
   const addListener = () => {

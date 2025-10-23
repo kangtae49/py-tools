@@ -29,6 +29,7 @@ function PictureGridCellView({
       setSetting((setting) => ({...setting, mediaPath: imgSrc}));
     }
     setViewType('single')
+
   }
 
   const idx = rowIndex * columnCount + columnIndex;

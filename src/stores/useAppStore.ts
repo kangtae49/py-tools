@@ -1,5 +1,6 @@
 import {create} from "zustand";
 import {commands} from "@/bindings.ts";
+import {useMosaicStore} from "@/components/layouts/mosaic/mosaicStore.ts";
 
 export interface AppState {
   activeWidgetRef: HTMLElement | null
@@ -20,17 +21,22 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   toggleFullscreen: async () => {
     const {activeWidgetRef} = get();
-    // if(fullscreenRef === null) return;
+    const {setMaxScreenView} = useMosaicStore.getState();
+    setMaxScreenView(null)
+
     commands.isFullscreen().then((res) => {
       if(res.status === "ok") {
         const isFullscreen = res.data;
-        // commands.change_fullscreen(!isFullscreen);
         if(isFullscreen) {
           if (document.hasFocus() && document.fullscreenElement) {
             document.exitFullscreen();
           }
         } else {
           activeWidgetRef?.querySelector(".fullscreen")?.requestFullscreen();
+          const widget = activeWidgetRef?.querySelector(".fullscreen") as HTMLElement | null;
+          if (widget) {
+            widget?.focus();
+          }
         }
       }
     })

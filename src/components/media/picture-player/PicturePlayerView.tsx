@@ -156,6 +156,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
           defaultSize={200}
         >
           <div className="image-view drop-image fullscreen"
+               tabIndex={0}
                ref={setMediaRef}
           >
           <AutoSizer>

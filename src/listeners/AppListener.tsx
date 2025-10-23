@@ -30,9 +30,6 @@ export default function AppListener() {
     const {toggleFullscreen} = useAppStore.getState()
     if (e.key === "F11") {
       e.preventDefault();
-
-      const {setMaxScreenView} = useMosaicStore.getState();
-      setMaxScreenView(null)
       toggleFullscreen()
     }
   };
@@ -42,6 +39,12 @@ export default function AppListener() {
     const {maxScreenView} = useMosaicStore.getState()
     if (maxScreenView === null) {
       commands.change_fullscreen(document.fullscreenElement !== null)
+      //   .then(() => {
+      //   if (document.fullscreenElement) {
+      //     const widget = (document.fullscreenElement as HTMLElement).querySelector(".widget") as HTMLElement;
+      //     widget.focus()
+      //   }
+      // })
     }
 
   }

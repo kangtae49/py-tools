@@ -41,6 +41,7 @@ function PictureGridView({
   const SLIDER_MIN = 64;
 
   onLoad(() => {
+    console.log('onLoad')
     containerRef?.focus();  // F11
   })
 

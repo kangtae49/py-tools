@@ -1,8 +1,9 @@
 import {useVideoStore as useMediaStore} from "../useMediaStore.ts";
 import {srcLocal} from "@/components/utils.ts";
-import {commands} from "@/bindings.ts";
+// import {commands} from "@/bindings.ts";
 import type {Sub} from "@/types/models";
 import useOnload from "@/stores/useOnload.ts";
+import {commands} from "@/bindings.ts";
 
 
 function VideoView() {
@@ -17,7 +18,7 @@ function VideoView() {
     changePlaybackRate,
     setting, setSetting,
     loadSrc,
-    setFullscreen,
+    // setFullscreen,
     subs,
   } = useMediaStore();
 
@@ -158,16 +159,9 @@ function VideoView() {
   const onPause = () => {}
   const onError = () => {}
   const onFullscreenChange = async () => {
-    if (isNullPlaying()) return;
-    if (!isValidSrc()) return;
-
-    const setting = useMediaStore.getState().setting;
-    const fullscreen = document.fullscreenElement === mediaRef;
-    console.log('fullscreenchange', fullscreen);
-    await commands.toggleFullscreen();
-    setFullscreen(fullscreen)
-
-    if (fullscreen) {
+    console.log('onFullscreenChange')
+    const {mediaRef} = useMediaStore.getState()
+    if (document.fullscreenElement) {
       mediaRef!.focus();
     } else {
       if (mediaRef!.paused !== setting!.paused) {
@@ -175,6 +169,7 @@ function VideoView() {
       }
       containerRef?.focus();
     }
+    commands.change_fullscreen(document.fullscreenElement !== null && document.fullscreenElement === mediaRef)
   }
 
   const addListener = () => {
@@ -217,7 +212,7 @@ function VideoView() {
   }
 
   return (
-    <video
+    <video className="fullscreen"
       ref={setMediaRef}
       controls={false}
       preload="metadata"

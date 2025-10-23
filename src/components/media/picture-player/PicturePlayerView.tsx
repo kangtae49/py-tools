@@ -28,6 +28,7 @@ import {srcLocal} from "@/components/utils.ts";
 import toast from "react-hot-toast";
 import ImageView from "./ImageView.tsx";
 import useOnload from "@/stores/useOnload.ts";
+import {useAppStore} from "@/stores/useAppStore.ts";
 
 
 interface Prop {
@@ -36,8 +37,9 @@ interface Prop {
 
 export default function PicturePlayerView({winKey: _}: Prop) {
   const {onLoad, useReadyEffect} = useOnload()
+  const {toggleFullscreen} = useAppStore()
   const {
-    mediaRef, setMediaRef,
+    setMediaRef,
     // setting,
     containerRef, setContainerRef,
     toggleRepeat,
@@ -129,24 +131,10 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
   const onKeyDownHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
     e.preventDefault()
-    if (e.key === "F11") {
-      console.log('F11')
-      toggleFullscreen().then()
-    }
     const onKeyDownPlayList = usePlayListStore.getState().onKeyDownPlayList
     onKeyDownPlayList(e);
-
   }
 
-  const toggleFullscreen = async () => {
-    const fullscreen = useMediaStore.getState().fullscreen;
-    if (fullscreen) {
-      await document.exitFullscreen();
-    } else {
-      await mediaRef?.requestFullscreen()
-    }
-    // setFullscreen(!fullscreen)
-  }
 
   const onChangeSpeed = (value: string) => {
     const v = Number(value)

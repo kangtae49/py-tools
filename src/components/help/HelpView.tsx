@@ -2,6 +2,7 @@ import "./HelpView.css"
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 import {useEffect, useRef} from "react";
 import logo from "../../assets/tr-tools.svg"
+import {useAppStore} from "@/stores/useAppStore.ts";
 
 interface Prop {
   winKey: WinKey
@@ -10,7 +11,13 @@ interface Prop {
 export default function HelpView({winKey: _}: Prop) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sizeRef = useRef<{width: number, height: number}>({width: 0, height: 0});
+  const {setFullscreenRef} = useAppStore()
 
+  useEffect(() => {
+    if(containerRef.current) {
+      setFullscreenRef(containerRef.current)
+    }
+  }, [containerRef]);
   const randomMove = () => {
     const elements = containerRef.current?.querySelectorAll(".letter");
     elements?.forEach((el) => {
@@ -50,7 +57,8 @@ export default function HelpView({winKey: _}: Prop) {
 
 
   return (
-    <div className="widget help"
+    <div className="widget help fullscreen"
+         ref={containerRef}
          tabIndex={0}
     >
       <div className="letter">

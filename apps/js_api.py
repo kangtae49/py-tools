@@ -28,6 +28,7 @@ class ApiError(Exception):
 class JsApi:
     def __init__(self):
         self.setting = {}
+        self.fullscreen = False
 
     def dialog_open(self, options: Optional[dict] = None) -> List[str] | None:
         try:
@@ -127,6 +128,13 @@ class JsApi:
     def toggle_fullscreen(self):
         window = webview.active_window()
         window.toggle_fullscreen()
+        self.fullscreen = not self.fullscreen
+    def change_fullscreen(self, is_fullscreen: bool):
+        if self.fullscreen != is_fullscreen:
+            self.toggle_fullscreen()
+
+    def is_fullscreen(self):
+        return self.fullscreen
 
     def get_subs(self, fullpath: str) -> List[Sub]:
         lang_id = ctypes.windll.kernel32.GetUserDefaultUILanguage()

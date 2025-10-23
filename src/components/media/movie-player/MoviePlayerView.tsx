@@ -26,6 +26,7 @@ import SpeedMenu from "@/components/media/menu/speed-menu/SpeedMenu.tsx";
 import SubtitleMenu from "@/components/media/menu/subtitle-menu/SubtitleMenu.tsx";
 import {getSubs} from "@/components/media/media.ts";
 import useOnload from "@/stores/useOnload.ts";
+import {useAppStore} from "@/stores/useAppStore.ts";
 
 interface Prop {
   winKey: WinKey
@@ -33,6 +34,7 @@ interface Prop {
 
 export default function MoviePlayerView({winKey: _}: Prop) {
   const {onLoad, useReadyEffect} = useOnload()
+  const {toggleFullscreen} = useAppStore()
 
   const {
     mediaRef,
@@ -199,20 +201,11 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     e.preventDefault()
     if (e.key === "F11") {
       console.log('F11')
-      toggleFullscreen().then()
+      toggleFullscreen()
     }
     const onKeyDownPlayList = usePlayListStore.getState().onKeyDownPlayList
     onKeyDownPlayList(e);
 
-  }
-
-  const toggleFullscreen = async () => {
-    const fullscreen = useMediaStore.getState().fullscreen;
-    if (fullscreen) {
-      await document.exitFullscreen();
-    } else {
-      await mediaRef?.requestFullscreen()
-    }
   }
 
   const toggleMute= (_e: React.MouseEvent ) => {
@@ -241,8 +234,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   }
 
   const clickVideo = (e: React.MouseEvent) => {
-    const state = useMediaStore.getState();
-    if (!state.fullscreen) {
+    if (document.fullscreenElement !== mediaRef) {
       const newPaused = !setting.paused;
       setSetting((setting) => ({...setting, caller: "clickVideo", paused: newPaused}))
     }

@@ -1,5 +1,6 @@
 import {useEffect} from "react";
 import {useAppStore} from "@/stores/useAppStore.ts";
+import {useMosaicStore} from "@/components/layouts/mosaic/mosaicStore.ts";
 
 export default function AppListener() {
   const {setActiveWidgetRef} = useAppStore();
@@ -24,12 +25,29 @@ export default function AppListener() {
   //   }
   // }
 
+  const handleKeyDown = (e: KeyboardEvent) => {
+    const {toggleFullscreen} = useAppStore.getState()
+    if (e.key === "F11") {
+      e.preventDefault();
+      const {maxScreenView} = useMosaicStore.getState();
+      if (maxScreenView !== null) {
+        document.exitFullscreen().then(() => {
+          toggleFullscreen()
+        });
+      } else {
+        toggleFullscreen()
+      }
+    }
+  };
+
   useEffect(() => {
     window.addEventListener("focusin", onFocusIn)
     // window.addEventListener("focusout", onFocusOut)
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("focusin", onFocusIn)
       // window.removeEventListener("focusout", onFocusOut)
+      window.removeEventListener("keydown", handleKeyDown);
     }
   }, [])
   return null

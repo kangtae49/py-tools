@@ -15,6 +15,8 @@ declare global {
         app_write(subpath: string, content: string): Promise<void>
         unload(): Promise<void>
         toggle_fullscreen(): Promise<void>
+        change_fullscreen(is_fullscreen: boolean): Promise<void>
+        is_fullscreen(): Promise<boolean>
         get_subs(fullpath): Promise<Sub[]>
         read_sub(fullpath): Promise<string>
       },

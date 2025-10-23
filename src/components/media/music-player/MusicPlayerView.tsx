@@ -20,6 +20,7 @@ import PlayListView from "@/components/media/play-list/PlayListView.tsx";
 import VolumeMenu from "@/components/media/menu/volume-menu/VolumeMenu.tsx";
 import SpeedMenu from "@/components/media/menu/speed-menu/SpeedMenu.tsx";
 import useOnload from "@/stores/useOnload.ts";
+import {useAppStore} from "@/stores/useAppStore.ts";
 
 
 interface Prop {
@@ -34,6 +35,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
 
   onUnload(() => {
   });
+  const {toggleFullscreen} = useAppStore()
 
   const {
     mediaRef,
@@ -184,20 +186,11 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     e.preventDefault()
     if (e.key === "F11") {
       console.log('F11')
-      toggleFullscreen().then()
+      toggleFullscreen()
     }
     const onKeyDownPlayList = usePlayListStore.getState().onKeyDownPlayList
     onKeyDownPlayList(e);
 
-  }
-
-  const toggleFullscreen = async () => {
-    const fullscreen = useMediaStore.getState().fullscreen;
-    if (fullscreen) {
-      await document.exitFullscreen();
-    } else {
-      await mediaRef?.requestFullscreen()
-    }
   }
 
   const toggleMute= (_e: React.MouseEvent ) => {

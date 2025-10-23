@@ -130,6 +130,7 @@ function MosaicLayoutView() {
                       title={maxScreenView === id ? "Minimize" : "Maximize"}
                       // title={document.fullscreenElement !== null ? "Minimize" : "Maximize"}
                       onClick={(e) => toggleMaximizeView(e, id)}
+                      // className={maxScreenView === id ? "bp6-icon-minus" : "bp6-icon-maximize"}
                       className={maxScreenView === id ? "bp6-icon-minus" : "bp6-icon-maximize"}
                       // className={document.fullscreenElement !== null ? "bp6-icon-minus" : "bp6-icon-maximize"}
                     />

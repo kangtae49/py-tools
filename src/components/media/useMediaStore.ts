@@ -246,13 +246,5 @@ export const useVideoStore = createMediaStore<HTMLVideoElement>(videoDefault);
 //   },
 // });
 //
-// useVideoStore.setState({
-//   // videoOnly: {
-//   //   toggleFullScreen: () => {
-//   //     const el = useVideoStore.getState().mediaRef?.current;
-//   //     el?.requestFullscreen?.();
-//   //   },
-//   // },
-// });
 
 

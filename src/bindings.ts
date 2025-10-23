@@ -107,6 +107,28 @@ export const commands = {
       }
     }
   },
+  async change_fullscreen(is_fullscreen: boolean): Promise<Result<void, Error>> {
+    try {
+      return { status: "ok", data: await window.pywebview.api.change_fullscreen(is_fullscreen) };
+    } catch (e: Error | any) {
+      if (e?.name === 'ApiError') {
+        return { status: "error", error: e  as any };
+      } else {
+        throw e;
+      }
+    }
+  },
+  async isFullscreen(): Promise<Result<boolean, Error>> {
+    try {
+      return { status: "ok", data: await window.pywebview.api.is_fullscreen() };
+    } catch (e: Error | any) {
+      if (e?.name === 'ApiError') {
+        return { status: "error", error: e  as any };
+      } else {
+        throw e;
+      }
+    }
+  },
   async getSubs(fullpath: string): Promise<Result<Sub[], Error>> {
     try {
       return { status: "ok", data: await window.pywebview.api.get_subs(fullpath) };

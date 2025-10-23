@@ -75,7 +75,11 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
       const listRef = get().playListRef;
       const idx = curPlayList.indexOf(value);
       if (idx >= 0) {
-        listRef?.scrollToRow({align:"auto", behavior: "auto", index: idx});
+        try {
+          listRef?.scrollToRow({align:"auto", behavior: "auto", index: idx});
+        } catch(e) {
+
+        }
       }
     },
 

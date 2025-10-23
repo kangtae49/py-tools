@@ -31,9 +31,12 @@ export default function AppListener() {
       e.preventDefault();
       const {maxScreenView} = useMosaicStore.getState();
       if (maxScreenView !== null) {
-        document.exitFullscreen().then(() => {
-          toggleFullscreen()
-        });
+        if (document.hasFocus() && document.fullscreenElement) {
+          document.exitFullscreen().then(() => {
+            toggleFullscreen()
+          });
+        }
+
       } else {
         toggleFullscreen()
       }

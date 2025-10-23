@@ -84,9 +84,11 @@ function MosaicLayoutView() {
 
   const toggleMaximizeView = async (e: React.MouseEvent, id: WinKey) => {
     if (document.fullscreenElement) {
-      document.exitFullscreen().then(()=>{
-        setMaxScreenView(null)
-      });
+      if (document.hasFocus() && document.fullscreenElement) {
+        document.exitFullscreen().then(()=>{
+          setMaxScreenView(null)
+        });
+      }
     } else {
       e.currentTarget.closest(".mosaic-window")?.requestFullscreen().then();
       setMaxScreenView(id)

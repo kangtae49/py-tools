@@ -16,7 +16,9 @@ function AppMenuView() {
     console.log('clickMenu', menu)
     addView(menu)
     if ((document as any).webkitFullscreenElement && maxScreenView !== menu) {
-      document.exitFullscreen().then()
+      if (document.hasFocus() && document.fullscreenElement) {
+        document.exitFullscreen().then()
+      }
       setMaxScreenView(null)
     }
   }

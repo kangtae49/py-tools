@@ -1,5 +1,5 @@
 import "./PictureGridView.css"
-import React from "react";
+import React, {useEffect} from "react";
 import {Grid} from "react-window";
 import type {UseBoundStore} from "zustand";
 import type {StoreApi} from "zustand/vanilla";
@@ -10,6 +10,11 @@ import PictureGridCellView from "@/components/media/picture-grid/PictureGridCell
 import {usePictureStore} from "@/components/media/picture-player/usePictureStore.ts";
 import useOnload from "@/stores/useOnload.ts";
 // import {commands} from "@/bindings.ts";
+
+export const SCROLL_SIZE = 15;
+export const SLIDER_SIZE = 25;
+export const SLIDER_STEP = 1;
+export const SLIDER_MIN = 64;
 
 interface Prop {
   usePlayListStore: UseBoundStore<StoreApi<UsePlayListStore>>
@@ -25,27 +30,30 @@ function PictureGridView({
   height,
 }: Prop) {
   const {onLoad, useReadyEffect} = useOnload()
+  // const sliderWidthRef = useRef<HTMLInputElement>(null);
+  // const sliderHeightRef = useRef<HTMLInputElement>(null);
   const {
     containerRef,
     setGridRef,
+    setSliderWidthRef, setSliderHeightRef,
     setting, setSetting,
     columnCount, setColumnCount,
     rowCount, setRowCount,
     scrollGrid,
+    setGridWidth, setGridHeight,
+    resizeSlider,
   } = usePictureStore();
   const {playList} = usePlayListStore();
 
-  const SCROLL_SIZE = 15;
-  const SLIDER_SIZE = 25;
-  const SLIDER_STEP = 64;
-  const SLIDER_MIN = 64;
+
 
   onLoad(() => {
     console.log('onLoad')
     containerRef?.focus();  // F11
+    resizeSlider()
   })
 
-  useReadyEffect(() => {
+  useEffect(() => {
     const columnCount = getColumnCount();
     const rowCount = getRowCount();
     setColumnCount(columnCount)
@@ -55,6 +63,11 @@ function PictureGridView({
   useReadyEffect(() => {
     scrollGrid(playList, setting.mediaPath)
   }, [setting.mediaPath, playList])
+
+  useEffect(() => {
+    setGridWidth(width);
+    setGridHeight(height)
+  }, [width, height])
 
   const getColumnCount = () => {
     const {setting} = usePictureStore.getState();
@@ -83,8 +96,10 @@ function PictureGridView({
   const onChangeSliderWidth = (value: string) => {
     const {setting} = usePictureStore.getState()
     let val = Number(value)
+    const SLIDER_WIDTH_MAX = width - SLIDER_SIZE - SCROLL_SIZE;
     val = Math.max(val, SLIDER_MIN)
-    console.log('onChange checked', setting.sliderCheck)
+    val = Math.min(val, SLIDER_WIDTH_MAX)
+    console.log('onChangeSliderWidth', val)
     if (setting.sliderCheck) {
       setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
     } else {
@@ -94,8 +109,10 @@ function PictureGridView({
   const onChangeSliderHeight = (value: string) => {
     const {setting} = usePictureStore.getState()
     let val = Number(value)
+    const SLIDER_HEIGHT_MAX = height - SLIDER_SIZE;
     val = Math.max(val, SLIDER_MIN)
-    console.log('onChange checked', setting.sliderCheck)
+    val = Math.min(val, SLIDER_HEIGHT_MAX)
+    console.log('onChangeSliderHeight', val)
     if (setting.sliderCheck) {
       setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
     } else {
@@ -106,6 +123,7 @@ function PictureGridView({
   return (
   <div className="picture-grid"
     style={{width: width, height: height}}
+
   >
     <div className="slider-wrap-w">
       <div className="check">
@@ -115,8 +133,9 @@ function PictureGridView({
       </div>
       <div className="slider-w">
         <input type="range" min={0} max={width - SLIDER_SIZE}
+               ref={setSliderWidthRef}
                step={SLIDER_STEP}
-               value={Math.min(setting.sliderWidth, width - SLIDER_SIZE - SCROLL_SIZE)}
+               value={Math.max(setting.sliderWidth, SLIDER_MIN)}
                onChange={(e) => onChangeSliderWidth(e.target.value)}
                style={{width: width - SLIDER_SIZE}}
         />
@@ -126,8 +145,9 @@ function PictureGridView({
       <div className="slider-h">
         <input type="range"
                min={0} max={height - SLIDER_SIZE}
+               ref={setSliderHeightRef}
                step={SLIDER_STEP}
-               value={Math.min(setting.sliderHeight, height - SLIDER_SIZE)}
+               value={Math.max(setting.sliderHeight, SLIDER_MIN)}
                onChange={(e) => onChangeSliderHeight(e.target.value)}
                style={{height: height - SLIDER_SIZE}}
         />

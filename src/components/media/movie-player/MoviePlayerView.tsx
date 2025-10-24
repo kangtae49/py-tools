@@ -63,6 +63,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
   } = useReceivedDropFilesStore();
 
   onLoad(() => {
+    console.log("onLoad")
     containerRef?.focus();
   })
 

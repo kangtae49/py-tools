@@ -18,6 +18,7 @@ function AudioView() {
   } = useMediaStore();
 
   onLoad(() => {
+    console.log("onLoad")
     const {setting} = useMediaStore.getState();
     loadSrc(setting.mediaPath)
   })

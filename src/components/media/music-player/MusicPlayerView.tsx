@@ -30,6 +30,7 @@ interface Prop {
 export default function MusicPlayerView({winKey: _}: Prop) {
   const {onLoad, onUnload, useReadyEffect} = useOnload()
   onLoad(() => {
+    console.log("onLoad")
     containerRef?.focus();
   });
 

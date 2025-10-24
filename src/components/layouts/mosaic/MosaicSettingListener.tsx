@@ -11,6 +11,7 @@ function MosaicSettingListener() {
   } = useMosaicStore();
 
   onLoad(() => {
+    console.log("onLoad")
     mountSetting();
   })
 

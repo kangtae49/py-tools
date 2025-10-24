@@ -9,7 +9,7 @@ export default function AboutView({winKey: _}: Prop) {
   const {onLoad, onUnload} = useOnload();
 
   onLoad(() => {
-    console.log("AboutView")
+    console.log("onLoad")
   })
 
   onUnload(() => {

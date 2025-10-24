@@ -14,6 +14,7 @@ function MusicSettingListener() {
   } = useMediaStore();
 
   onLoad(() => {
+    console.log("onLoad")
     mountSetting();
   });
   onUnload(() => {

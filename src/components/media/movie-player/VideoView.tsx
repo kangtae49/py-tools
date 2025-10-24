@@ -23,6 +23,7 @@ function VideoView() {
   } = useMediaStore();
 
   onLoad(() => {
+    console.log("onLoad")
     containerRef?.focus();  // F11
     loadSrc(setting.mediaPath)
   })

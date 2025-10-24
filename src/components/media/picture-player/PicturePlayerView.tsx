@@ -21,7 +21,8 @@ import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
 import {
   usePictureStore as useMediaStore,
 } from "./usePictureStore.ts";
-import PictureGridView from "@/components/media/picture-grid/PictureGridView.tsx";
+import PictureGridView, {
+} from "@/components/media/picture-grid/PictureGridView.tsx";
 import PictureSettingListener from "./PictureSettingListener.tsx";
 import SpeedMenu from "@/components/media/menu/speed-menu/SpeedMenu.tsx";
 import {srcLocal} from "@/components/utils.ts";
@@ -63,6 +64,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   } = useReceivedDropFilesStore();
 
   onLoad(() => {
+    console.log('onLoad')
     containerRef?.focus();
   })
 
@@ -141,12 +143,51 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     setSetting((setting) => ({...setting, caller: "clickSpeed", playbackRate: v}))
   }
 
+
+  // const onChangeSliderWidth = (value: string) => {
+  //   const {setting} = usePictureStore.getState()
+  //   let val = Number(value)
+  //   val = Math.max(val, SLIDER_MIN)
+  //   console.log('onChangeSliderWidth', setting.sliderCheck)
+  //   if (setting.sliderCheck) {
+  //     setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
+  //   } else {
+  //     setSetting((setting) => ({...setting, sliderWidth: val}))
+  //   }
+  // }
+  // const onChangeSliderHeight = (value: string) => {
+  //   const {setting} = usePictureStore.getState()
+  //   let val = Number(value)
+  //   val = Math.max(val, SLIDER_MIN)
+  //   console.log('onChange checked', setting.sliderCheck)
+  //   if (setting.sliderCheck) {
+  //     setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
+  //   } else {
+  //     setSetting((setting) => ({...setting, sliderHeight: val}))
+  //   }
+  // }
+
+  // const onFocus = () => {
+  //   console.log('onFocus!!!!')
+  //
+  //   const {setting, gridWidth, gridHeight} = usePictureStore.getState()
+  //   const maxWidth = gridWidth - SLIDER_SIZE - SCROLL_SIZE;
+  //   const maxHeight = gridHeight - SLIDER_SIZE;
+  //   if (setting.sliderWidth > maxWidth) {
+  //     onChangeSliderWidth(maxWidth.toString())
+  //   }
+  //   if (setting.sliderHeight > maxHeight) {
+  //     onChangeSliderHeight(maxHeight.toString())
+  //   }
+  // }
+
   return (
     <>
       <PictureSettingListener />
       <div className={`widget picture-player`}
            ref={setContainerRef}
            onKeyDown={onKeyDownHandler}
+           // onFocus={onFocus}
            tabIndex={0}
       >
         <SplitPane

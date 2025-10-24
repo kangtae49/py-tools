@@ -20,3 +20,5 @@ html, body, #root {
 :fullscreen {
     background-color: #fff;
 }
+
+.fullscreen:focus { outline: none;}

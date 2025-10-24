@@ -42,17 +42,15 @@ function PictureGridView({
   } = usePictureStore();
   const {playList} = usePlayListStore();
 
-
-
   onLoad(() => {
     console.log('onLoad')
-    // containerRef?.focus();  // F11
     resizeSlider()
   })
 
   useEffect(() => {
     const columnCount = getColumnCount();
     const rowCount = getRowCount();
+
     setColumnCount(columnCount)
     setRowCount(rowCount)
   }, [width, height, playList, setting.sliderWidth, setting.sliderHeight, setting.sliderCheck])
@@ -62,8 +60,10 @@ function PictureGridView({
   }, [setting.mediaPath, playList])
 
   useEffect(() => {
+    console.log('change width height', width, height)
     setGridWidth(width);
     setGridHeight(height)
+    resizeSlider()
   }, [width, height])
 
   const getColumnCount = () => {
@@ -129,8 +129,10 @@ function PictureGridView({
                onChange={(e) => onChangeSliderCheck(e.target.checked)}/>
       </div>
       <div className="slider-w">
-        <input type="range" min={0} max={width - SLIDER_SIZE}
+        <input type="range"
                ref={setSliderWidthRef}
+               min={0}
+               max={width - SLIDER_SIZE - SCROLL_SIZE}
                step={SLIDER_STEP}
                value={Math.max(setting.sliderWidth, SLIDER_MIN)}
                onChange={(e) => onChangeSliderWidth(e.target.value)}
@@ -141,8 +143,9 @@ function PictureGridView({
     <div className="slider-wrap-h">
       <div className="slider-h">
         <input type="range"
-               min={0} max={height - SLIDER_SIZE}
                ref={setSliderHeightRef}
+               min={0}
+               max={height - SLIDER_SIZE}
                step={SLIDER_STEP}
                value={Math.max(setting.sliderHeight, SLIDER_MIN)}
                onChange={(e) => onChangeSliderHeight(e.target.value)}

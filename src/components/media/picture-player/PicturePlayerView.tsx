@@ -143,35 +143,6 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   }
 
 
-  // const onChangeSliderWidth = (value: string) => {
-  //   const {setting} = usePictureStore.getState()
-  //   let val = Number(value)
-  //   val = Math.max(val, SLIDER_MIN)
-  //   console.log('onChangeSliderWidth', setting.sliderCheck)
-  //   if (setting.sliderCheck) {
-  //     setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
-  //   } else {
-  //     setSetting((setting) => ({...setting, sliderWidth: val}))
-  //   }
-  // }
-  // const onChangeSliderHeight = (value: string) => {
-  //   const {setting} = usePictureStore.getState()
-  //   let val = Number(value)
-  //   val = Math.max(val, SLIDER_MIN)
-  //   console.log('onChange checked', setting.sliderCheck)
-  //   if (setting.sliderCheck) {
-  //     setSetting((setting) => ({...setting, sliderWidth: val, sliderHeight: val}))
-  //   } else {
-  //     setSetting((setting) => ({...setting, sliderHeight: val}))
-  //   }
-  // }
-
-  // const onFocusImageview = () => {
-  //   console.log('onFocus!!!!')
-  //   const {resizeSlider} = useMediaStore.getState()
-  //   resizeSlider();
-  // }
-
   return (
     <>
       <PictureSettingListener />

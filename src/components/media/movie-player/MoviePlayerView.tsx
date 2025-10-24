@@ -38,7 +38,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   const {
     mediaRef,
-    containerRef, setContainerRef,
+    setContainerRef,
     changeVolume,
     currentTime, changeCurrentTime, setCurrentTime,
     changeMuted,
@@ -64,7 +64,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   onLoad(() => {
     console.log("onLoad")
-    containerRef?.focus();
   })
 
   useReadyEffect(() => {

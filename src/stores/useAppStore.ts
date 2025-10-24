@@ -33,10 +33,10 @@ export const useAppStore = create<AppState>((set, get) => ({
           }
         } else {
           activeWidgetRef?.querySelector(".fullscreen")?.requestFullscreen();
-          const widget = activeWidgetRef?.querySelector(".fullscreen") as HTMLElement | null;
-          if (widget) {
-            widget?.focus();
-          }
+          // const widget = activeWidgetRef?.querySelector(".fullscreen") as HTMLElement | null;
+          // if (widget) {
+          //   widget?.focus();
+          // }
         }
       }
     })

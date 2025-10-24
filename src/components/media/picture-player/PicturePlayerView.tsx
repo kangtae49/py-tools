@@ -41,8 +41,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   const {toggleFullscreen} = useAppStore()
   const {
     setMediaRef,
-    // setting,
-    containerRef, setContainerRef,
+    setContainerRef,
     toggleRepeat,
     toggleShuffle,
     setting, setSetting,
@@ -65,7 +64,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
   onLoad(() => {
     console.log('onLoad')
-    containerRef?.focus();
+    // containerRef?.focus();
   })
 
   useReadyEffect(() => {
@@ -167,18 +166,10 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   //   }
   // }
 
-  // const onFocus = () => {
+  // const onFocusImageview = () => {
   //   console.log('onFocus!!!!')
-  //
-  //   const {setting, gridWidth, gridHeight} = usePictureStore.getState()
-  //   const maxWidth = gridWidth - SLIDER_SIZE - SCROLL_SIZE;
-  //   const maxHeight = gridHeight - SLIDER_SIZE;
-  //   if (setting.sliderWidth > maxWidth) {
-  //     onChangeSliderWidth(maxWidth.toString())
-  //   }
-  //   if (setting.sliderHeight > maxHeight) {
-  //     onChangeSliderHeight(maxHeight.toString())
-  //   }
+  //   const {resizeSlider} = useMediaStore.getState()
+  //   resizeSlider();
   // }
 
   return (
@@ -198,6 +189,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
         >
           <div className="image-view drop-image fullscreen"
                tabIndex={0}
+               // onFocus={() => onFocusImageview()}
                ref={setMediaRef}
           >
           <AutoSizer>

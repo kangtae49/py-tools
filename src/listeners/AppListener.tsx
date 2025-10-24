@@ -38,13 +38,12 @@ export default function AppListener() {
     console.log('onFullscreenChange')
     const {maxScreenView} = useMosaicStore.getState()
     if (maxScreenView === null) {
-      commands.change_fullscreen(document.fullscreenElement !== null)
-      //   .then(() => {
-      //   if (document.fullscreenElement) {
-      //     const widget = (document.fullscreenElement as HTMLElement).querySelector(".widget") as HTMLElement;
-      //     widget.focus()
-      //   }
-      // })
+      commands.change_fullscreen(document.fullscreenElement !== null).then(() => {
+        const widget = document.querySelector(".fullscreen") as HTMLElement | null;
+        if (widget) {
+          widget.focus()
+        }
+      })
     }
 
   }

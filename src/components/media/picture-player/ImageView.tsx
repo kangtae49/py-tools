@@ -12,7 +12,6 @@ function ImageView({width, height}: Prop) {
   const [opacity, setOpacity] = useState(0);
   const imageRef = useRef<HTMLImageElement>(null);
   const {
-    containerRef,
     setViewType,
     setting,
   } = useMediaStore()
@@ -20,7 +19,7 @@ function ImageView({width, height}: Prop) {
   onLoad(() => {
     console.log('onLoad')
     loadSrc()
-    containerRef?.focus();  // F11
+    // containerRef?.focus();  // F11
   })
 
   useReadyEffect(() => {

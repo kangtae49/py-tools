@@ -30,10 +30,7 @@ function PictureGridView({
   height,
 }: Prop) {
   const {onLoad, useReadyEffect} = useOnload()
-  // const sliderWidthRef = useRef<HTMLInputElement>(null);
-  // const sliderHeightRef = useRef<HTMLInputElement>(null);
   const {
-    containerRef,
     setGridRef,
     setSliderWidthRef, setSliderHeightRef,
     setting, setSetting,
@@ -49,7 +46,7 @@ function PictureGridView({
 
   onLoad(() => {
     console.log('onLoad')
-    containerRef?.focus();  // F11
+    // containerRef?.focus();  // F11
     resizeSlider()
   })
 

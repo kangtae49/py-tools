@@ -1,16 +1,13 @@
 import {useVideoStore as useMediaStore} from "../useMediaStore.ts";
 import {srcLocal} from "@/components/utils.ts";
-// import {commands} from "@/bindings.ts";
 import type {Sub} from "@/types/models";
 import useOnload from "@/stores/useOnload.ts";
-// import {commands} from "@/bindings.ts";
 
 
 function VideoView() {
   const {onLoad, useReadyEffect} = useOnload()
   const {
     mediaRef, setMediaRef,
-    containerRef,
     setCurrentTime, changeCurrentTime,
     changeVolume,
     changeMuted,
@@ -24,7 +21,7 @@ function VideoView() {
 
   onLoad(() => {
     console.log("onLoad")
-    containerRef?.focus();  // F11
+    // containerRef?.focus();  // F11
     loadSrc(setting.mediaPath)
   })
 
@@ -163,12 +160,10 @@ function VideoView() {
     console.log('onFullscreenChange')
     const {mediaRef} = useMediaStore.getState()
     if (document.fullscreenElement) {
-      mediaRef!.focus();
     } else {
       if (mediaRef!.paused !== setting!.paused) {
         setSetting((setting) => ({...setting, caller: "onPause", paused: mediaRef!.paused}))
       }
-      containerRef?.focus();
     }
   }
 

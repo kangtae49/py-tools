@@ -29,7 +29,7 @@ function PictureGridView({
   width,
   height,
 }: Prop) {
-  const {onLoad, useReadyEffect} = useOnload()
+  const {onLoad} = useOnload()
   const {
     setGridRef,
     setSliderWidthRef, setSliderHeightRef,
@@ -37,39 +37,53 @@ function PictureGridView({
     columnCount, setColumnCount,
     rowCount, setRowCount,
     scrollGrid,
-    setGridWidth, setGridHeight,
+    gridWidth, setGridWidth,
+    gridHeight, setGridHeight,
     resizeSlider,
   } = usePictureStore();
   const {playList} = usePlayListStore();
 
   onLoad(() => {
     console.log('onLoad')
+    const {setting} = usePictureStore.getState()
+    const {playList} = usePlayListStore.getState()
     resizeSlider()
+    scrollGrid(playList, setting.mediaPath)
   })
 
   useEffect(() => {
+    console.log('useEffect[width, height]', width, height)
+    setGridWidth(width)
+    setGridHeight(height)
+  }, [width, height])
+
+
+  useEffect(() => {
+    console.log('useEffect[gridWidth, gridHeight, playList, setting.sliderWidth, setting.sliderHeight, setting.sliderCheck]', gridWidth, gridHeight)
     const columnCount = getColumnCount();
     const rowCount = getRowCount();
+    resizeSlider()
 
     setColumnCount(columnCount)
     setRowCount(rowCount)
-  }, [width, height, playList, setting.sliderWidth, setting.sliderHeight, setting.sliderCheck])
+  }, [gridWidth, gridHeight, playList, setting.sliderWidth, setting.sliderHeight, setting.sliderCheck])
 
-  useReadyEffect(() => {
+
+  useEffect(() => {
+    console.log('useEffect[columnCount, rowCount]')
+    resizeSlider()
+  }, [columnCount, rowCount])
+
+  useEffect(() => {
+    console.log('useEffect[setting.mediaPath, playList]')
     scrollGrid(playList, setting.mediaPath)
   }, [setting.mediaPath, playList])
 
-  useEffect(() => {
-    console.log('change width height', width, height)
-    setGridWidth(width);
-    setGridHeight(height)
-    resizeSlider()
-  }, [width, height])
 
   const getColumnCount = () => {
-    const {setting} = usePictureStore.getState();
+    const {setting, gridWidth} = usePictureStore.getState();
 
-    let cnt =  Math.floor((width - SLIDER_SIZE - SCROLL_SIZE) / setting.sliderWidth)
+    let cnt =  Math.floor((gridWidth - SLIDER_SIZE - SCROLL_SIZE) / setting.sliderWidth)
     if (cnt <= 0) {
       cnt = 1
     }
@@ -86,7 +100,6 @@ function PictureGridView({
   }
 
   const onChangeSliderCheck = (value: boolean) => {
-    // const {setSetting} = usePictureStore.getState()
     console.log('onChangeSliderCheck', value)
     setSetting((setting) => ({...setting, sliderCheck: value}))
   }

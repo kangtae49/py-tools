@@ -1,5 +1,5 @@
 import "./PicturePlayerView.css"
-import React, {Activity} from "react";
+import React, {Activity, useEffect} from "react";
 import type {WinKey} from "@/components/layouts/mosaic/mosaicStore.ts";
 import {SplitPane} from "@rexxars/react-split-pane";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -64,8 +64,13 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
   onLoad(() => {
     console.log('onLoad')
-    // containerRef?.focus();
   })
+
+  useEffect(() => {
+    if (viewType === 'grid') {
+      scrollGrid(playList, playPath);
+    }
+  }, [viewType]);
 
   useReadyEffect(() => {
     setPlaying(!setting.paused)

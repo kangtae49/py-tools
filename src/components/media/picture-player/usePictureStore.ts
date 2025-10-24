@@ -106,12 +106,17 @@ function createPictureStore(pictureDefault: PictureDefault) {
       const idx = curPlayList.indexOf(value);
       const columnIndex = idx % columnCount;
       const rowIndex = Math.floor(idx / columnCount);
-      console.log("scrollGrid", rowIndex, columnIndex);
 
       try {
-        gridRef?.scrollToCell({rowAlign: "start", columnAlign: "start", behavior: "auto",
-          columnIndex: columnIndex, rowIndex: rowIndex});
+        requestAnimationFrame(() => {
+          gridRef?.scrollToCell({
+            rowAlign: "start", columnAlign: "start", behavior: "auto",
+            columnIndex: columnIndex, rowIndex: rowIndex
+          });
+          console.log("scrollGrid", rowIndex, columnIndex);
+        })
       } catch(e) {
+        console.log("scrollGrid", e);
       }
     },
 

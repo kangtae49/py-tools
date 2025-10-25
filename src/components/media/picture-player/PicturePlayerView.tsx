@@ -55,7 +55,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     playPath, setPlayPath,
     playList,
     getPrevPlayPath, getNextPlayPath,
-    setSelectionBegin, scrollPlayPath,
+    scrollPlayPath,
   } = usePlayListStore();
 
   const {
@@ -105,7 +105,6 @@ export default function PicturePlayerView({winKey: _}: Prop) {
           console.log('fetch error', res.status);
           const newPlayPath = getNextPlayPath(playPath)
           setPlayPath(newPlayPath);
-          setSelectionBegin(newPlayPath);
           scrollPlayPath(playList, newPlayPath)
         }
       })

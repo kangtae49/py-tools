@@ -22,13 +22,14 @@ function PictureGridCellView({
   // rowCount,
 }: CellComponentProps<Prop>) {
   const {setSetting, setViewType, setting} = usePictureStore();
-  const {playList} = usePlayListStore();
+  const {playList, setRowStep} = usePlayListStore();
 
   const onClickCell = async (imgSrc: string | null) => {
     if (imgSrc) {
       setSetting((setting) => ({...setting, mediaPath: imgSrc}));
     }
     setViewType('single')
+    setRowStep(1)
 
   }
 

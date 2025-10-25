@@ -110,7 +110,8 @@ function createPictureStore(pictureDefault: PictureDefault) {
       try {
         requestAnimationFrame(() => {
           gridRef?.scrollToCell({
-            rowAlign: "start", columnAlign: "start", behavior: "auto",
+            // rowAlign: "start", columnAlign: "start", behavior: "auto",
+            rowAlign: "auto", columnAlign: "auto", behavior: "auto",
             columnIndex: columnIndex, rowIndex: rowIndex
           });
           console.log("scrollGrid", rowIndex, columnIndex);

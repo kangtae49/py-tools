@@ -25,7 +25,6 @@ function PlayListRowView({
     playPath, setPlayPath,
     playing,
     playList, removePlayList, setPlayList,
-    selectionBegin, setSelectionBegin,
     checkedPlayList,
     appendCheckedPlayList, removeCheckedPlayList,
   } = usePlayListStore();
@@ -34,7 +33,6 @@ function PlayListRowView({
   const clickPlayPath = (path: string) => {
     console.log('clickPlayPath', path)
     setPlayPath(path)
-    setSelectionBegin(path)
   }
   const clickRemovePlayPath = (path: string) => {
     const newPlayList = removePlayList(playList, [path]);
@@ -51,10 +49,10 @@ function PlayListRowView({
   }
   const isPlayPath = playPath === playList[index];
   const isChecked = checkedPlayList.includes(playList[index]);
-  const isSelected = playList[index] === selectionBegin;
+  // const isSelected = playList[index] === selectionBegin;
 
   return (
-    <div className={`row ${isSelected ? 'selected': ''} ${isPlayPath ? 'playing' : ''}`} style={style}>
+    <div className={`row ${isPlayPath ? 'playing' : ''}`} style={style}>
       <div className={`title  ${(playing && isPlayPath) ? 'playing' : ''}`}
            title={playList[index]}
       >

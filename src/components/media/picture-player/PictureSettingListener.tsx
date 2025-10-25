@@ -56,7 +56,6 @@ export const mountSetting = async () => {
     setPlayList,
     setShuffle,
     setPlaying,
-    setSelectionBegin,
   } = usePlayListStore.getState();
   if(defaultSetting?.settingName === undefined) return;
   let newSetting: MediaSetting | null = null;
@@ -93,7 +92,6 @@ export const mountSetting = async () => {
   setPlayList(newPlayList)
   setShuffle(newShuffle)
   setPlaying(!newPaused)
-  setSelectionBegin(newPlayPath)
 
 }
 

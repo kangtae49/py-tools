@@ -41,7 +41,7 @@ function PictureGridView({
     gridHeight, setGridHeight,
     resizeSlider,
   } = usePictureStore();
-  const {playList} = usePlayListStore();
+  const {playList, setRowStep} = usePlayListStore();
 
   onLoad(() => {
     console.log('onLoad')
@@ -66,6 +66,7 @@ function PictureGridView({
 
     setColumnCount(columnCount)
     setRowCount(rowCount)
+    setRowStep(columnCount)
   }, [gridWidth, gridHeight, playList, setting.sliderWidth, setting.sliderHeight, setting.sliderCheck])
 
 

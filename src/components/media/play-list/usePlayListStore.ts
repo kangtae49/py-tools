@@ -12,7 +12,7 @@ export interface UsePlayListStore {
   shuffle: boolean
   playList: string[]
   checkedPlayList: string[];
-  selectionBegin: string | undefined;
+  rowStep: number;
   filter: string[]
 
 
@@ -22,9 +22,8 @@ export interface UsePlayListStore {
   setShuffle: (value: boolean) => void;
   setPlayList: (value: string[]) => void;
   setCheckedPlayList: (value: string[]) => void;
-  setSelectionBegin: (value: string | undefined) => void;
   setFilter: (value: string[]) => void;
-
+  setRowStep: (value: number) => void;
 
   scrollPlayPath: (curPlayList: string[], value: string | undefined) => void;
 
@@ -34,8 +33,8 @@ export interface UsePlayListStore {
   shufflePlayList: (curList: string[]) => string [];
   toggleShuffle: () => void;
   natsortPlayList: (curList: string[]) => string [];
-  getPrevPlayPath: (value: string | undefined) => string | undefined;
-  getNextPlayPath: (value: string | undefined) => string | undefined;
+  getPrevPlayPath: (value: string | undefined, step?: number) => string | undefined;
+  getNextPlayPath: (value: string | undefined, step?: number) => string | undefined;
 
   appendCheckedPlayList: (value: string[]) => void;
   removeCheckedPlayList: (value: string[]) => void;
@@ -56,6 +55,7 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
     checkedPlayList: [],
     selectionBegin: undefined,
     filter: [],
+    rowStep: 1,
     ...defaultState,
 
     setPlayListRef: (value) => {
@@ -66,9 +66,8 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
     setShuffle: (value) => set({shuffle: value}),
     setPlayList: (value) => set({playList: value}),
     setCheckedPlayList: (value) => set({ checkedPlayList: value }),
-    setSelectionBegin: (value) => set({ selectionBegin: value }),
     setFilter: (value) => set({filter: value}),
-
+    setRowStep: (value) => set({rowStep: value}),
 
     scrollPlayPath: (curPlayList, value) => {
       if(value === undefined) return;
@@ -103,7 +102,7 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
       const sorter = natsort();
       return [...curList].sort(sorter);
     },
-    getPrevPlayPath: (value) => {
+    getPrevPlayPath: (value, step=1) => {
       const curPlayList = get().playList;
       if (curPlayList === undefined) return undefined;
       if (curPlayList.length == 0) {
@@ -114,14 +113,19 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
         prev = curPlayList[0];
         return prev
       }
-      let idx = curPlayList.indexOf(value) -1;
+      let idx = curPlayList.indexOf(value);
       if (idx < 0) {
-        idx = curPlayList.length - 1;
+        idx = 0;
+      } else {
+        idx = idx - step
+      }
+      if (idx < 0) {
+        idx = idx + curPlayList.length
       }
       prev = curPlayList[idx]
       return prev;
     },
-    getNextPlayPath: (value) => {
+    getNextPlayPath: (value, step=1) => {
       const curPlayList = get().playList;
       if (curPlayList === undefined) return undefined;
       if (curPlayList.length == 0) {
@@ -132,9 +136,14 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
         next = curPlayList[0];
         return next;
       }
-      let idx = curPlayList.indexOf(value) +1;
-      if (idx > curPlayList.length -1) {
+      let idx = curPlayList.indexOf(value);
+      if (idx < 0) {
         idx = 0;
+      } else {
+        idx = idx + step
+      }
+      if (idx >= curPlayList.length) {
+        idx = idx - curPlayList.length
       }
       next = curPlayList[idx]
       return next;
@@ -170,13 +179,10 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
       const {
         playPath, setPlayPath,
         playList, setPlayList,
-        selectionBegin, setSelectionBegin,
         checkedPlayList, setCheckedPlayList,
         getPrevPlayPath, getNextPlayPath,
-        setPlaying,
         scrollPlayPath,
-        removeCheckedPlayList,
-        appendCheckedPlayList,
+        rowStep,
       } = get();
       e.preventDefault()
       window.getSelection()?.removeAllRanges();
@@ -191,58 +197,22 @@ function createPlayListStore(defaultState?: Partial<DefaultPlayListState>) {
         const newPlayPath = getPrevPlayPath(playPath)
         console.log('setSetting ArrowLeft')
         setPlayPath(newPlayPath);
-        setSelectionBegin(newPlayPath)
         scrollPlayPath(playList, newPlayPath)
       } else if (e.key === "ArrowRight") {
         const newPlayPath = getNextPlayPath(playPath)
         console.log('setSetting ArrowRight')
         setPlayPath(newPlayPath);
-        setSelectionBegin(newPlayPath)
         scrollPlayPath(playList, newPlayPath)
-      } else if (e.key === "Enter") {
-        console.log('setSetting Enter')
-        setPlaying(true);
-        setPlayPath(selectionBegin);
-        setSelectionBegin(selectionBegin);
       } else if (e.key === "ArrowUp") {
-        if (playList.length == 0) return;
-        if (selectionBegin === undefined) {
-          setSelectionBegin(playList[0])
-          scrollPlayPath(playList, playList[0])
-          return;
-        }
-        let newSelection = getPrevPlayPath(selectionBegin)
-        if (newSelection === undefined) {
-          newSelection = playList[0]
-        }
-        setSelectionBegin(newSelection)
-        scrollPlayPath(playList, newSelection)
+        const newPlayPath = getPrevPlayPath(playPath, rowStep)
+        console.log('setSetting ArrowLeft')
+        setPlayPath(newPlayPath);
+        scrollPlayPath(playList, newPlayPath)
       } else if (e.key === "ArrowDown") {
-        if (playList.length == 0) return;
-        if (selectionBegin == undefined) {
-          setSelectionBegin(playList[0])
-          scrollPlayPath(playList, playList[0])
-          return;
-        }
-        let newSelection = getNextPlayPath(selectionBegin)
-        if (newSelection === null) {
-          newSelection = playList[0]
-        }
-        setSelectionBegin(newSelection)
-        scrollPlayPath(playList, newSelection)
-      } else if (e.key === " ") {
-        if (playList.length == 0) return;
-        if (selectionBegin == undefined) {
-          setSelectionBegin(playList[0])
-          scrollPlayPath(playList, playList[0])
-          return;
-        }
-        const pos = checkedPlayList.indexOf(selectionBegin);
-        if (pos >= 0) {
-          removeCheckedPlayList([selectionBegin])
-        } else {
-          appendCheckedPlayList([selectionBegin])
-        }
+        const newPlayPath = getNextPlayPath(playPath, rowStep)
+        console.log('setSetting ArrowRight')
+        setPlayPath(newPlayPath);
+        scrollPlayPath(playList, newPlayPath)
       }
     }
 

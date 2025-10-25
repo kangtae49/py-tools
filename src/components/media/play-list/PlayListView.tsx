@@ -30,22 +30,8 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     scrollPlayPath,
     shufflePlayList, natsortPlayList,
     toggleAllChecked,
-    setSelectionBegin,
     filter,
   } = usePlayListStore();
-
-  // useEffect(() => {
-  //   let active = false;
-  //   const controller = new AbortController();
-  //   onMount(controller.signal, () => {active = true;})
-  //
-  //   return () => {
-  //     controller.abort();
-  //     if (active) {
-  //       onUnMount().then()
-  //     }
-  //   }
-  // }, [])
 
   useReadyEffect(() => {
     console.log('PlayListView', playList, filter[0])
@@ -124,11 +110,6 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     } = usePlayListStore.getState();
     const newPlayList = appendPlayList(playList, files);
     const shuffledPlayList = shuffle ? shufflePlayList(newPlayList) : natsortPlayList(newPlayList);
-    let newPlayPath = playPath;
-    if (shuffledPlayList.length > 0) {
-      newPlayPath = shuffledPlayList[0];
-      setSelectionBegin(newPlayPath)
-    }
     setPlayList(shuffledPlayList);
     if (playPath === undefined && shuffledPlayList.length > 0) {
       setPlayPath(shuffledPlayList[0])

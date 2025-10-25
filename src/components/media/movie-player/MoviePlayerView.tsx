@@ -56,7 +56,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     scrollPlayPath,
     shufflePlayList, toggleShuffle,
     getPrevPlayPath, getNextPlayPath,
-    setSelectionBegin,
   } = usePlayListStore();
   const {
     setDropRef,
@@ -117,7 +116,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
           console.log('fetch error', res.status);
           const newPlayPath = getNextPlayPath(playPath)
           setPlayPath(newPlayPath);
-          setSelectionBegin(newPlayPath);
           scrollPlayPath(playList, newPlayPath)
           return;
         }

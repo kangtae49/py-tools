@@ -30,6 +30,7 @@ import toast from "react-hot-toast";
 import ImageView from "./ImageView.tsx";
 import useOnload from "@/stores/useOnload.ts";
 import {useAppStore} from "@/stores/useAppStore.ts";
+import SwiperView from "@/components/media/picture-player/SwiperView.tsx";
 
 
 interface Prop {
@@ -45,7 +46,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     toggleRepeat,
     toggleShuffle,
     setting, setSetting,
-    viewType,
+    viewType, setViewType,
     scrollGrid,
   } = useMediaStore();
 
@@ -115,6 +116,11 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   const clickTogglePlay = async () => {
     const newPaused = !setting.paused
     setSetting((setting) => ({...setting, caller: "clickTogglePlay", paused: newPaused}))
+    if (!newPaused) {
+      setViewType('swiper')
+    } else {
+      setViewType('grid')
+    }
   }
 
   const playPrev = () => {
@@ -180,6 +186,14 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                 </Activity>
                 <Activity mode={viewType === "single" ? "visible": "hidden"}>
                   <ImageView
+                    width={width}
+                    height={height}
+                  />
+                </Activity>
+                <Activity mode={viewType === "swiper" ? "visible": "hidden"}>
+                  <SwiperView
+                    usePlayListStore={usePlayListStore}
+                    icon={<Icon icon={faImage} />}
                     width={width}
                     height={height}
                   />

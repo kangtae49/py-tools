@@ -47,27 +47,6 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     console.log('playListRef', playListRef)
   }, [playListRef])
 
-  // const onMount = async (signal: AbortSignal, onComplete: () => void) => {
-  //   console.log('onMount', signal)
-  //   await Promise.resolve();
-  //
-  //   if(signal?.aborted) {
-  //     console.log('onMount Aborted')
-  //     return;
-  //   }
-  //
-  //   // do something
-  //   onComplete();
-  //   setIsInitialized(true)
-  //   console.log('onMount Completed')
-  // }
-  //
-  // const onUnMount = async () => {
-  //   console.log('onUnMount')
-  // }
-
-
-
 
   const openDialogPlayList = async () => {
     const filter_ext = filter.map((ext)=> `*.${ext}`).join(";") // *.mp3;*.wav;*.ogg;*.m4a;*.opus;*.webm

@@ -3,7 +3,7 @@ import type {GridImperativeAPI} from "react-window";
 import {SCROLL_SIZE, SLIDER_MIN, SLIDER_SIZE} from "@/components/media/picture-grid/PictureGridView.tsx";
 
 export type RepeatType = 'repeat_none' | 'repeat_all' | 'repeat_one'
-export type ViewType = 'grid' | 'single'
+export type ViewType = 'grid' | 'single' | 'swiper'
 
 export interface PictureSetting {
   caller?: string

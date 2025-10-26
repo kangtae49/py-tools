@@ -31,8 +31,9 @@ function SwiperView({
           Autoplay,
         ]}
         effect={"fade"}
+        centeredSlides={true}
         autoplay={{
-            delay: 1000,
+            delay: 100,
         }}
         loop={true}
         slidesPerView={1}

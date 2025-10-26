@@ -250,6 +250,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
             <SpeedMenu
               value={String(setting.playbackRate)}
               list={["0.25", "0.5", "0.75", "1", "1.25", "1.5", "1.75", "2"]}
+              label={(value) => `x${value}`}
               defaultValue={"1"}
               onChange={onChangeSpeed} />
             <div className="center">

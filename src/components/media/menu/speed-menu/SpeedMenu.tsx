@@ -8,10 +8,11 @@ interface Prop {
   value: string | undefined
   defaultValue: string
   list: string[]
+  label: (value: string) => string
   onChange: (value: string) => void
 }
 
-function SpeedMenu({value, defaultValue, list, onChange}: Prop) {
+function SpeedMenu({value, defaultValue, list, label, onChange}: Prop) {
   const [isOpen, setOpen] = useState(false);
   const { anchorProps, hoverProps } = useHover(isOpen, setOpen);
   let ref = useRef<HTMLDivElement | null>(null);
@@ -38,7 +39,11 @@ function SpeedMenu({value, defaultValue, list, onChange}: Prop) {
         onClose={() => setOpen(false)}
       >
         { list.map((v, idx) => (
-          <MenuItem key={idx} className={`menu-item ${(value ?? defaultValue) == v ? 'selected': ''}`} value={v} onClick={(e) => onChange(e.value)}>x{v}</MenuItem>
+          <MenuItem key={idx} className={`menu-item ${(value ?? defaultValue) == v ? 'selected': ''}`}
+                    value={v}
+                    onClick={(e) => onChange(e.value)}>
+            {label(v)}
+          </MenuItem>
         ))}
       </ControlledMenu>
     </div>

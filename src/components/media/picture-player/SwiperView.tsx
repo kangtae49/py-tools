@@ -6,6 +6,7 @@ import type {StoreApi} from "zustand/vanilla";
 import type {UsePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
 import React from "react";
 import {getFilename, srcLocal} from "@/components/utils.ts";
+import {usePictureStore} from "@/components/media/picture-player/usePictureStore.ts";
 
 interface Prop {
   usePlayListStore: UseBoundStore<StoreApi<UsePlayListStore>>
@@ -20,6 +21,7 @@ function SwiperView({
   width,
   height,
 }: Prop) {
+  const {setting} = usePictureStore();
   const {playList} = usePlayListStore();
 
   return (
@@ -33,7 +35,7 @@ function SwiperView({
         effect={"fade"}
         centeredSlides={true}
         autoplay={{
-            delay: 100,
+            delay: setting.playbackRate * 1000,
         }}
         loop={true}
         slidesPerView={1}

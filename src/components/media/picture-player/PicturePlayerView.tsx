@@ -219,7 +219,8 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                   <div className="row first">
                     <SpeedMenu
                       value={String(setting.playbackRate)}
-                      list={["1", "2", "3"]}
+                      list={["0.5", "1", "1.5", "2", "2.5", "3", "5", "10"]}
+                      label={(value) => `${value} sec`}
                       defaultValue={"1"}
                       onChange={onChangeSpeed} />
                     <div className="center">
@@ -242,8 +243,6 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                       {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
                     </div>
 
-                    <div className="speed" title="Speed">
-                    </div>
                     <div className="slider">
                     </div>
                     <div className="icon">

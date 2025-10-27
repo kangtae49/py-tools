@@ -18,8 +18,9 @@ import useOnload from "@/stores/useOnload.ts";
 interface Prop {
   usePlayListStore: UseBoundStore<StoreApi<UsePlayListStore>>
   icon?: React.ReactElement,
+  onClickTitle?: (playPath: string | undefined) => void,
 }
-export default function PlayListView({usePlayListStore, icon}: Prop) {
+export default function PlayListView({usePlayListStore, icon, onClickTitle}: Prop) {
   const {useReadyEffect} = useOnload()
   const {
     shuffle,
@@ -118,7 +119,13 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
     })
   }
 
-  // if (!isInitialized) return null;
+  const clickTitle = (playPath: string | undefined) => {
+    playPath && scrollPlayPath(playList ?? [], playPath)
+    if (onClickTitle) {
+      onClickTitle(playPath)
+    }
+  }
+
   return (
     <div className="play-list">
       <div className="head">
@@ -140,7 +147,7 @@ export default function PlayListView({usePlayListStore, icon}: Prop) {
 
         <div className="title"
              title={playPath ?? ''}
-             onClick={() => {playPath && scrollPlayPath(playList ?? [], playPath)}}
+             onClick={() => clickTitle(playPath)}
         >{playPath && icon} {getFilename(playPath ?? '')}</div>
       </div>
       <List

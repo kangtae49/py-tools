@@ -91,7 +91,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
   useReadyEffect(() => {
     if (playPath === undefined) return;
-    setSetting((setting) => ({...setting, caller: "useEffect [playPath]", mediaPath: playPath}))
+    setSetting((setting) => ({...setting, mediaPath: playPath}))
     console.log('fetch HEAD');
     fetch(srcLocal(playPath), {method: "HEAD"})
       .then( (res) => {
@@ -115,7 +115,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     if (!newPaused) {
       setViewType('swiper')
     } else {
-      setViewType('grid')
+      setViewType('single')
     }
   }
 
@@ -150,6 +150,12 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
   const onChangeRepeat = (value: RepeatType) => {
     setSetting((setting) => ({...setting, caller: "onChangeRepeat", repeat: value}));
+  }
+
+  const onClickTitle = (playPath: string | undefined) => {
+    if (playPath === undefined) return;
+    const {playList} = usePlayListStore.getState()
+    scrollGrid(playList, playPath);
   }
 
   return (
@@ -197,12 +203,6 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                     height={height}
                   />
                 </Activity>
-                {/*<PictureListView*/}
-                {/*  usePlayListStore={usePlayListStore}*/}
-                {/*  icon={<Icon icon={faImage} />}*/}
-                {/*  width={width}*/}
-                {/*  height={height}*/}
-                {/*/>*/}
               </>
             )}
           </AutoSizer>
@@ -263,6 +263,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                   <PlayListView
                     usePlayListStore={usePlayListStore}
                     icon={<Icon icon={faImage} />}
+                    onClickTitle={onClickTitle}
                   />
                 </div>
               </div>

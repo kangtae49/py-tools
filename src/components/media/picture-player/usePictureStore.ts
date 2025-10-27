@@ -130,9 +130,9 @@ function createPictureStore(pictureDefault: PictureDefault) {
         const repeat = state.setting.repeat;
         let newRepeat: RepeatType;
         if (repeat === 'repeat_all') {
-          newRepeat = 'repeat_one'
-        } else if (repeat === 'repeat_one') {
           newRepeat = 'repeat_none'
+        // } else if (repeat === 'repeat_one') {
+        //   newRepeat = 'repeat_none'
         } else if (repeat === 'repeat_none') {
           newRepeat = 'repeat_all'
         } else {

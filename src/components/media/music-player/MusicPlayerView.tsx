@@ -9,10 +9,10 @@ import {
   faCirclePlay, faCirclePause,
   faBackwardStep, faForwardStep,
   faShuffle,
-  faArrowsSpin, faRotateRight, faMinus, faMusic,
+  faMusic,
 } from '@fortawesome/free-solid-svg-icons'
 import AudioView from "./AudioView.tsx";
-import {useAudioStore as useMediaStore} from "../useMediaStore.ts";
+import {type RepeatType, useAudioStore as useMediaStore} from "../useMediaStore.ts";
 import {useMusicPlayListStore as usePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
 import MusicDropListener from "./MusicDropListener.tsx";
 import MusicSettingListener from "./MusicSettingListener.tsx";
@@ -21,6 +21,7 @@ import VolumeMenu from "@/components/media/menu/volume-menu/VolumeMenu.tsx";
 import SpeedMenu from "@/components/media/menu/speed-menu/SpeedMenu.tsx";
 import useOnload from "@/stores/useOnload.ts";
 import {useAppStore} from "@/stores/useAppStore.ts";
+import RepeatMenu from "@/components/media/menu/repeat-menu/RepeatMenu.tsx";
 
 
 interface Prop {
@@ -43,7 +44,6 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     changeVolume,
     currentTime, changeCurrentTime, setCurrentTime,
     changeMuted,
-    toggleRepeat,
     ended, setEnded,
     setting, setSetting,
     changePlaybackRate,
@@ -216,6 +216,10 @@ export default function MusicPlayerView({winKey: _}: Prop) {
     changeVolume(v);
   }
 
+  const onChangeRepeat = (value: RepeatType) => {
+    setSetting((setting) => ({...setting, caller: "onChangeRepeat", repeat: value}));
+  }
+
   return (
     <>
       <MusicDropListener />
@@ -254,7 +258,7 @@ export default function MusicPlayerView({winKey: _}: Prop) {
               defaultValue={"1"}
               onChange={onChangeSpeed} />
             <div className="center">
-              <div className="icon" onClick={() => toggleShuffle()}>
+              <div className="icon" onClick={() => toggleShuffle()} title="Shuffle">
                 <Icon icon={faShuffle} className={shuffle ? '': 'inactive'}/>
               </div>
               <div className="icon" onClick={() => playPrev()}>
@@ -268,9 +272,18 @@ export default function MusicPlayerView({winKey: _}: Prop) {
               <div className="icon" onClick={() => playNext()}>
                 <Icon icon={faForwardStep}/>
               </div>
-              {setting.repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
-              {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
-              {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
+              <RepeatMenu
+                value={setting.repeat}
+                defaultValue={'repeat_all'}
+                list={['repeat_all', 'repeat_one', 'repeat_none']}
+                label={(v) => ({
+                    'repeat_all': 'Repeat All',
+                    'repeat_one': 'Repeat One',
+                    'repeat_none': 'Repeat Off'
+                  }[v]
+                )}
+                onChange={onChangeRepeat}
+              />
             </div>
             <VolumeMenu
               muted={setting.muted} volume={setting.volume}

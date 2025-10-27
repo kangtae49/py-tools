@@ -9,11 +9,10 @@ import {
 } from "@/components/media/play-list/usePlayListStore.ts";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
-  faArrowsSpin,
   faBackwardStep,
   faCirclePause, faCirclePlay, faExpand,
   faForwardStep,
-  faImage, faMinus, faRotateRight,
+  faImage,
   faShuffle,
 } from "@fortawesome/free-solid-svg-icons";
 import {useReceivedDropFilesStore} from "@/stores/useReceivedDropFilesStore.ts";
@@ -31,6 +30,8 @@ import ImageView from "./ImageView.tsx";
 import useOnload from "@/stores/useOnload.ts";
 import {useAppStore} from "@/stores/useAppStore.ts";
 import SwiperView from "@/components/media/picture-player/SwiperView.tsx";
+import RepeatMenu from "@/components/media/menu/repeat-menu/RepeatMenu.tsx";
+import type {RepeatType} from "@/components/media/useMediaStore.ts";
 
 
 interface Prop {
@@ -43,7 +44,6 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   const {
     setMediaRef,
     setContainerRef,
-    toggleRepeat,
     toggleShuffle,
     setting, setSetting,
     viewType, setViewType,
@@ -52,7 +52,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
   const {
     setShuffle,
-    playing, setPlaying,
+    playing,
     playPath, setPlayPath,
     playList,
     getPrevPlayPath, getNextPlayPath,
@@ -72,10 +72,6 @@ export default function PicturePlayerView({winKey: _}: Prop) {
       scrollGrid(playList, playPath);
     }
   }, [viewType]);
-
-  useReadyEffect(() => {
-    setPlaying(!setting.paused)
-  }, [setting.paused])
 
   useReadyEffect(() => {
     setSetting((setting) => ({...setting, caller: "useEffect [playing]", paused: !playing}))
@@ -152,6 +148,9 @@ export default function PicturePlayerView({winKey: _}: Prop) {
     setSetting((setting) => ({...setting, caller: "clickSpeed", playbackRate: v}))
   }
 
+  const onChangeRepeat = (value: RepeatType) => {
+    setSetting((setting) => ({...setting, caller: "onChangeRepeat", repeat: value}));
+  }
 
   return (
     <>
@@ -220,7 +219,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                     <SpeedMenu
                       value={String(setting.playbackRate)}
                       list={["0.5", "1", "1.5", "2", "2.5", "3", "5", "10"]}
-                      label={(value) => `${value} sec`}
+                      label={(value) => `${value}s`}
                       defaultValue={"1"}
                       onChange={onChangeSpeed} />
                     <div className="center">
@@ -238,14 +237,18 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                       <div className="icon" onClick={() => playNext()}>
                         <Icon icon={faForwardStep}/>
                       </div>
-                      {setting.repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
-                      {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
-                      {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
-                    </div>
-
-                    <div className="slider">
-                    </div>
-                    <div className="icon">
+                      <RepeatMenu
+                        value={setting.repeat}
+                        defaultValue={'repeat_all'}
+                        list={['repeat_all', 'repeat_none']}
+                        label={(v) => ({
+                            'repeat_all': 'Repeat All',
+                            'repeat_one': 'Repeat One',
+                            'repeat_none': 'Repeat Off'
+                          }[v]
+                        )}
+                        onChange={onChangeRepeat}
+                      />
                     </div>
                     <div className="icon" onClick={() => toggleFullscreen()} title="Fullscreen(F11)">
                       <Icon icon={faExpand}/>

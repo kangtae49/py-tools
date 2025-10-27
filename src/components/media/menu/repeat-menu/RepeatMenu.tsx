@@ -1,37 +1,33 @@
 import "../menu.css"
-import React, {useRef, useState} from "react";
 import {ControlledMenu, MenuItem, type RectElement, useHover} from "@szhsin/react-menu";
+import React, {type JSX, useRef, useState} from "react";
 import {FontAwesomeIcon as Icon} from "@fortawesome/react-fontawesome";
-import {faPersonBiking} from "@fortawesome/free-solid-svg-icons";
+import {faArrowsSpin, faMinus, faRotateRight} from "@fortawesome/free-solid-svg-icons";
+import type {RepeatType} from "@/components/media/useMediaStore.ts";
 
 interface Prop {
-  value: string | undefined
-  defaultValue: string
-  list: string[]
-  label: (value: string) => string
-  onChange: (value: string) => void
+  value: RepeatType
+  defaultValue: RepeatType
+  list: RepeatType[]
+  label: (value: RepeatType) => string
+  onChange: (value: RepeatType) => void
 }
 
-function SpeedMenu({value, defaultValue, list, label, onChange}: Prop) {
+const ICONS: Record<RepeatType, JSX.Element> = {
+  'repeat_all': <Icon icon={faArrowsSpin}/>,
+  'repeat_one': <Icon icon={faRotateRight}/>,
+  'repeat_none': <Icon icon={faMinus}/>,
+}
+function RepeatMenu({value, defaultValue, list, label, onChange}: Prop) {
   const [isOpen, setOpen] = useState(false);
   const { anchorProps, hoverProps } = useHover(isOpen, setOpen);
   let ref = useRef<HTMLDivElement | null>(null);
 
-  // let speedNm;
-  // let speed = Number(value ?? defaultValue);
-  // if (speed > 1) {
-  //   speedNm = "up";
-  // } else if (speed < 1) {
-  //   speedNm = "down";
-  // } else {
-  //   speedNm = "";
-  // }
-  // ["0.25", "0.5", "0.75", "1", "1.25", "1.5", "1.75", "2"]
+
   return (
-    <div className="hover-menu badge-wrap">
-      {<div className="badge-bottom" title={label(value ?? '')}>{label(value ?? '')}</div>}
+    <>
       <div className="target" ref={ref} {...anchorProps} onClick={() => onChange(defaultValue)}>
-        <Icon icon={faPersonBiking} />
+        {ICONS[value]}
       </div>
       <ControlledMenu
         {...hoverProps}
@@ -39,16 +35,16 @@ function SpeedMenu({value, defaultValue, list, label, onChange}: Prop) {
         anchorRef={ref as React.RefObject<Element | RectElement>}
         onClose={() => setOpen(false)}
       >
-        { list.map((v, idx) => (
+        {list.map((v, idx) => (
           <MenuItem key={idx} className={`menu-item ${(value ?? defaultValue) == v ? 'selected': ''}`}
                     value={v}
                     onClick={(e) => onChange(e.value)}>
-            {label(v)}
+            {ICONS[v]} {label(v)}
           </MenuItem>
         ))}
       </ControlledMenu>
-    </div>
+    </>
   )
 }
 
-export default SpeedMenu
+export default RepeatMenu;

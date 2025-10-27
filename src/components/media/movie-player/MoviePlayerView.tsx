@@ -12,10 +12,10 @@ import {
   faCirclePlay, faCirclePause,
   faBackwardStep, faForwardStep,
   faShuffle,
-  faArrowsSpin, faRotateRight, faMinus, faFilm, faExpand,
+  faFilm, faExpand,
 } from '@fortawesome/free-solid-svg-icons'
 import VideoView from "./VideoView.tsx";
-import {useVideoStore as useMediaStore} from "../useMediaStore.ts";
+import {type RepeatType, useVideoStore as useMediaStore} from "../useMediaStore.ts";
 import {useMoviePlayListStore as usePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
 import MovieDropListener from "./MovieDropListener.tsx";
 import MovieSettingListener from "./MovieSettingListener.tsx";
@@ -27,6 +27,7 @@ import SubtitleMenu from "@/components/media/menu/subtitle-menu/SubtitleMenu.tsx
 import {getSubs} from "@/components/media/media.ts";
 import useOnload from "@/stores/useOnload.ts";
 import {useAppStore} from "@/stores/useAppStore.ts";
+import RepeatMenu from "@/components/media/menu/repeat-menu/RepeatMenu.tsx";
 
 interface Prop {
   winKey: WinKey
@@ -42,7 +43,6 @@ export default function MoviePlayerView({winKey: _}: Prop) {
     changeVolume,
     currentTime, changeCurrentTime, setCurrentTime,
     changeMuted,
-    toggleRepeat,
     ended, setEnded,
     setting, setSetting,
     changePlaybackRate,
@@ -220,15 +220,19 @@ export default function MoviePlayerView({winKey: _}: Prop) {
 
   const onChangeSpeed = (value: string) => {
     const v = Number(value)
-    setSetting((setting) => ({...setting, caller: "clickSpeed", playbackRate: v}))
+    setSetting((setting) => ({...setting, caller: "onChangeSpeed", playbackRate: v}))
     changePlaybackRate(v);
   }
 
   const onChangeVolume= (value: string) => {
     let v = Number(value);
     console.log('change volume', v);
-    setSetting((setting) => ({...setting, caller: "input range", volume: v}));
+    setSetting((setting) => ({...setting, caller: "onChangeVolume", volume: v}));
     changeVolume(v);
+  }
+
+  const onChangeRepeat = (value: RepeatType) => {
+    setSetting((setting) => ({...setting, caller: "onChangeRepeat", repeat: value}));
   }
 
   const clickVideo = (e: React.MouseEvent) => {
@@ -307,7 +311,7 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                     defaultValue={"1"}
                     onChange={onChangeSpeed} />
                   <div className="center">
-                    <div className="icon" onClick={() => toggleShuffle()}>
+                    <div className="icon" onClick={() => toggleShuffle()} title="Shuffle">
                       <Icon icon={faShuffle} className={shuffle ? '': 'inactive'}/>
                     </div>
                     <div className="icon" onClick={() => playPrev()}>
@@ -321,9 +325,18 @@ export default function MoviePlayerView({winKey: _}: Prop) {
                     <div className="icon" onClick={() => playNext()}>
                       <Icon icon={faForwardStep}/>
                     </div>
-                    {setting.repeat === 'repeat_all' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat All"><Icon icon={faArrowsSpin}/></div>}
-                    {setting.repeat === 'repeat_one' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat One"><Icon icon={faRotateRight}/></div>}
-                    {setting.repeat === 'repeat_none' && <div className="icon" onClick={() => toggleRepeat()} title="Repeat Off"><Icon icon={faMinus}/></div>}
+                    <RepeatMenu
+                      value={setting.repeat}
+                      defaultValue={'repeat_all'}
+                      list={['repeat_all', 'repeat_one', 'repeat_none']}
+                      label={(v) => ({
+                          'repeat_all': 'Repeat All',
+                          'repeat_one': 'Repeat One',
+                          'repeat_none': 'Repeat Off'
+                        }[v]
+                      )}
+                      onChange={onChangeRepeat}
+                    />
                   </div>
                   <VolumeMenu
                     muted={setting.muted} volume={setting.volume}

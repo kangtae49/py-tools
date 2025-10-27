@@ -52,9 +52,9 @@ export default function PicturePlayerView({winKey: _}: Prop) {
 
   const {
     setShuffle,
-    playing,
     playPath, setPlayPath,
     playList,
+    setPlaying,
     getPrevPlayPath, getNextPlayPath,
     scrollPlayPath,
   } = usePlayListStore();
@@ -64,18 +64,21 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   } = useReceivedDropFilesStore();
 
   onLoad(() => {
-    console.log('onLoad')
+    const {setting, viewType} = useMediaStore.getState()
+    console.log('onLoad', setting.paused, viewType)
+    if (!setting.paused) {
+      setViewType('swiper')
+    }
   })
 
+
+
   useEffect(() => {
+    console.log('useEffect [viewType]', viewType)
     if (viewType === 'grid') {
       scrollGrid(playList, playPath);
     }
   }, [viewType]);
-
-  useReadyEffect(() => {
-    setSetting((setting) => ({...setting, caller: "useEffect [playing]", paused: !playing}))
-  }, [playing]);
 
   useReadyEffect(() => {
     setSetting((setting) => ({...setting, caller: "useEffect [playList]", playList}))
@@ -88,6 +91,14 @@ export default function PicturePlayerView({winKey: _}: Prop) {
   useReadyEffect(() => {
     setPlayPath(setting.mediaPath)
   }, [setting.mediaPath])
+
+  useEffect(() => {
+    const {setting} = useMediaStore.getState()
+    if (!setting.paused) {
+      setViewType('swiper')
+    }
+    setPlaying(!setting.paused)
+  }, [setting.paused])
 
   useReadyEffect(() => {
     if (playPath === undefined) return;

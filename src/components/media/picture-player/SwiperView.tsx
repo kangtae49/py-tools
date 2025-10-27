@@ -51,6 +51,10 @@ function SwiperView({
     }
   };
 
+  const onClickImage = (_playPath: string) => {
+
+  }
+
   return (
     <div className="swiper-view"
          style={{width: width, height: height}}
@@ -76,7 +80,7 @@ function SwiperView({
 
       >
         {playList.map((playPath: string, idx: number) => (
-          <SwiperSlide key={idx}>
+          <SwiperSlide key={idx} onClick={() => onClickImage(playPath)}>
             <img src={srcLocal(playPath)}
                  loading="lazy"
                  alt={getFilename(playPath)}

@@ -2,7 +2,7 @@
 .picture-player {
     display: flex;
     flex-direction: column;
-    --top-height: 50px;
+    --top-height: 60px;
     --first-height: 60px;
     --icon-size: 24px;
     --icon-size-middle: 35px;

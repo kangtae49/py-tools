@@ -268,7 +268,7 @@ export default function PicturePlayerView({winKey: _}: Prop) {
                   </div>
                 </div>
                 <div className="drop-list"
-                     style={{ height: "calc(100% - 50px)", width }}
+                     style={{ height: "calc(100% - 60px)", width }}
                      onDrop={(e) => setDropRef(e.currentTarget as HTMLDivElement)}
                 >
                   <PlayListView

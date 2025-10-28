@@ -9,7 +9,7 @@ import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import {type WinKey, type WinType, getWinType, useMosaicStore} from "./mosaicStore.ts";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
-  faMusic, faFilm,
+  faMusic, faFilm, faImage,
 } from '@fortawesome/free-solid-svg-icons'
 import MusicPlayerView from "@/components/media/music-player/MusicPlayerView.tsx";
 import MoviePlayerView from "@/components/media/movie-player/MoviePlayerView.tsx";
@@ -46,7 +46,7 @@ const ELEMENT_MAP: Record<WinType, TitleInfo> = {
   },
   "picture-player": {
     title: "Picture",
-    icon: <div><Icon icon={faFilm} /></div>,
+    icon: <div><Icon icon={faImage} /></div>,
     view: (winKey: WinKey) => (<PicturePlayerView winKey={winKey} />)
   },
   "monaco": {

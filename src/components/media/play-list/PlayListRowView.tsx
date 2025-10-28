@@ -1,10 +1,11 @@
-import React from "react";
+import React, {useRef, useState} from "react";
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome'
 import {
   faCircleXmark,
 } from '@fortawesome/free-solid-svg-icons'
+import {ControlledMenu, MenuItem, type RectElement, useHover} from "@szhsin/react-menu";
 import { type RowComponentProps } from "react-window";
-import {getFilename} from "@/components/utils.ts";
+import {getFilename, isImage, srcLocal} from "@/components/utils.ts";
 import type {StoreApi} from "zustand/vanilla";
 import type { UseBoundStore } from "zustand";
 import type {UsePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
@@ -21,6 +22,10 @@ function PlayListRowView({
   usePlayListStore,
   icon,
 }: RowComponentProps<Prop>) {
+  const [isOpen, setOpen] = useState(false);
+  const { anchorProps, hoverProps } = useHover(isOpen, setOpen);
+  let ref = useRef<HTMLDivElement | null>(null);
+
   const {
     playPath, setPlayPath,
     playing,
@@ -54,6 +59,7 @@ function PlayListRowView({
   return (
     <div className={`row ${isPlayPath ? 'playing' : ''}`} style={style}>
       <div className={`title  ${(playing && isPlayPath) ? 'playing' : ''}`}
+           ref={ref} {...anchorProps}
            title={playList[index]}
       >
         <div className="no">{index+1}</div>
@@ -73,6 +79,23 @@ function PlayListRowView({
       >
         <Icon icon={faCircleXmark} />
       </div>
+      {isImage(getFilename(playList[index])) &&
+        <ControlledMenu
+          {...hoverProps}
+          state={isOpen ? 'open' : 'closed'}
+          anchorRef={ref as React.RefObject<Element | RectElement>}
+          onClose={() => setOpen(false)}
+          portal={true}
+          menuStyle={{transform: "translateX(220px)",}}
+        >
+          <MenuItem>
+            <img
+              src={srcLocal(playList[index])} alt={getFilename(playList[index])}
+              style={{width: '150px', height: '150px', objectFit: 'contain'}}
+            />
+          </MenuItem>
+        </ControlledMenu>
+      }
     </div>
   );
 }

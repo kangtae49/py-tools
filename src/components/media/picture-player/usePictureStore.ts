@@ -187,7 +187,11 @@ interface PictureDefault {
 
 export const pictureDefault: PictureDefault = {
   settingName: 'picture-player.setting.json',
-  extensions: ["jpg", "png", "svg", "bmp"],
+  extensions: [
+    "jpg", "jpeg", "png", "gif",
+    "webp", "bmp", "svg", "avif",
+    "ico",
+  ],
   setting: {
     mediaPath: undefined,
     sliderWidth: 64*4,

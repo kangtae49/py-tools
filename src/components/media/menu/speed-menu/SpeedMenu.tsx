@@ -16,17 +16,6 @@ function SpeedMenu({value, defaultValue, list, label, onChange}: Prop) {
   const [isOpen, setOpen] = useState(false);
   const { anchorProps, hoverProps } = useHover(isOpen, setOpen);
   let ref = useRef<HTMLDivElement | null>(null);
-
-  // let speedNm;
-  // let speed = Number(value ?? defaultValue);
-  // if (speed > 1) {
-  //   speedNm = "up";
-  // } else if (speed < 1) {
-  //   speedNm = "down";
-  // } else {
-  //   speedNm = "";
-  // }
-  // ["0.25", "0.5", "0.75", "1", "1.25", "1.5", "1.75", "2"]
   return (
     <div className="hover-menu badge-wrap">
       {<div className="badge-bottom" title={label(value ?? '')}>{label(value ?? '')}</div>}

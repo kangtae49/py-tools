@@ -159,11 +159,17 @@ uv run python --version
 ```
 
 ## TODO
- - [ ] 하나의 이미지만 볼때
-   - [ ] 확대 축소 이동 기능, 마우스 휠로 가능? (다른 리스트와 충돌하는가 확인)
- - [ ] 플레이기능 
-   - [ ] 시간간격 (delay)
-   - [ ] 화면 클릭시 paly, pause
-   - [ ] 이미지 전환할때 효과 가능한가?
- - [ ] 드래그 드랍
-   - [ ] 
+ - [ ] folder
+   - [ ] tree or list ?
+   - [ ] watchdog ?
+   - [ ] folder to media 
+ - [ ] youtube downloader
+ - [ ] movie repeat player
+ - [ ] note 
+   - [ ] monaco editor
+   - [ ] markdown editor
+   - [ ] excalidraw editor
+ - [ ] doc
+   - [ ] pdf, office embed viewer
+   
+ 

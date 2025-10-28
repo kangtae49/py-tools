@@ -1,4 +1,4 @@
-import {Swiper, SwiperSlide} from "swiper/react"
+import {Swiper, type SwiperRef, SwiperSlide} from "swiper/react"
 import {Autoplay, EffectFade} from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import "swiper/swiper.css";
@@ -6,7 +6,7 @@ import "swiper/swiper-bundle.css"
 import type {UseBoundStore} from "zustand";
 import type {StoreApi} from "zustand/vanilla";
 import type {UsePlayListStore} from "@/components/media/play-list/usePlayListStore.ts";
-import React from "react";
+import React, {useRef} from "react";
 import {getFilename, srcLocal} from "@/components/utils.ts";
 import {usePictureStore} from "@/components/media/picture-player/usePictureStore.ts";
 
@@ -23,11 +23,14 @@ function SwiperView({
   width,
   height,
 }: Prop) {
-  const {setting} = usePictureStore();
+  const {setting, setSetting} = usePictureStore();
+  const swiperRef = useRef<SwiperRef>(null);
+  const {setViewType} = usePictureStore();
   const {
     playList, setPlayList,
     setPlayPath,
   } = usePlayListStore();
+
 
   const onSlideChange = (swiper: SwiperType) => {
     console.log("swiper index", swiper.realIndex);
@@ -38,7 +41,8 @@ function SwiperView({
     console.log("swiper end", swiper.isEnd);
     const {setting} = usePictureStore.getState()
     console.log(setting.repeat)
-    if (swiper.isEnd && setting.repeat === 'repeat_all') {
+    if (!swiper.isEnd) return;
+    if (setting.repeat === 'repeat_all') {
       const {shuffle, shufflePlayList} = usePlayListStore.getState()
       if (shuffle) {
         const shuffledPlayList = shufflePlayList(playList);
@@ -46,8 +50,10 @@ function SwiperView({
       }
       setTimeout(() => {
         swiper.slideTo(0);
-        swiper.autoplay.start();
       }, setting.playbackRate);
+    } else {
+      setSetting((setting) => ({...setting, paused: true}))
+      setViewType('single')
     }
   };
 
@@ -60,6 +66,7 @@ function SwiperView({
          style={{width: width, height: height}}
     >
       <Swiper
+        ref={(swiper) => {swiperRef.current = swiper}}
         modules={[
           Autoplay,
           EffectFade,
